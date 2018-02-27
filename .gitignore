@@ -57,3 +57,6 @@ typings/
 # dotenv environment variables file
 .env
 
+# custom
+config.json
+./test_client
