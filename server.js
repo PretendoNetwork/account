@@ -63,7 +63,7 @@ router.use('/v1/api/oauth20', ROUTES.OAUTH20);   // oAuth API routes
 router.use('/v1/api/people', ROUTES.PEOPLE);     // People API routes
 router.use('/v1/api/provider', ROUTES.PROVIDER); // Provider API routes
 router.use('/v1/api/support', ROUTES.SUPPORT);   // Support API routes
-router.use('/v1/api', ROUTES.ROOT);              // Root/Misc routes
+router.use('/', ROUTES.ROOT);              // Root/Misc routes
 
 function getRoutes(_router) {
     let routes, ret = [];
