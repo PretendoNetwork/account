@@ -1,25 +1,19 @@
-//////////////////////////////////////////////////////////////////
-///                                                            ///
-///                        Dependencies                        ///
-///                                                            ///
-//////////////////////////////////////////////////////////////////
+const path = require('path');
+const express = require('express');
+const subdomain = require('express-subdomain');
+const table = require('cli-table');
+const colors = require('colors');
+const morgan = require('morgan');
+const XMLMiddleware = require('./xml-middleware');
+const debug = require('./debugger');
+const config = require('./config.json')
+const app = express();
+const router = express.Router();
+const testing_env = process.env.NODE_ENV !== "production"
 
-let port = 8080,
-    debug = require('./debugger'),
-    path = require('path'),
-    express = require('express'),
-    subdomain = require('express-subdomain'),
-    table = require('cli-table'),
-    XMLMiddleware = require('./xml-middleware'),
-    colors = require('colors'),
-    morgan = require('morgan'),
-    app = express(),
-    testing_env = true,
-    router = express.Router();
+const server_debugger = new debug('Server');
 
-let server_debugger = new debug('Server');
-
-server_debugger.log('Importing routes');
+server_debugger.log('Importing routes'); 
 // API routes
 const ROUTES = {
     ACCOUNT: require('./routes/account'),
@@ -118,20 +112,20 @@ router.use((error, request, response) => {
 
 server_debugger.log('Starting server');
 // Starts the server
-app.listen(port, () => {
+app.listen(config.http.port, () => {
     let route_table = new table({
             head: ["Method", "Path"]
         }),
         routes = getRoutes(app._router.stack);
-    
+
     routes.forEach(route => {
         let obj = {};
         obj[route.method] = route.path;
 
         route_table.push(obj)
     });
-    
+
     console.log(route_table.toString());
 
-    server_debugger.log('Started '.green + 'on port '.blue + new String(port).yellow);
+    server_debugger.log('Started '.green + 'on port '.blue + new String(config.http.port).yellow);
 });

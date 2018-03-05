@@ -1,5 +1,4 @@
-let http = require('http'),
-    XML = require('pixl-xml');
+const XML = require('pixl-xml');
 
 module.exports = middleware;
 

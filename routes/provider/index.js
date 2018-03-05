@@ -1,18 +1,8 @@
-let routes = require('express').Router(),
-    helpers = require('../../helpers'),
-    constants = require('../../constants'),
-    database = require('../../db'),
-    mailer = require('../../mailer'),
-    RateLimit = require('express-rate-limit'),
-    randtoken = require('rand-token'),
-    json2xml = require('json2xml'),
-    bcrypt = require('bcryptjs'),
-    moment = require('moment'),
-    moment_timezone = require('moment-timezone'),
-    puid = require('puid'),
-    fs = require('fs-extra'),
-    debug = require('../../debugger'),
-    route_debugger = new debug('Provider Route'.green);
+const routes = require('express').Router();
+const RateLimit = require('express-rate-limit');
+const json2xml = require('json2xml');
+const debug = require('../../debugger');
+const route_debugger = new debug('Provider Route'.green);
 
 route_debugger.log('Loading \'provider\' API routes');
 

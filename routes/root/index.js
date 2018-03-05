@@ -1,6 +1,6 @@
-let routes = require('express').Router(),
-	debug = require('../../debugger'),
-	route_debugger = new debug('Root/Misc Route'.green);
+const routes = require('express').Router();
+const debug = require('../../debugger');
+const route_debugger = new debug('Root/Misc Route'.green);
 
 route_debugger.log('Loading \'root/misc\' API routes');
 

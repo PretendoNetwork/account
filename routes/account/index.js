@@ -1,7 +1,7 @@
-let routes = require('express').Router(),
-    database = require('../../db'),
-    debug = require('../../debugger'),
-    route_debugger = new debug('Account Route');
+const routes = require('express').Router();
+const database = require('../../db');
+const debug = require('../../debugger');
+const route_debugger = new debug('Account Route');
 
 route_debugger.success('Loading \'account\' API routes');
 /**

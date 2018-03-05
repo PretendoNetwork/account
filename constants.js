@@ -1,8 +1,3 @@
-const ENV = process.env.NODE_ENV || 'dev';
-
-let fs = require('fs'),
-    path = require('path');
-
 module.exports = {
     URL_ENDPOINTS: {
         mii: 'http://mii-secure.account.riiu.net/'

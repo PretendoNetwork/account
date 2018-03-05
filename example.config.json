@@ -4,10 +4,17 @@
         "password": "password"
     },
     "mongo": {
-        "database_name": {
+        "database": "foo",
+        "hostname": "localhost",
+        "port": 27017,
+        "use_authentication": true,
+        "authentication": {
             "username": "username",
             "password": "password",
-            "hostname": "localhost"
+            "authentication_database": "admin"
         }
+    },
+    "http": {
+        "port": 8080
     }
 }
