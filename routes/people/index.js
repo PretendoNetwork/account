@@ -195,12 +195,14 @@ routes.post('/', new RateLimit({
 
         Your Prentendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.
         
-        http://account.prentendo.cc/account/email-confirmation?token=` + email_token + `
+        https://account.pretendo.cc/account/email-confirmation?token=` + email_token + `
         
         If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.
         
         &lt;&lt;Confirmation code: ` + email_code + `&gt;&gt;`
-    )
+    );
+
+    console.log('account registered', 'PID:', pid, 'email_token:', email_token, 'email_code:', email_code);
 
     response.send(json2xml({
         person: {
