@@ -62,7 +62,7 @@ routes.get('/email-confirmation', async (request, response) => {
 
     console.log(8)
 
-    response.send('It has been confirmed that you can receive e-mails from Pretenod. The confirmation process is now complete.');
+    response.send('It has been confirmed that you can receive e-mails from Pretendo. The confirmation process is now complete.');
 
     console.log(9)
 });
