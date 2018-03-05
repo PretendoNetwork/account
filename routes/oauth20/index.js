@@ -1,11 +1,10 @@
-let routes = require('express').Router(),
-    json2xml = require('json2xml'),
-    bcrypt = require('bcryptjs'),
-    database = require('../../db'),
-    helpers = require('../../helpers'),
-    constants = require('../../constants'),
-    debug = require('../../debugger'),
-    route_debugger = new debug('oAuth Route'.green);
+const routes = require('express').Router();
+const json2xml = require('json2xml');
+const bcrypt = require('bcryptjs');
+const database = require('../../db');
+const helpers = require('../../helpers');
+const debug = require('../../debugger');
+const route_debugger = new debug('oAuth Route'.green);
 
 route_debugger.log('Loading \'oauth20\' API routes');
 

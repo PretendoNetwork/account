@@ -1,17 +1,17 @@
-let routes = require('express').Router(),
-    helpers = require('../../helpers'),
-    constants = require('../../constants'),
-    database = require('../../db'),
-    mailer = require('../../mailer'),
-    RateLimit = require('express-rate-limit'),
-    json2xml = require('json2xml'),
-    bcrypt = require('bcryptjs'),
-    moment = require('moment'),
-    moment_timezone = require('moment-timezone'),
-    puid = require('puid'),
-    fs = require('fs-extra'),
-    debug = require('../../debugger'),
-    route_debugger = new debug('People Route'.green);
+const routes = require('express').Router();
+const RateLimit = require('express-rate-limit');
+const json2xml = require('json2xml');
+const bcrypt = require('bcryptjs');
+const moment = require('moment');
+const moment_timezone = require('moment-timezone');
+const puid = require('puid');
+const fs = require('fs-extra');
+const helpers = require('../../helpers');
+const constants = require('../../constants');
+const database = require('../../db');
+const mailer = require('../../mailer');
+const debug = require('../../debugger');
+const route_debugger = new debug('People Route'.green);
 
 route_debugger.log('Loading \'people\' API routes');
 

@@ -7,8 +7,7 @@ const database = require('./db');
 
 async function generatePID() {
     // Quick, dirty fix for PIDs
-    let pid = Math.floor(Math.random() * (4294967295 - 1000000000) + 1000000000);
-
+    const pid = Math.floor(Math.random() * (4294967295 - 1000000000) + 1000000000);
     let does_pid_inuse = await database.user_collection.findOne({
         pid: pid
     });
@@ -31,8 +30,7 @@ function generateRandID(length = 10) {
 }
 
 async function generateEmailToken() {
-    let token = randtoken.generate(32);
-
+    const token = randtoken.generate(32);
     let user = await database.user_collection.findOne({
         'sensitive.email_confirms.token': token
     });
@@ -45,7 +43,7 @@ async function generateEmailToken() {
 }
 
 async function generateEmailCode() {
-    let code = generateRandID(6);
+    const code = generateRandID(6);
 
     let user = await database.user_collection.findOne({
         'sensitive.email_confirms.code': code

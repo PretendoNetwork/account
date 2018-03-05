@@ -1,11 +1,11 @@
-let routes = require('express').Router(),
-    helpers = require('../../helpers'),
-    constants = require('../../constants'),
-	database = require('../../db'),
-    dns = require('dns'),
-    json2xml = require('json2xml'),
-    debug = require('../../debugger'),
-    route_debugger = new debug('Support Route'.green);
+const dns = require('dns');
+const routes = require('express').Router();
+const helpers = require('../../helpers');
+const constants = require('../../constants');
+const database = require('../../db');
+const json2xml = require('json2xml');
+const debug = require('../../debugger');
+const route_debugger = new debug('Support Route'.green);
 
 route_debugger.log('Loading \'support\' API routes');
 
