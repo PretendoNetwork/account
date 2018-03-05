@@ -1,9 +1,8 @@
 language: node_js
 sudo: false
 script: 
-  - "mv example.config.json config.json"
-  - "node server.js"
+  - "./node_modules/.bin/eslint . ./**/*.js"
 node_js:
   - stable
 env:
-  - NODE_ENV=production
+  - NODE_ENV=development
