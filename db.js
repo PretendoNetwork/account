@@ -9,8 +9,7 @@ const auth     = config.mongo.authentication
 let connection_string = '';
 
 if(config.mongo.use_authentication) {
-    connection_string = `mongodb://${auth.username}:${auth.password}@${hostname}:${port}/\
-        ${database}?authSource=${auth.authentication_database}` 
+    connection_string = `mongodb://${auth.username}:${auth.password}@${hostname}:${port}/${database}?authSource=${auth.authentication_database}` 
 }else {
     connection_string = `mongodb://${hostname}:${port}/${database}`
 }
