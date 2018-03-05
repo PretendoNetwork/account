@@ -1,5 +1,7 @@
 # account.pretendo.cc
 
+[![Travis](https://travis-ci.org/PretendoNetwork/account.svg?branch=master)](https://travis-ci.org/PretendoNetwork/account)
+
 <p align="left">
     <a href="https://discord.gg/rxekqVJ" target="_blank">
         <img src="https://discordapp.com/api/guilds/408718485913468928/widget.png?style=banner3">
