@@ -9,14 +9,6 @@ let routes = require('express').Router(),
 
 route_debugger.success('Loading \'content\' API routes');
 
-const VALID_REGIONS = [
-    'US', 'JP', 'GB', 'DE', 'FR'
-];
-
-const VALID_LANGUAGES = [
-    'en'
-];
-
 /**
  * [GET]
  * Replacement for: https://account.nintendo.net/v1/api/content/time_zones/REGION/LANGUAGE
@@ -50,9 +42,7 @@ routes.get('/time_zones/:region/:language', (request, response) => {
         return response.send(json2xml(error));
     }
 
-    if (!VALID_REGIONS.contains(region)
-        || !VALID_LANGUAGES.contains(language)
-        || !fs.pathExistsSync(path.join(__dirname, 'storage', 'timezones', region, language + '.xml'))) {
+    if (!fs.pathExistsSync(path.join(__dirname, 'storage', 'timezones', region, language + '.xml'))) {
         let error = {
             errors: {
                 error: {
@@ -105,21 +95,6 @@ routes.get('/agreements/:type/:region/:version', (request, response) => {
 
         return response.send(json2xml(error));
     }
-
-
-    if (!VALID_REGIONS.contains(region)) {
-        let error = {
-            errors: {
-                error: {
-                    code: '0000',
-                    message: 'Unknown error'
-                }
-            }
-        }
-
-        return response.send(json2xml(error));
-    }
-
 
     if (!fs.pathExistsSync(path.join(__dirname, 'storage', 'agreements', type, region, version + '.xml'))) {
         let error = {
