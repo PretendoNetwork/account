@@ -10,9 +10,9 @@ let connection_string = '';
 
 if(config.mongo.use_authentication) {
     connection_string = `mongodb://${auth.username}:${auth.password}@${hostname}:${port}/\
-        ${user_database_name}?authSource=${auth.authentication_database}` 
+        ${database}?authSource=${auth.authentication_database}` 
 }else {
-    connection_string = `mongodb://${hostname}:${port}/${user_database_name}`
+    connection_string = `mongodb://${hostname}:${port}/${database}`
 }
 
 user_database = mongoist(connection_string);
