@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const config = require('./config.json');
 
-let transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: config.email.address,
@@ -9,9 +9,15 @@ let transporter = nodemailer.createTransport({
     }
 });
 
+/**
+ * Sends an email with the specified subject and message to an email address
+ * @param {String} email the destination email address
+ * @param {String} subject The Subject of the email
+ * @param {String} message The body of the email
+ */
 function send(email, subject = 'No email subject provided', message = 'No email body provided') {
     let options = {
-        from: 'pretendonetwork@gmail.com',
+        from: config.email.address,
         to: email,
         subject: subject,
         html: message
