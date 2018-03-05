@@ -9,6 +9,7 @@ const debug = require('./debugger');
 const config = require('./config.json')
 const app = express();
 const router = express.Router();
+const test_env = process.env.NODE_ENV !== "production"
 
 const server_debugger = new debug('Server');
 
