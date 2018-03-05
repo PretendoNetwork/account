@@ -1,13 +1,19 @@
-let mongoist = require('mongoist'),
-    config = require('./config.json'),
-    user_database_name = 'nintendo_acts',
-    user_database_collection_name = 'users',
-    user_database, user_collection;
+const mongoist = require('mongoist');
+const config = require('./config.json');
+const user_database_collection_name = 'users';
+const database = config.mongo.database
+const hostname = config.mongo.hostname
+const port     = config.mongo.port
+const auth     = config.mongo.authentication
 
-let username = config.mongo.nintendo_acts.username;
-let password = config.mongo.nintendo_acts.password;
-let hostname = config.mongo.nintendo_acts.hostname;
-let connection_string = 'mongodb://' + username + ':' + password + '@' + hostname + '/' + user_database_name + '?authSource=admin';
+let connection_string = '';
+
+if(config.mongo.use_authentication) {
+    connection_string = `mongodb://${auth.username}:${auth.password}@${hostname}:${port}/\
+        ${user_database_name}?authSource=${auth.authentication_database}` 
+}else {
+    connection_string = `mongodb://${hostname}:${port}/${user_database_name}`
+}
 
 user_database = mongoist(connection_string);
 user_collection = user_database.collection(user_database_collection_name);
