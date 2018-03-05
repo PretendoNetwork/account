@@ -9,11 +9,11 @@ const debug = require('./debugger');
 const config = require('./config.json')
 const app = express();
 const router = express.Router();
-const test_env = process.env.NODE_ENV !== "production"
+const testing_env = process.env.NODE_ENV !== "production"
 
 const server_debugger = new debug('Server');
 
-server_debugger.log('Importing routes');
+server_debugger.log('Importing routes'); 
 // API routes
 const ROUTES = {
     ACCOUNT: require('./routes/account'),
