@@ -1,9 +1,9 @@
-let constants = require('./constants'), 
-    database = require('./db'),
-    pythonStruct = require('python-struct'),
-    bcrypt = require('bcryptjs'),
-    randtoken = require('rand-token'),
-    crypto = require('crypto');
+const pythonStruct = require('python-struct');
+const bcrypt = require('bcryptjs');
+const randtoken = require('rand-token');
+const crypto = require('crypto');
+const constants = require('./constants');
+const database = require('./db');
 
 async function generatePID() {
     // Quick, dirty fix for PIDs
