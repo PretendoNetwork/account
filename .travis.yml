@@ -1,7 +1,7 @@
 language: node_js
 sudo: false
 script: 
-  - "./node_modules/.bin/jslint . ./**/*.js"
+  - "./node_modules/.bin/jslint *.js ./routes/*.js"
 node_js:
   - stable
 env:
