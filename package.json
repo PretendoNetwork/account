@@ -30,5 +30,8 @@
     "puid": "^1.0.7",
     "python-struct": "^1.0.6",
     "rand-token": "^0.4.0"
+  },
+  "devDependencies": {
+    "jslint": "^0.12.0"
   }
 }
