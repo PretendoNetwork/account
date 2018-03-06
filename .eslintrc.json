@@ -12,6 +12,7 @@
 		"no-console": "off",
 		"prefer-const": "error",
 		"no-var": "error",
+		"linebreak-style": "off",
 		"one-var": [
 			"error",
 			"never"
@@ -22,10 +23,6 @@
 			{
 				"SwitchCase": 1
 			}
-        ],
-        "linebreak-style": [
-            "error",
-            "windows"
         ],
         "quotes": [
             "error",
