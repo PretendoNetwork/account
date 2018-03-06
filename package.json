@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+	"lint": "./node_modules/.bin/eslint .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "NODE_ENV=production node server.js",
     "start:dev": "NODE_ENV=development node server.js"
@@ -14,6 +15,7 @@
     "bcryptjs": "^2.4.3",
     "cli-table": "^0.3.1",
     "colors": "^1.1.2",
+    "eslint": "^4.18.2",
     "express": "^4.16.2",
     "express-rate-limit": "^2.11.0",
     "express-subdomain": "^1.0.5",

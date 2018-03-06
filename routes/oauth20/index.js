@@ -11,184 +11,183 @@ route_debugger.log('Loading \'oauth20\' API routes');
 /**
  * [GET]
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
- * Description: Unknown use
+ * Description: Generates user access tokens
  */
 routes.all('/access_token/generate', async (request, response) => {
-    let POST = request.body;
-    
-    if (
-        !POST ||
-        !POST.grant_type ||
-        !['password', 'refresh_token'].includes(POST.grant_type)
-    ) {
-        let error = {
-            errors: {
-                error: {
-                    cause: 'grant_type',
-                    code: '0004',
-                    message: 'Invalid Grant Type'
-                }
-            }
-        }
+	const POST = request.body;
 
-        return response.send(json2xml(error));
-    }
+	if (
+		!POST ||
+		!POST.grant_type ||
+		!['password', 'refresh_token'].includes(POST.grant_type)
+	) {
+		const error = {
+			errors: {
+				error: {
+					cause: 'grant_type',
+					code: '0004',
+					message: 'Invalid Grant Type'
+				}
+			}
+		};
 
-    if (POST.grant_type == 'password') {
-        if (!POST.user_id || !POST.password) {
-            let error = {
-                errors: {
-                    error: {
-                        cause: 'grant_type',
-                        code: '0004',
-                        message: 'Invalid Grant Type'
-                    }
-                }
-            }
-    
-            return response.send(json2xml(error));
-        }
+		return response.send(json2xml(error));
+	}
 
-        let user = await database.user_collection.findOne({
-            user_id: POST.user_id
-        });
+	if (POST.grant_type == 'password') {
+		if (!POST.user_id || !POST.password) {
+			const error = {
+				errors: {
+					error: {
+						cause: 'grant_type',
+						code: '0004',
+						message: 'Invalid Grant Type'
+					}
+				}
+			};
+		
+			return response.send(json2xml(error));
+		}
 
-        if (!user) {
-            let error = {
-                errors: {
-                    error: {
-                        code: '0113',
-                        message: 'Unauthorized device'
-                    }
-                }
-            }
+		const user = await database.user_collection.findOne({
+			user_id: POST.user_id
+		});
 
-            return response.send(json2xml(error));
-        }
+		if (!user) {
+			const error = {
+				errors: {
+					error: {
+						code: '0113',
+						message: 'Unauthorized device'
+					}
+				}
+			};
 
-        if (!POST.password_type || POST.password_type.toLowerCase() !== 'hash') {
-            POST.password = helpers.generateNintendoHashedPWrd(POST.password, user.pid);
-        }
+			return response.send(json2xml(error));
+		}
 
-        if (!bcrypt.compareSync(POST.password, user.sensitive.password)) {
-            let error = {
-                errors: {
-                    error: {
-                        code: '0106',
-                        message: 'Invalid account ID or password.'
-                    }
-                }
-            }
+		if (!POST.password_type || POST.password_type.toLowerCase() !== 'hash') {
+			POST.password = helpers.generateNintendoHashedPWrd(POST.password, user.pid);
+		}
 
-            return response.send(json2xml(error));
-        }
-        
-        let access_token = helpers.generateAccessToken({
-            pid: user.pid,
-            token_salt: helpers.generateRandID(100)
-        });
-		//let access_token = user.pid
+		if (!bcrypt.compareSync(POST.password, user.sensitive.password)) {
+			const error = {
+				errors: {
+					error: {
+						code: '0106',
+						message: 'Invalid account ID or password.'
+					}
+				}
+			};
 
-        let refresh_token = helpers.generateRefreshToken({
-            pid: user.pid,
-            token_salt: helpers.generateRandID(100)
-        });
+			return response.send(json2xml(error));
+		}
+		
+		const access_token = helpers.generateAccessToken({
+			pid: user.pid,
+			token_salt: helpers.generateRandID(100)
+		});
 
-        user.sensitive.tokens.refresh = refresh_token;
-        user.sensitive.tokens.access.token = access_token;
-        user.sensitive.tokens.access.ttl = Math.floor((Date.now() / 1000) + 3600);
+		const refresh_token = helpers.generateRefreshToken({
+			pid: user.pid,
+			token_salt: helpers.generateRandID(100)
+		});
 
-        await database.user_collection.update({
-            pid: user.pid
-        }, {
-            $set: {
-                sensitive: user.sensitive
-            }
-        });
-        
-        response.send(json2xml({
-            OAuth20: {
-                access_token: {
-                    token: access_token,
-                    refresh_token: refresh_token,
-                    expires_in: 3600,
-                }
-            }
-        }));
-    } else if (POST.grant_type == 'refresh_token') {
-        if (!POST.refresh_token) {
-            let error = {
-                errors: {
-                    error: {
-                        cause: 'refresh_token',
-                        code: '0106',
-                        message: 'Invalid Refresh Token'
-                    }
-                }
-            }
+		user.sensitive.tokens.refresh = refresh_token;
+		user.sensitive.tokens.access.token = access_token;
+		user.sensitive.tokens.access.ttl = Math.floor((Date.now() / 1000) + 3600);
 
-            return response.send(json2xml(error));
-        }
+		await database.user_collection.update({
+			pid: user.pid
+		}, {
+			$set: {
+				sensitive: user.sensitive
+			}
+		});
+		
+		response.send(json2xml({
+			OAuth20: {
+				access_token: {
+					token: access_token,
+					refresh_token: refresh_token,
+					expires_in: 3600,
+				}
+			}
+		}));
+	} else if (POST.grant_type == 'refresh_token') {
+		if (!POST.refresh_token) {
+			const error = {
+				errors: {
+					error: {
+						cause: 'refresh_token',
+						code: '0106',
+						message: 'Invalid Refresh Token'
+					}
+				}
+			};
 
-        let user = database.user_collection.findOne({
-            sensitive: {
-                tokens: {
-                    refresh: POST.refresh_token
-                }
-            }
-        });
+			return response.send(json2xml(error));
+		}
 
-        if (!user || user.sensitive.tokens.refresh !== POST.refresh_token) {
-            let error = {
-                errors: {
-                    error: {
-                        cause: 'refresh_token',
-                        code: '0106',
-                        message: 'Invalid Refresh Token'
-                    }
-                }
-            }
+		const user = database.user_collection.findOne({
+			sensitive: {
+				tokens: {
+					refresh: POST.refresh_token
+				}
+			}
+		});
 
-            return response.send(json2xml(error));
-        }
+		if (!user || user.sensitive.tokens.refresh !== POST.refresh_token) {
+			const error = {
+				errors: {
+					error: {
+						cause: 'refresh_token',
+						code: '0106',
+						message: 'Invalid Refresh Token'
+					}
+				}
+			};
 
-        let access_token = helpers.generateAccessToken({
-            pid: user.pid,
-            token_salt: helpers.generateRandID(100)
-        });
+			return response.send(json2xml(error));
+		}
 
-        let refresh_token = helpers.generateRefreshToken({
-            pid: user.pid,
-            token_salt: helpers.generateRandID(100)
-        });
+		const access_token = helpers.generateAccessToken({
+			pid: user.pid,
+			token_salt: helpers.generateRandID(100)
+		});
 
-        user.sensitive.tokens.refresh = refresh_token;
-        user.sensitive.tokens.access.token = access_token;
-        user.sensitive.tokens.access.ttl = Math.floor((Date.now() / 1000) + 3600);
+		const refresh_token = helpers.generateRefreshToken({
+			pid: user.pid,
+			token_salt: helpers.generateRandID(100)
+		});
 
-        await database.user_collection.update({
-            sensitive: {
-                tokens: {
-                    refresh: POST.refresh_token
-                }
-            }
-        }, {
-            $set: {
-                sensitive: user.sensitive
-            }
-        });
+		user.sensitive.tokens.refresh = refresh_token;
+		user.sensitive.tokens.access.token = access_token;
+		user.sensitive.tokens.access.ttl = Math.floor((Date.now() / 1000) + 3600);
 
-        
-        response.send(json2xml({
-            OAuth20: {
-                access_token: {
-                    token: access_token,
-                    refresh_token: refresh_token,
-                    expires_in: 3600,
-                }
-            }
-        }));
-    }
+		await database.user_collection.update({
+			sensitive: {
+				tokens: {
+					refresh: POST.refresh_token
+				}
+			}
+		}, {
+			$set: {
+				sensitive: user.sensitive
+			}
+		});
+
+		
+		response.send(json2xml({
+			OAuth20: {
+				access_token: {
+					token: access_token,
+					refresh_token: refresh_token,
+					expires_in: 3600,
+				}
+			}
+		}));
+	}
 
 });
 

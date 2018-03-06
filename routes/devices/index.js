@@ -1,6 +1,4 @@
 const routes = require('express').Router();
-const path = require('path');
-const fs = require('fs-extra');
 const json2xml = require('json2xml');
 const debug = require('../../debugger');
 const constants = require('../../constants');
@@ -14,32 +12,32 @@ route_debugger.success('Loading \'devices\' API routes');
  * Description: Unknown use
  */
 routes.get('/@current/status', (request, response) => {
-    response.set('Content-Type', 'text/xml');
-    response.set('Server', 'Nintendo 3DS (http)');
-    response.set('X-Nintendo-Date', new Date().getTime());
+	response.set('Content-Type', 'text/xml');
+	response.set('Server', 'Nintendo 3DS (http)');
+	response.set('X-Nintendo-Date', new Date().getTime());
 
-    let headers = request.headers;
+	const headers = request.headers;
 
-    if (
-        !headers['x-nintendo-client-id'] ||
-        !headers['x-nintendo-client-secret'] ||
-        !constants.VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']] ||
-        headers['x-nintendo-client-secret'] !== constants.VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']]
-    ) {
-        let error = {
-            errors: {
-                error: {
-                    cause: 'client_id',
-                    code: '0004',
-                    message: 'API application invalid or incorrect application credentials'
-                }
-            }
-        }
+	if (
+		!headers['x-nintendo-client-id'] ||
+		!headers['x-nintendo-client-secret'] ||
+		!constants.VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']] ||
+		headers['x-nintendo-client-secret'] !== constants.VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']]
+	) {
+		const error = {
+			errors: {
+				error: {
+					cause: 'client_id',
+					code: '0004',
+					message: 'API application invalid or incorrect application credentials'
+				}
+			}
+		};
 
-        return response.send(json2xml(error));
-    }
+		return response.send(json2xml(error));
+	}
 
-    return response.send(json2xml({device: null}));
+	return response.send(json2xml({device: null}));
 });
 
 module.exports = routes;

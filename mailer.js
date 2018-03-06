@@ -2,11 +2,11 @@ const nodemailer = require('nodemailer');
 const config = require('./config.json');
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: config.email.address,
-        pass: config.email.password
-    }
+	service: 'gmail',
+	auth: {
+		user: config.email.address,
+		pass: config.email.password
+	}
 });
 
 /**
@@ -16,22 +16,22 @@ const transporter = nodemailer.createTransport({
  * @param {String} message The body of the email
  */
 function send(email, subject = 'No email subject provided', message = 'No email body provided') {
-    let options = {
-        from: config.email.address,
-        to: email,
-        subject: subject,
-        html: message
-    }
+	const options = {
+		from: config.email.address,
+		to: email,
+		subject: subject,
+		html: message
+	};
 
-    transporter.sendMail(options, (error, info) => {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log(info);
-        }
-     });
+	transporter.sendMail(options, (error, info) => {
+		if (error) {
+			console.log(error);
+		} else {
+			console.log(info);
+		}
+	});
 }
 
 module.exports = {
-    send: send
-}
+	send: send
+};

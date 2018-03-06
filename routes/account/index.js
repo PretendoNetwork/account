@@ -10,61 +10,43 @@ route_debugger.success('Loading \'account\' API routes');
  * Description: Verifies a user email via token
  */
 routes.get('/email-confirmation', async (request, response) => {
-    let _GET = request.query;
+	const _GET = request.query;
 
-    console.log(_GET)
+	if (!_GET.token) {
+		return response.send('ERROR: Invalid token');
+	}
 
-    if (!_GET.token) {
-        return response.send('ERROR: Invalid token');
-    }
+	const user = await database.user_collection.findOne({
+		'sensitive.email_confirms.token': _GET.token
+	});
 
-    console.log(2)
+	if (!user) {
+		return response.send('ERROR: Invalid token');
+	}
 
-    let user = await database.user_collection.findOne({
-        'sensitive.email_confirms.token': _GET.token
-    });
+	user.email.reachable = 'Y';
+	user.email.validated = 'Y';
 
-    console.log(3)
+	await database.user_collection.update({
+		pid: user.pid
+	}, {
+		$set: {
+			email: user.email
+		}
+	});
 
-    if (!user) {
-        return response.send('ERROR: Invalid token');
-    }
+	user.sensitive.email_confirms.token = null;
+	user.sensitive.email_confirms.code = null;
 
-    console.log(4)
+	await database.user_collection.update({
+		pid: user.pid
+	}, {
+		$set: {
+			sensitive: user.sensitive
+		}
+	});
 
-    user.email.reachable = 'Y';
-    user.email.validated = 'Y';
-
-    console.log(5)
-
-    await database.user_collection.update({
-        pid: user.pid
-    }, {
-        $set: {
-            email: user.email
-        }
-    });
-
-    console.log(6)
-
-    user.sensitive.email_confirms.token = null;
-    user.sensitive.email_confirms.code = null;
-
-    console.log(7)
-
-    await database.user_collection.update({
-        pid: user.pid
-    }, {
-        $set: {
-            sensitive: user.sensitive
-        }
-    });
-
-    console.log(8)
-
-    response.send('It has been confirmed that you can receive e-mails from Pretendo. The confirmation process is now complete.');
-
-    console.log(9)
+	response.send('It has been confirmed that you can receive e-mails from Pretendo. The confirmation process is now complete.');
 });
 
 module.exports = routes;
