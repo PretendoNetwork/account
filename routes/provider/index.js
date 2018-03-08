@@ -2,20 +2,9 @@ const routes = require('express').Router();
 const json2xml = require('json2xml');
 const debug = require('../../debugger');
 const route_debugger = new debug('Provider Route'.green);
+const gamePort = require('../../config.json').nex_servers;
 
 route_debugger.log('Loading \'provider\' API routes');
-
-//The game ips and ports are stored here. When the game tries to access its specific server, it will be given the respecive ip and port.
-const gamePort = {
-	friends: {
-		ip: '10.0.0.225',
-		port: '1300'
-	},
-	supermariomaker: {
-		ip: '10.0.0.225',
-		port: '1301'
-	}
-};
 
 /**
  * [GET]

@@ -16,5 +16,15 @@
     },
     "http": {
         "port": 8080
-    }
+    },
+	"nex_servers": {
+		"friends": {
+			"ip": "ip",
+			"port": "port"
+		},
+		"supermariomaker": {
+			"ip": "ip",
+			"port": "port"
+		}
+	}
 }
