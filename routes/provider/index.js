@@ -196,19 +196,15 @@ routes.get('/nex_token/@me', async (request, response) => {
 			nex_password: nex_password,
 			pid: user.pid,
 			port: port,
-			token: {
-				service_token: {
-					token: jwt.sign({
-						data: {
-							type: 'service_token',
-							payload: user
-						}
-					}, {
-						key: config.JWT.SERVICE.PRIVATE,
-						passphrase: config.JWT.SERVICE.PASSPHRASE
-					}, { algorithm: 'RS256'})
+			token: jwt.sign({
+				data: {
+					type: 'nex_token',
+					payload: user
 				}
-			}
+			}, {
+				key: config.JWT.NEX.PRIVATE,
+				passphrase: config.JWT.NEX.PASSPHRASE
+			}, { algorithm: 'RS256'})
 		}
 	};
 
