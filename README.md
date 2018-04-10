@@ -51,8 +51,7 @@ This is the PN account server, which replaces the official NN account server acc
 - [GET] https://id.nintendo.net/account/email-confirmation
 
 # Currently implemented nex servers
-- supermariomaker
-- friends
+None
 
 
 ### Footnotes
