@@ -5,6 +5,22 @@ const crypto = require('crypto');
 const constants = require('./constants');
 const database = require('./db');
 
+function genNEXPassoword() {
+	const output = [];
+	const character = () => {
+		const offset = Math.floor(Math.random() * 62);
+		if (offset < 10) return offset;
+		if (offset < 36) return String.fromCharCode(offset + 55);
+		return String.fromCharCode(offset + 61);
+	}
+
+	while (output.length < 16) {
+		output.push(character());
+	}
+
+	return output.join('');
+}
+
 async function generatePID() {
 	// Quick, dirty fix for PIDs
 	const pid = Math.floor(Math.random() * (4294967295 - 1000000000) + 1000000000);
@@ -236,6 +252,7 @@ function mapUser(user) {
 
 
 module.exports = {
+	genNEXPassoword: genNEXPassoword,
 	generatePID: generatePID,
 	generateRandID: generateRandID,
 	generateNintendoHashedPWrd: generateNintendoHashedPWrd,

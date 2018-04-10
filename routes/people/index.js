@@ -4,6 +4,7 @@ const json2xml = require('json2xml');
 const bcrypt = require('bcryptjs');
 const moment = require('moment');
 const puid = require('puid');
+const mongo = require('mongodb');
 const helpers = require('../../helpers');
 const constants = require('../../constants');
 const database = require('../../db');
@@ -99,7 +100,7 @@ routes.post('/', new RateLimit({
 					attributes: [
 						{
 							attribute: {
-								id: helpers.generateRandID(8), // THIS IS A PLACE HOLDER
+								id: new mongo.ObjectID(), // THIS IS A PLACE HOLDER
 								name: 'environment',
 								updated_by: 'USER',
 								value: 'PROD'
@@ -108,7 +109,7 @@ routes.post('/', new RateLimit({
 					],
 					domain: 'ESHOP.NINTENDO.NET',
 					type: 'INTERNAL',
-					username: helpers.generateRandID(9) // THIS IS A PLACE HOLDER
+					username: new mongo.ObjectID() // THIS IS A PLACE HOLDER
 				}  
 			}
 		],
@@ -125,7 +126,7 @@ routes.post('/', new RateLimit({
 		pid: pid,
 		email: {
 			address: user_data.email,
-			id: helpers.generateRandID(8), // THIS IS A PLACE HOLDER
+			id: new mongo.ObjectID(), // THIS IS A PLACE HOLDER
 			parent: user_data.parent,
 			primary: user_data.primary,
 			reachable: 'N',
@@ -136,13 +137,13 @@ routes.post('/', new RateLimit({
 		mii: {
 			status: 'COMPLETED', // idk man, idk
 			data: user_data.mii.data,
-			id: helpers.generateRandID(10), // THIS IS A PLACE HOLDER
+			id: new mongo.ObjectID(), // THIS IS A PLACE HOLDER
 			mii_hash: mii_hash,
 			mii_images: [
 				{
 					mii_image: {
 						cached_url: constants.URL_ENDPOINTS.mii + mii_hash + '_standard.tga',
-						id: helpers.generateRandID(10), // THIS IS A PLACE HOLDER
+						id: new mongo.ObjectID(), // THIS IS A PLACE HOLDER
 						url: constants.URL_ENDPOINTS.mii + mii_hash + '_standard.tga',
 						type: 'standard'
 					}
@@ -169,6 +170,7 @@ routes.post('/', new RateLimit({
 				code: email_code,
 			},
 			password: password,
+			nex_password: helpers.genNEXPassoword(),
 			linked_devices: {
 				wiiu: {
 					serial: headers['x-nintendo-serial-number'],

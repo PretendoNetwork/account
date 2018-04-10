@@ -1,21 +1,14 @@
 const routes = require('express').Router();
 const json2xml = require('json2xml');
+const jwt = require('jsonwebtoken');
 const debug = require('../../debugger');
+const config = require('../../config');
+const constants = require('../../constants');
+const helpers = require('../../helpers');
 const route_debugger = new debug('Provider Route'.green);
+const gamePort = require('../../config.json').nex_servers;
 
 route_debugger.log('Loading \'provider\' API routes');
-
-//The game ips and ports are stored here. When the game tries to access its specific server, it will be given the respecive ip and port.
-const gamePort = {
-	friends: {
-		ip: '10.0.0.225',
-		port: '1300'
-	},
-	supermariomaker: {
-		ip: '10.0.0.225',
-		port: '1301'
-	}
-};
 
 /**
  * [GET]
@@ -26,10 +19,73 @@ routes.get('/service_token/@me', async (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
+
+	const headers = request.headers;
+
+	if (
+		!headers['x-nintendo-client-id'] ||
+		!headers['x-nintendo-client-secret'] ||
+		!constants.VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']] ||
+		headers['x-nintendo-client-secret'] !== constants.VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']]
+	) {
+		const error = {
+			errors: {
+				error: {
+					cause: 'client_id',
+					code: '0004',
+					message: 'API application invalid or incorrect application credentials'
+				}
+			}
+		};
+
+		return response.send(json2xml(error));
+	}
+
+	if (
+		!headers['authorization']
+	) {
+		const error = {
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		};
+
+		return response.send(json2xml(error));
+	}
 	
+	const user = await helpers.getUser(headers['authorization'].replace('Bearer ',''));
+
+	if (!user) {
+		const error = {
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		};
+
+		return response.send(json2xml(error));
+	}
+	
+	delete user.sensitive;
+
 	const token = {
 		service_token: {
-			token: 'pretendo_test'
+			token: jwt.sign({
+				data: {
+					type: 'service_token',
+					payload: user
+				}
+			}, {
+				key: config.JWT.SERVICE.PRIVATE,
+				passphrase: config.JWT.SERVICE.PASSPHRASE
+			}, { algorithm: 'RS256'})
 		}
 	};
 
@@ -45,11 +101,65 @@ routes.get('/nex_token/@me', async (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
+
+	const headers = request.headers;
+
+	if (
+		!headers['x-nintendo-client-id'] ||
+		!headers['x-nintendo-client-secret'] ||
+		!constants.VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']] ||
+		headers['x-nintendo-client-secret'] !== constants.VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']]
+	) {
+		const error = {
+			errors: {
+				error: {
+					cause: 'client_id',
+					code: '0004',
+					message: 'API application invalid or incorrect application credentials'
+				}
+			}
+		};
+
+		return response.send(json2xml(error));
+	}
+
+	if (
+		!headers['authorization']
+	) {
+		const error = {
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		};
+
+		return response.send(json2xml(error));
+	}
+	
+	const user = await helpers.getUser(headers['authorization'].replace('Bearer ',''));
+
+	if (!user) {
+		const error = {
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		};
+
+		return response.send(json2xml(error));
+	}
+
+	const nex_password = user.sensitive.nex_password;
+	delete user.sensitive;
 	
 	let ip = null;
 	let port = null;
-	
-	console.log(request.query.game_server_id);
 	
 	switch(request.query.game_server_id){
 		case '00003200':
@@ -83,10 +193,22 @@ routes.get('/nex_token/@me', async (request, response) => {
 	const token = {
 		nex_token: {
 			host: ip,
-			nex_password: 'pretendo',
-			pid: request.headers['authorization'].replace('Bearer ',''),
+			nex_password: nex_password,
+			pid: user.pid,
 			port: port,
-			token: 'pretendo_test'
+			token: {
+				service_token: {
+					token: jwt.sign({
+						data: {
+							type: 'service_token',
+							payload: user
+						}
+					}, {
+						key: config.JWT.SERVICE.PRIVATE,
+						passphrase: config.JWT.SERVICE.PASSPHRASE
+					}, { algorithm: 'RS256'})
+				}
+			}
 		}
 	};
 

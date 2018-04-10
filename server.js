@@ -4,7 +4,7 @@ const table = require('cli-table');
 const morgan = require('morgan');
 const XMLMiddleware = require('./xml-middleware');
 const debug = require('./debugger');
-const config = require('./config.json');
+const config = require('./config');
 const app = express();
 const router = express.Router();
 const testing_env = process.env.NODE_ENV !== 'production';

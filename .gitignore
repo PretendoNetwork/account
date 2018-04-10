@@ -58,4 +58,8 @@ typings/
 .env
 
 # custom
-config.json
+config.js
+certs/jwt/service/private.pem
+certs/jwt/service/public.pem
+certs/jwt/nex/private.pem
+certs/jwt/nex/public.pem

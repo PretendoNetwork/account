@@ -50,6 +50,10 @@ This is the PN account server, which replaces the official NN account server acc
 - [POST] https://account.nintendo.net/v1/api/support/validate/email
 - [GET] https://id.nintendo.net/account/email-confirmation
 
+# Currently implemented nex servers
+- supermariomaker
+- friends
+
 
 ### Footnotes
 
@@ -58,3 +62,5 @@ This is the PN account server, which replaces the official NN account server acc
 <b id="f3">2</b> There are MANY values here that Nintendo seems to generate on their servers. I have no idea what some of these values mean and where/how they are used. Because of this I am unsure how to properly generate these values, and I am using placeholder values instead! ([see here for an example of what the return for an account is ](https://github.com/RedDuckss/csms/blob/master/OFFICIAL_SCHEMA.md#grab-profile))
 
 The entire `accounts` section at the beginning is new, and not sent by the registration request. It seems to have something to do with eShop accounts, though I don't know what exactly. I went to the eShop and it never even makes a request to that endpoint so the eShop isn't using that data, yet it's the only "account" mentioned. I am also unsure as to what `active_flag` is used for. There are also several `id` fields that seem completely pointless, like the `id` field in the `email` section and how the `mii` has it's own `id`, as do each of the different `mii_image` fields. [↩](#a3)
+
+The EULAs need to be changed, as they are currently stock Nintendo's.
