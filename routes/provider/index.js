@@ -6,7 +6,7 @@ const config = require('../../config');
 const constants = require('../../constants');
 const helpers = require('../../helpers');
 const route_debugger = new debug('Provider Route'.green);
-const gamePort = require('../../config.json').nex_servers;
+const gamePort = config.nex_servers;
 
 route_debugger.log('Loading \'provider\' API routes');
 

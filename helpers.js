@@ -12,7 +12,7 @@ function genNEXPassoword() {
 		if (offset < 10) return offset;
 		if (offset < 36) return String.fromCharCode(offset + 55);
 		return String.fromCharCode(offset + 61);
-	}
+	};
 
 	while (output.length < 16) {
 		output.push(character());
