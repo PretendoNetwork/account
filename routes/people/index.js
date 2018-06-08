@@ -245,10 +245,19 @@ routes.get('/:username', async (request, response) => {
 	}
 
 	const user_exists = await helpers.doesUserExist(username);
-
 	if (user_exists) {
 		response.status(400);
-		response.send();
+
+		const error = {
+			errors: {
+				error: {
+					code: '0100',
+					message: 'Account ID already exists'
+				}
+			}
+		};
+
+		response.send(json2xml(error));
 	}
 		
 	response.status(200);
