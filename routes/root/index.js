@@ -10,7 +10,7 @@ route_debugger.log('Loading \'root/misc\' API routes');
  * Description: tests the validity of this server by returning a predefined message
  */
 routes.get('/isthisworking', async (req, res) => {
-	return res.json({"server": "account.nintendo.net"});
+	return res.json({'server': 'account.nintendo.net'});
 });
 
 module.exports = routes;
