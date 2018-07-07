@@ -62,4 +62,4 @@ None
 
 The entire `accounts` section at the beginning is new, and not sent by the registration request. It seems to have something to do with eShop accounts, though I don't know what exactly. I went to the eShop and it never even makes a request to that endpoint so the eShop isn't using that data, yet it's the only "account" mentioned. I am also unsure as to what `active_flag` is used for. There are also several `id` fields that seem completely pointless, like the `id` field in the `email` section and how the `mii` has it's own `id`, as do each of the different `mii_image` fields. [↩](#a3)
 
-The EULAs need to be changed, as they are currently stock Nintendo's.
+The EULAs need to be changed, as most of them are currently stock Nintendo's.
