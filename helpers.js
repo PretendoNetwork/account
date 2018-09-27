@@ -94,10 +94,10 @@ function bufferToHex(buff) {
 
 async function doesUserExist(username) {
 	const user = await database.user_collection.findOne({
-		username: username.toLowerCase()
+		user_id_flat: username.toLowerCase()
 	});
 		
-	if (user) {
+	if (user !== null) {
 		return true;
 	}
 

@@ -15,6 +15,11 @@
 # What is this?
 This is the PN account server, which replaces the official NN account server account.nintendo.net
 
+
+# Install and usage
+
+First install [NodeJS](https://nodejs.org) and [MongoDB](https://mongodb.com). Download/clone this repo and run `npm i` to install all dependencies. Edit `example.config.js` to your liking and rename it `config.js`. Run the server via `npm run start`.
+
 # What works
 - [x] PNID (Pretendo Network ID) creation
 - [x] PNID deletion

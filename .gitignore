@@ -59,6 +59,8 @@ typings/
 
 # custom
 config.js
+t.js
+t.php
 certs/jwt/service/private.pem
 certs/jwt/service/public.pem
 certs/jwt/nex/private.pem
