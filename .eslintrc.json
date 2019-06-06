@@ -3,16 +3,21 @@
         "node": true,
         "commonjs": true,
         "es6": true
-	},
+    },
+    "globals": {
+        "document": true
+    },
 	"parserOptions": {
         "ecmaVersion": 2017
     },
     "extends": "eslint:recommended",
     "rules": {
+		"no-case-declarations": "off",
+		"no-empty": "off",
 		"no-console": "off",
+		"linebreak-style": "off",
 		"prefer-const": "error",
 		"no-var": "error",
-		"linebreak-style": "off",
 		"one-var": [
 			"error",
 			"never"

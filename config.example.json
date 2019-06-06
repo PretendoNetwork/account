@@ -1,0 +1,36 @@
+{
+    "http": {
+        "port": 7070
+    },
+    "mongoose": {
+        "uri": "mongodb://localhost:27017",
+        "database_name": "pretendo",
+        "connection_options": {
+            "useNewUrlParser": true
+        }
+    },
+    "email": {
+        "service": "gmail",
+        "auth": {
+            "user": "email@gmail.com",
+            "pass": "password"
+        }
+    },
+    "recaptcha": {
+        "siteKey": "key",
+        "secretKey": "secret"
+    },
+    "rsa": {
+        "modulusLength": 2048,
+        "publicKeyEncoding": {
+            "type": "spki",
+            "format": "pem"
+        },
+        "privateKeyEncoding": {
+            "type": "pkcs8",
+            "format": "pem",
+            "cipher": "aes-256-cbc",
+            "passphrase": "password"
+        }
+    }
+}
