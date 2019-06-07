@@ -1,6 +1,8 @@
 const argv = require('yargs').argv;
 const assert = require('assert');
 const mongoose = require('mongoose');
+const crypto = require('crypto');
+const util = require('./helpers/util');
 const {mongoose: {uri, database_name, connection_options}} = require('./config');
 const {PNID} = require('./models/pnid');
 const {username, email, password} = argv;
@@ -10,6 +12,7 @@ assert(email, 'Provide --email flag');
 assert(password, 'Provide --password flag');
 
 const date = new Date().toISOString();
+const miiHash = crypto.createHash('md5').update(date).digest('hex');
 
 const document = {
 	pid: 1,
@@ -26,25 +29,33 @@ const document = {
 		primary: true,
 		parent: true,
 		reachable: true,
-		validated: true
+		validated: true,
+		id: util.generateRandomInt(10)
 	},
 	region: 0x310B0000,
 	timezone: {
-		name: 'America/New_Tork',
+		name: 'America/New_York',
 		offset: -14400
 	},
 	mii: {
-		name: 'logintest',
+		name: `${username} mii`,
 		primary: true,
-		data: `AwAAQIhluwTgxEAA2NlGWQOzuI0n2QAAAEBsAG8AZwBpAG4AdABlAHMAdAAAAEBAAAAhAQJoRBgm
-		NEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMw7`,
-		hash: 'hash',
-		url: 'url'
+		data: 'AwAAQIhluwTgxEAA2NlGWQOzuI0n2QAAAEBsAG8AZwBpAG4AdABlAHMAdAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMw7', // hardcoded for now. currently testing
+		id: util.generateRandomInt(10),
+		hash: miiHash,
+		image_url: 'https://mii-secure.account.nintendo.net/2rtgf01lztoqo_standard.tga',
+		image_id: util.generateRandomInt(10)
 	},
-	flags: { // not entirely sure what these are used for
-		active: true, // Is the account active? Like, not deleted maybe?
-		marketing: false, // Send email ads?
-		off_device: true // No idea
+	flags: {
+		active: true,
+		marketing: false,
+		off_device: true
+	},
+	validation: {
+		// These values are temp and will be overwritten before the document saves
+		// These values are only being defined to get around the `E11000 duplicate key error collection` error
+		email_code: Date.now(),
+		email_token: Date.now().toString()
 	}
 };
 

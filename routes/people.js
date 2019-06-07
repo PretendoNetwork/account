@@ -75,7 +75,7 @@ router.post('/registerwp', recaptcha.middleware.verify, async (request, response
 		},
 		region: 0x310B0000, // hardcoded for now. currently testing
 		timezone: { // hardcoded for now. currently testing
-			name: 'America/New_Tork',
+			name: 'America/New_York',
 			offset: -14400
 		},
 		mii: {
@@ -87,10 +87,10 @@ router.post('/registerwp', recaptcha.middleware.verify, async (request, response
 			image_url: 'https://mii-secure.account.nintendo.net/2rtgf01lztoqo_standard.tga',
 			image_id: util.generateRandomInt(10)
 		},
-		flags: { // not entirely sure what these are used for
-			active: true, // Is the account active? Like, not deleted maybe?
-			marketing: false, // Send email ads?
-			off_device: true // No idea
+		flags: {
+			active: true,
+			marketing: false,
+			off_device: true
 		},
 		validation: {
 			// These values are temp and will be overwritten before the document saves
