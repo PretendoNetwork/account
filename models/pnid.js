@@ -190,8 +190,24 @@ PNIDSchema.methods.generateAccessTokens = async function() {
 	return [accessToken, refreshToken];
 };
 
+PNIDSchema.methods.getConsole = async function(document) {
+	const consoles = this.get('consoles');
+
+	return consoles.find(_console => {
+		return (_console.device_id === document.device_id && _console.device_type === document.device_type && _console.serial === document.serial);
+	});
+};
+
 PNIDSchema.methods.addConsole = async function(_console) {
 	this.consoles.push(_console);
+
+	await this.save();
+};
+
+PNIDSchema.methods.removeConsole = async function(_console) {
+	this.consoles = this.consoles.filter(({_id}) => {
+		return _id !== _console._id
+	});
 
 	await this.save();
 };

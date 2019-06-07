@@ -197,6 +197,35 @@ router.put('/@me/miis/@primary', nintendoClientHeaderCheck, async (request, resp
 });
 
 /**
+ * [GET]
+ * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices
+ * Description: Gets device attributes
+ */
+router.get('/@me/devices', nintendoClientHeaderCheck, (request, response) => {
+	const {headers} = request;
+
+	response.send(json2xml({
+		devices: [
+			{
+				device: {
+					device_id: headers['x-nintendo-device-id'],
+					language: headers['accept-language'],
+					updated: request.pnid.get('updated'),
+					pid: request.pnid.get('pid'),
+					platform_id: headers['x-nintendo-platform-id'],
+					region: headers['x-nintendo-region'],
+					serial_number: headers['x-nintendo-serial-number'],
+					status: 'ACTIVE',
+					system_version: headers['x-nintendo-system-version'],
+					type: 'RETAIL',
+					updated_by: 'USER'
+				}
+			}
+		]
+	}));
+});
+
+/**
  * [POST]
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices
  * Description: Updates profile device attributes
@@ -292,6 +321,39 @@ router.get('/@me/devices/owner', nintendoClientHeaderCheck, async (request, resp
 	};
 
 	response.send(json2xml(person));
+});
+
+/**
+ * [PUT]
+ * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices/@current/inactivate
+ * Description: Deactivates a user from a console
+ */
+router.put('/@me/devices/@current/inactivate', nintendoClientHeaderCheck, async (request, response) => {
+	const {headers} = request;
+
+	const document = {
+		device_id: Number(headers['x-nintendo-device-id']),
+		device_type: Number(headers['x-nintendo-device-type']),
+		serial: headers['x-nintendo-serial-number']
+	};
+
+	const _console = await request.pnid.getConsole(document);
+
+	if (!_console) {
+		request.errors.push({
+			error: { // idk what exact error to put here
+				code: '9999',
+				message: 'Console not exist'
+			}
+		});
+	}
+
+	request.checkForErrors(async () => {
+		await request.pnid.removeConsole(_console);
+
+		response.status(200);
+		response.end();
+	});
 });
 
 module.exports = router;
