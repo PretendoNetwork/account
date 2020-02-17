@@ -1,0 +1,19 @@
+{
+    "http": {
+        "port": 7070
+    },
+    "mongoose": {
+        "uri": "mongodb://localhost:27017",
+        "database": "database_name",
+        "options": {
+            "useNewUrlParser": true
+        }
+    },
+    "email": {
+        "service": "gmail",
+        "auth": {
+            "user": "email@address.com",
+            "pass": "password"
+        }
+    }
+}
