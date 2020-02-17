@@ -58,10 +58,8 @@ typings/
 .env
 
 # custom
-config.js
+sign.js
 t.js
-t.php
-certs/jwt/service/private.pem
-certs/jwt/service/public.pem
-certs/jwt/nex/private.pem
-certs/jwt/nex/public.pem
+config.json
+servers.json
+certs
