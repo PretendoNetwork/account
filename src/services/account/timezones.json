@@ -852,7 +852,7 @@
             {
                 "area": "Indian/Christmas",
                 "language": "it",
-                "name": "Isola del Natale",
+                "name": "Isola di Natale",
                 "utc_offset": "25200",
                 "order": "2"
             },
@@ -4609,7 +4609,7 @@
             {
                 "area": "America/Martinique",
                 "language": "it",
-                "name": "Orario standard atlantico (Caraibi)",
+                "name": "Atlantic Standard Time (Caraibi)",
                 "utc_offset": "-14400",
                 "order": "5"
             },
@@ -4651,7 +4651,7 @@
             {
                 "area": "Pacific/Noumea",
                 "language": "it",
-                "name": "Nouméa",
+                "name": "Numea",
                 "utc_offset": "39600",
                 "order": "11"
             },
@@ -5263,14 +5263,14 @@
             {
                 "area": "America/Anguilla",
                 "language": "it",
-                "name": "Orario standard atlantico (Caraibi)",
+                "name": "Atlantic Standard Time (Caraibi)",
                 "utc_offset": "-14400",
                 "order": "2"
             },
             {
                 "area": "America/Grand_Turk",
                 "language": "it",
-                "name": "Orario Costa Orientale (USA e Canada)",
+                "name": "Eastern Standard Time (USA e Canada)",
                 "utc_offset": "-14400",
                 "order": "3"
             },
@@ -8733,7 +8733,7 @@
             {
                 "area": "America/Martinique",
                 "language": "it",
-                "name": "Orario standard atlantico (Caraibi)",
+                "name": "Atlantic Standard Time (Caraibi)",
                 "utc_offset": "-14400",
                 "order": "0"
             }
@@ -9670,7 +9670,7 @@
             {
                 "area": "America/Curacao",
                 "language": "it",
-                "name": "Orario standard atlantico (Caraibi)",
+                "name": "Atlantic Standard Time (Caraibi)",
                 "utc_offset": "-14400",
                 "order": "1"
             },
@@ -12555,7 +12555,7 @@
             {
                 "area": "America/Grand_Turk",
                 "language": "it",
-                "name": "Orario Costa Orientale (USA e Canada)",
+                "name": "Eastern Standard Time (USA e Canada)",
                 "utc_offset": "-14400",
                 "order": "0"
             }
