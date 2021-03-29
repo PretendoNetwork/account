@@ -43,13 +43,13 @@ prompt.get(properties, function (error, { username, email, password }) {
 			offset: -14400
 		},
 		mii: {
-			name: 'UserMii',
+			name: 'bella',
 			primary: true,
-			data: 'AwAAQIhluwTgxEAA2NlGWQOzuI0n2QAAAEBsAG8AZwBpAG4AdABlAHMAdAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMw7', // hardcoded for now. currently testing
-			id: util.generateRandomInt(10),
-			hash: miiHash,
-			image_url: 'https://mii-secure.account.nintendo.net/2rtgf01lztoqo_standard.tga',
-			image_id: util.generateRandomInt(10)
+			data: 'AwAAQOlVognnx0GC2X0LLQOzuI0n2QAAAUBiAGUAbABsAGEAAABFAAAAAAAAAEBAEgCBAQRoQxggNEYUgRIXaA0AACkDUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP6G', // hardcoded for now. currently testing
+			id: 1330180812,
+			hash: '1o54mkuuxfg8t',
+			image_url: 'https://mii-secure.account.nintendo.net/1o54mkuuxfg8t_standard.tga',
+			image_id: 1330180887
 		},
 		flags: {
 			active: true,
