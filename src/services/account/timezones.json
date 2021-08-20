@@ -1122,11 +1122,18 @@
                 "order": "9"
             },
             {
+                "area": "Australia/Camberra",
+                "language": "pt",
+                "name": "Camberra",
+                "utc_offset": "39600",
+                "order": "10"
+            },
+            {
                 "area": "Pacific/Norfolk",
                 "language": "pt",
                 "name": "Ilha Norfolk",
                 "utc_offset": "39600",
-                "order": "10"
+                "order": "11"
             }
         ],
         "ru": [
