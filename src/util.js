@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const NodeRSA = require('node-rsa');
 const fs = require('fs-extra');
+const url = require('url');
 
 function nintendoPasswordHash(password, pid) {
 	const pidBuffer = Buffer.alloc(4);
@@ -163,10 +164,19 @@ function unpackToken(token) {
 	};
 }
 
+function fullUrl(request) {
+	return url.format({
+		protocol: request.protocol,
+		host: request.get('host'),
+		pathname: request.originalUrl
+	});
+}
+
 module.exports = {
 	nintendoPasswordHash,
 	generateRandomInt,
 	generateToken,
 	decryptToken,
-	unpackToken
+	unpackToken,
+	fullUrl
 };
