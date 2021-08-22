@@ -33,11 +33,13 @@
     "mongoose": "^5.8.3",
     "mongoose-unique-validator": "^2.0.3",
     "morgan": "^1.9.1",
-    "node-rsa": "^1.0.7",
     "nodemailer": "^6.4.2",
-    "prompt": "^1.0.0",
     "tga": "^1.0.4",
     "xmlbuilder": "^13.0.2",
     "xmlbuilder2": "0.0.4"
+  },
+  "devDependencies": {
+    "node-rsa": "^1.0.7",
+    "prompt": "^1.0.0"
   }
 }
