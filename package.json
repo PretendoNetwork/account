@@ -2,7 +2,7 @@
   "name": "account",
   "version": "1.0.0",
   "description": "",
-  "main": "./src/server",
+  "main": "./src/server.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
     "start": "node .",
@@ -20,21 +20,26 @@
   },
   "homepage": "https://github.com/PretendoNetwork/account#readme",
   "dependencies": {
-    "bcrypt": "^3.0.7",
+    "bcrypt": "^5.0.0",
     "colors": "^1.4.0",
     "express": "^4.17.1",
-    "express-session": "^1.17.0",
     "express-subdomain": "^1.0.5",
     "fs-extra": "^8.1.0",
+    "got": "^11.8.2",
+    "image-pixels": "^2.2.2",
+    "kaitai-struct": "^0.9.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.27",
     "mongoose": "^5.8.3",
     "mongoose-unique-validator": "^2.0.3",
     "morgan": "^1.9.1",
-    "node-rsa": "^1.0.7",
     "nodemailer": "^6.4.2",
-    "prompt": "^1.0.0",
+    "tga": "^1.0.4",
     "xmlbuilder": "^13.0.2",
     "xmlbuilder2": "0.0.4"
+  },
+  "devDependencies": {
+    "node-rsa": "^1.0.7",
+    "prompt": "^1.0.0"
   }
 }

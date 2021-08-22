@@ -2,8 +2,14 @@ const { Schema, model } = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const fs = require('fs-extra');
+const path = require('path');
+const imagePixels = require('image-pixels');
+const TGA = require('tga');
+const got = require('got');
 const util = require('../util');
 const { DeviceSchema } = require('./device');
+const Mii = require('../mii');
 
 const PNIDSchema = new Schema({
 	access_level: {
@@ -190,6 +196,33 @@ PNIDSchema.methods.updateMii = async function({name, primary, data}) {
 	this.set('mii.name', name);
 	this.set('mii.primary', primary === 'Y');
 	this.set('mii.data', data);
+	this.set('mii.hash', crypto.randomBytes(7).toString('hex'));
+	this.set('mii.id', crypto.randomBytes(4).readUInt32LE());
+	this.set('mii.image_id', crypto.randomBytes(4).readUInt32LE());
+
+	const studioMii = new Mii(Buffer.from(data, 'base64'));
+	const converted = studioMii.toStudioMii();
+	const encodedStudioMiiData = converted.toString('hex');
+	const miiStudioUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&width=128&instanceCount=1`;
+	const miiStudioNormalFaceImageData = await got(miiStudioUrl).buffer();
+	const pngData = await imagePixels(miiStudioNormalFaceImageData);
+	const tga = TGA.createTgaBuffer(pngData.width, pngData.height, pngData.data);
+
+	const userMiiPath = path.normalize(`${__dirname}/../../cdn/${this.get('pid')}/miis`);
+	fs.ensureDirSync(userMiiPath);
+	fs.writeFileSync(`${userMiiPath}/standard.tga`, tga);
+	fs.writeFileSync(`${userMiiPath}/normal_face.png`, miiStudioNormalFaceImageData);
+
+	const expressions = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
+	for (const expression of expressions) {
+		const miiStudioExpressionUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&expression=${expression}&width=128&instanceCount=1`;
+		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
+		fs.writeFileSync(`${userMiiPath}/${expression}.png`, miiStudioExpressionImageData);
+	}
+
+	const miiStudioBodyUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=all_body&width=270&instanceCount=1`;
+	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
+	fs.writeFileSync(`${userMiiPath}/body.png`, miiStudioBodyImageData);
 
 	await this.save();
 };
