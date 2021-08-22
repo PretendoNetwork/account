@@ -17,10 +17,6 @@ function nintendoPasswordHash(password, pid) {
 	return hashed;
 }
 
-function generateRandomInt(length = 4) {
-	return Math.floor(Math.pow(10, length-1) + Math.random() * 9 * Math.pow(10, length-1));
-}
-
 function generateToken(cryptoOptions, tokenOptions) {
 
 	// Access and refresh tokens use a different format since they must be much smaller
@@ -174,7 +170,6 @@ function fullUrl(request) {
 
 module.exports = {
 	nintendoPasswordHash,
-	generateRandomInt,
 	generateToken,
 	decryptToken,
 	unpackToken,
