@@ -160,9 +160,9 @@ function unpackToken(token) {
 }
 
 function fullUrl(request) {
-	const protocol = request.get('protocol');
-	const host = request.get('host');
-	const path = request.get('originalUrl');
+	const protocol = request.protocol;
+	const host = request.host;
+	const path = request.originalUrl;
 
 	return `${protocol}://${host}${path}`;
 }
