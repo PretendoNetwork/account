@@ -14,6 +14,7 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
 	response.set('X-Nintendo-Date', new Date().getTime());
 
 	// Registration process has started
+	// eslint-disable-next-line require-atomic-updates
 	request.session.registration_status = 0;
 
 	response.send(xmlbuilder.create({
@@ -149,6 +150,7 @@ router.get('/time_zones/:countryCode/:language', clientHeaderCheck, (request, re
 	const regionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
 
 	// Bump status to allow access to next endpoint
+	// eslint-disable-next-line require-atomic-updates
 	request.session.registration_status = 1;
 
 	response.send(xmlbuilder.create({

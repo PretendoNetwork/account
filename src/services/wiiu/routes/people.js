@@ -40,6 +40,7 @@ router.get('/:username', clientHeaderCheck, async (request, response) => {
 	}
 
 	// Bump status to allow access to next endpoint
+	// eslint-disable-next-line require-atomic-updates
 	request.session.registration_status = 2;
 
 	response.status(200);
@@ -95,7 +96,7 @@ router.post('/', clientHeaderCheck, async (request, response) => {
 			parent: person.get('email').get('parent') === 'Y',
 			reachable: false,
 			validated: person.get('email').get('validated') === 'Y',
-			id: Math.floor(Math.random(10000000000)*10000000000)
+			id: crypto.randomBytes(4).readUInt32LE()
 		},
 		region: person.get('region'),
 		timezone: {
@@ -106,10 +107,10 @@ router.post('/', clientHeaderCheck, async (request, response) => {
 			name: person.get('mii').get('name'),
 			primary: person.get('mii').get('name') === 'Y',
 			data: person.get('mii').get('data'),
-			id: Math.floor(Math.random(10000000000)*10000000000),
-			hash: crypto.createHash('md5').update(person.get('mii').get('data')).digest('hex'),
-			image_url: 'https://mii-secure.account.nintendo.net/2rtgf01lztoqo_standard.tga',
-			image_id: Math.floor(Math.random(10000000000)*10000000000)
+			id: crypto.randomBytes(4).readUInt32LE(),
+			hash: crypto.randomBytes(7).toString('hex'),
+			image_url: '', // deprecated, will be removed in the future
+			image_id: crypto.randomBytes(4).readUInt32LE()
 		},
 		flags: {
 			active: true,
@@ -154,7 +155,7 @@ router.post('/', clientHeaderCheck, async (request, response) => {
 			);
 			
 			delete request.session.registration_status;
-	
+
 			response.send(xmlbuilder.create({
 				person: {
 					pid: newUser.get('pid')

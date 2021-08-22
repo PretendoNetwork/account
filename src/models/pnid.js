@@ -207,7 +207,7 @@ PNIDSchema.methods.updateMii = async function({name, primary, data}) {
 	const miiStudioNormalFaceImageData = await got(miiStudioUrl).buffer();
 	const pngData = await imagePixels(miiStudioNormalFaceImageData);
 	const tga = TGA.createTgaBuffer(pngData.width, pngData.height, pngData.data);
-	
+
 	const userMiiPath = path.normalize(`${__dirname}/../../cdn/${this.get('pid')}/miis`);
 	fs.ensureDirSync(userMiiPath);
 	fs.writeFileSync(`${userMiiPath}/standard.tga`, tga);

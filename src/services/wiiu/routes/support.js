@@ -45,6 +45,7 @@ router.post('/validate/email', clientHeaderCheck, async (request, response) => {
 			}).end());
 		}
 
+		// eslint-disable-next-line require-atomic-updates
 		request.session.registration_status = 3;
 
 		response.status(200);
