@@ -138,7 +138,7 @@ async function getUserProfileJSONByPID(pid) {
 		},
 		mii: {
 			status: 'COMPLETED',
-			data: user.get('mii.data'),
+			data: user.get('mii.data').replace(/(\r\n|\n|\r)/gm, ''),
 			id: user.get('mii.id'),
 			mii_hash: user.get('mii.hash'),
 			mii_images: {
