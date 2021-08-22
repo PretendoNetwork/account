@@ -132,7 +132,7 @@ async function getUserProfileJSONByPID(pid) {
 			primary: user.get('email.primary') ? 'Y' : 'N',
 			reachable: user.get('email.reachable') ? 'Y' : 'N',
 			type: 'DEFAULT',
-			updated_by: 'USER', // Can also be INTERNAL WS, don't know the difference
+			updated_by: 'INTERNAL WS', // Can also be INTERNAL WS, don't know the difference
 			validated: user.get('email.validated') ? 'Y' : 'N',
 			//validated_date: user.get('email.validated_date') // not used atm
 		},
@@ -143,9 +143,10 @@ async function getUserProfileJSONByPID(pid) {
 			mii_hash: user.get('mii.hash'),
 			mii_images: {
 				mii_image: {
-					cached_url: user.get('mii.image_url'),
+					// Images MUST be loaded over HTTPS or console ignores them
+					cached_url: `https://mii-images.cdn.pretendo.cc/${user.pid}/standard.tga`,
 					id: user.get('mii.image_id'),
-					url: user.get('mii.image_url'),
+					url: `https://mii-images.cdn.pretendo.cc/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},

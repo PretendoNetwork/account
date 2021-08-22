@@ -63,3 +63,4 @@ t.js
 config.json
 servers.json
 certs
+/cdn

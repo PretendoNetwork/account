@@ -180,11 +180,7 @@ router.get('/@me/profile', clientHeaderCheck, async (request, response) => {
 
 	response.send(xmlbuilder.create({
 		person
-	}).end());
-	
-
-	//response.send(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><person><accounts><account><attributes><attribute><id>84955611</id><name>ctr_initial_device_account_id</name><updated_by>USER</updated_by><value>195833643</value></attribute><attribute><id>84955489</id><name>environment</name><updated_by>USER</updated_by><value>PROD</value></attribute></attributes><domain>ESHOP.NINTENDO.NET</domain><type>INTERNAL</type><username>327329101</username></account></accounts><active_flag>Y</active_flag><birth_date>1998-09-22</birth_date><country>US</country><create_date>2017-12-29T04:11:24</create_date><device_attributes><device_attribute><created_date>2019-11-24T15:26:06</created_date><name>persistent_id</name><value>80000043</value></device_attribute><device_attribute><created_date>2019-11-24T15:26:06</created_date><name>transferable_id_base</name><value>1200000444b6221d</value></device_attribute><device_attribute><created_date>2019-11-24T15:26:06</created_date><name>transferable_id_base_common</name><value>1180000444b6221d</value></device_attribute><device_attribute><created_date>2019-11-24T15:26:06</created_date><name>uuid_account</name><value>42ef6c46-0ea3-11ea-97fe-010144b6221d</value></device_attribute><device_attribute><created_date>2019-11-24T15:26:06</created_date><name>uuid_common</name><value>3d9b06d8-0ea3-11ea-97fe-010144b6221d</value></device_attribute></device_attributes><gender>M</gender><language>en</language><updated>2019-06-02T04:17:56</updated><marketing_flag>Y</marketing_flag><off_device_flag>Y</off_device_flag><pid>1750087940</pid><email><address>halolink44@gmail.com</address><id>50463196</id><parent>N</parent><primary>Y</primary><reachable>Y</reachable><type>DEFAULT</type><updated_by>INTERNAL WS</updated_by><validated>Y</validated><validated_date>2017-12-29T04:12:32</validated_date></email><mii><status>COMPLETED</status><data>AwBzMOlVognnx0GCk6r2p0D0B2n+cgAA0lJSAGUAZABEAHUAYwBrAHMAAAAAAGQrAAAWAQJoRBgmNEYUgRIXaI0AiiWBSUhQUgBlAGQARAB1AGMAawBzAHMAAAAAAJZY</data><id>1151699634</id><mii_hash>u2jg043u028x</mii_hash><mii_images><mii_image><cached_url>https://mii-secure.account.nintendo.net/u2jg043u028x_standard.tga</cached_url><id>1319591505</id><url>https://mii-secure.account.nintendo.net/u2jg043u028x_standard.tga</url><type>standard</type></mii_image></mii_images><name>RedDucks</name><primary>Y</primary></mii><region>822870016</region><tz_name>America/New_York</tz_name><user_id>RedDuckss</user_id><utc_offset>-18000</utc_offset></person>`);
-
+	}, { separateArrayItems: true }).end());
 });
 
 /**
@@ -273,7 +269,7 @@ router.put('/@me/miis/@primary', clientHeaderCheck, async (request, response) =>
 
 	const mii = request.body.get('mii');
 
-	const [name, primary, data] = [mii.get('name'), mii.get('primary'), mii.get('data')]
+	const [name, primary, data] = [mii.get('name'), mii.get('primary'), mii.get('data')];
 
 	await pnid.updateMii({name, primary, data});
 
