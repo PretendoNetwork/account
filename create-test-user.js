@@ -18,7 +18,7 @@ prompt.get(properties, (error, { username, email, password }) => {
 	const date = new Date().toISOString();
 	// Sample Mii data
 	const miiData = 'AwAAQOlVognnx0GC2X0LLQOzuI0n2QAAAUBiAGUAbABsAGEAAABFAAAAAAAAAEBAEgCBAQRoQxggNEYUgRIXaA0AACkDUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP6G';
-	
+
 	const document = {
 		pid: 1,
 		creation_date: date.split('.')[0],
