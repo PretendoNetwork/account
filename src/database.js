@@ -144,9 +144,9 @@ async function getUserProfileJSONByPID(pid) {
 			mii_images: {
 				mii_image: {
 					// Images MUST be loaded over HTTPS or console ignores them
-					cached_url: `https://mii-images.cdn.pretendo.cc/${user.pid}/standard.tga`,
+					cached_url: `https://cdn.pretendo.cc/mii/${user.pid}/standard.tga`,
 					id: user.get('mii.image_id'),
-					url: `https://mii-images.cdn.pretendo.cc/${user.pid}/standard.tga`,
+					url: `https://cdn.pretendo.cc/mii/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},
