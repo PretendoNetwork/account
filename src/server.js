@@ -13,7 +13,6 @@ const app = express();
 
 const accountWiiU = require('./services/wiiu');
 //const account3DS = require('./services/3ds');
-const cdnService = require('./services/cdn');
 
 // START APPLICATION
 app.set('etag', false);
@@ -31,7 +30,6 @@ app.use(xmlparser);
 // import the servers into one
 app.use(accountWiiU);
 //app.use(account3DS);
-app.use(cdnService);
 
 // 404 handler
 logger.info('Creating 404 status handler');
