@@ -200,7 +200,14 @@ PNIDSchema.methods.updateMii = async function({name, primary, data}) {
 	this.set('mii.id', crypto.randomBytes(4).readUInt32LE());
 	this.set('mii.image_id', crypto.randomBytes(4).readUInt32LE());
 
-	const studioMii = new Mii(Buffer.from(data, 'base64'));
+	await this.generateMiiImages();
+
+	await this.save();
+};
+
+PNIDSchema.methods.generateMiiImages = async function() {
+	const miiData = this.get('mii.data');
+	const studioMii = new Mii(Buffer.from(miiData, 'base64'));
 	const converted = studioMii.toStudioMii();
 	const encodedStudioMiiData = converted.toString('hex');
 	const miiStudioUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&width=128&instanceCount=1`;
@@ -223,8 +230,6 @@ PNIDSchema.methods.updateMii = async function({name, primary, data}) {
 	const miiStudioBodyUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=all_body&width=270&instanceCount=1`;
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
 	fs.writeFileSync(`${userMiiPath}/body.png`, miiStudioBodyImageData);
-
-	await this.save();
 };
 
 PNIDSchema.pre('save', async function(next) {
