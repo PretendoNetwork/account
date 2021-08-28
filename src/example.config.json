@@ -15,5 +15,11 @@
             "user": "email@address.com",
             "pass": "password"
         }
+    },
+    "aws": {
+        "spaces": {
+            "key": "ACCESS_KEY",
+            "secret": "ACCESS_SECRET"
+        }
     }
 }

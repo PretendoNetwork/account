@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/PretendoNetwork/account#readme",
   "dependencies": {
+    "aws-sdk": "^2.978.0",
     "bcrypt": "^5.0.0",
     "colors": "^1.4.0",
     "express": "^4.17.1",

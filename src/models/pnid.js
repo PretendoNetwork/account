@@ -2,8 +2,6 @@ const { Schema, model } = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const fs = require('fs-extra');
-const path = require('path');
 const imagePixels = require('image-pixels');
 const TGA = require('tga');
 const got = require('got');
@@ -215,21 +213,21 @@ PNIDSchema.methods.generateMiiImages = async function() {
 	const pngData = await imagePixels(miiStudioNormalFaceImageData);
 	const tga = TGA.createTgaBuffer(pngData.width, pngData.height, pngData.data);
 
-	const userMiiPath = path.normalize(`${__dirname}/../../cdn/${this.get('pid')}/miis`);
-	fs.ensureDirSync(userMiiPath);
-	fs.writeFileSync(`${userMiiPath}/standard.tga`, tga);
-	fs.writeFileSync(`${userMiiPath}/normal_face.png`, miiStudioNormalFaceImageData);
+	const userMiiKey = `mii/${this.get('pid')}`;
+
+	await util.uploadCDNAsset(`${userMiiKey}/standard.tga`, tga);
+	await util.uploadCDNAsset(`${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData);
 
 	const expressions = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
 	for (const expression of expressions) {
 		const miiStudioExpressionUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&expression=${expression}&width=128&instanceCount=1`;
 		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
-		fs.writeFileSync(`${userMiiPath}/${expression}.png`, miiStudioExpressionImageData);
+		await util.uploadCDNAsset(`${userMiiKey}/${expression}.png`, miiStudioExpressionImageData);
 	}
 
 	const miiStudioBodyUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=all_body&width=270&instanceCount=1`;
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
-	fs.writeFileSync(`${userMiiPath}/body.png`, miiStudioBodyImageData);
+	await util.uploadCDNAsset(`${userMiiKey}/body.png`, miiStudioBodyImageData);
 };
 
 PNIDSchema.pre('save', async function(next) {

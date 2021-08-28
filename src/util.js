@@ -1,6 +1,15 @@
 const crypto = require('crypto');
 const NodeRSA = require('node-rsa');
 const fs = require('fs-extra');
+const aws = require('aws-sdk');
+const config = require('./config.json');
+
+const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
+const s3 = new aws.S3({
+	endpoint: spacesEndpoint,
+	accessKeyId: config.aws.spaces.key,
+	secretAccessKey: config.aws.spaces.secret
+});
 
 function nintendoPasswordHash(password, pid) {
 	const pidBuffer = Buffer.alloc(4);
@@ -167,10 +176,22 @@ function fullUrl(request) {
 	return `${protocol}://${host}${path}`;
 }
 
+async function uploadCDNAsset(key, data) {
+	const awsPutParams = {
+		Body: data,
+		Key: key,
+		Bucket: 'pn-cdn',
+		ACL: 'public-read'
+	};
+
+	await s3.putObject(awsPutParams).promise();
+}
+
 module.exports = {
 	nintendoPasswordHash,
 	generateToken,
 	decryptToken,
 	unpackToken,
-	fullUrl
+	fullUrl,
+	uploadCDNAsset
 };
