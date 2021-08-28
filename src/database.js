@@ -144,9 +144,10 @@ async function getUserProfileJSONByPID(pid) {
 			mii_images: {
 				mii_image: {
 					// Images MUST be loaded over HTTPS or console ignores them
-					cached_url: `https://cdn.pretendo.cc/mii/${user.pid}/standard.tga`,
+					// Bunny CDN is the only CDN which seems to support TLS 1.0/1.1 (required)
+					cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
 					id: user.get('mii.image_id'),
-					url: `https://cdn.pretendo.cc/mii/${user.pid}/standard.tga`,
+					url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},
