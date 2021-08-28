@@ -215,19 +215,19 @@ PNIDSchema.methods.generateMiiImages = async function() {
 
 	const userMiiKey = `mii/${this.get('pid')}`;
 
-	await util.uploadCDNAsset(`${userMiiKey}/standard.tga`, tga);
-	await util.uploadCDNAsset(`${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData);
+	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/standard.tga`, tga, 'public-read');
+	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
 
 	const expressions = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
 	for (const expression of expressions) {
 		const miiStudioExpressionUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&expression=${expression}&width=128&instanceCount=1`;
 		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
-		await util.uploadCDNAsset(`${userMiiKey}/${expression}.png`, miiStudioExpressionImageData);
+		await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
 	}
 
 	const miiStudioBodyUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=all_body&width=270&instanceCount=1`;
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
-	await util.uploadCDNAsset(`${userMiiKey}/body.png`, miiStudioBodyImageData);
+	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 };
 
 PNIDSchema.pre('save', async function(next) {

@@ -176,12 +176,12 @@ function fullUrl(request) {
 	return `${protocol}://${host}${path}`;
 }
 
-async function uploadCDNAsset(key, data) {
+async function uploadCDNAsset(bucket, key, data, acl) {
 	const awsPutParams = {
 		Body: data,
 		Key: key,
-		Bucket: 'pn-cdn',
-		ACL: 'public-read'
+		Bucket: bucket,
+		ACL: acl
 	};
 
 	await s3.putObject(awsPutParams).promise();
