@@ -43,11 +43,11 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
 							'#cdata': 'Dont be dumb'
 						},
 						sub_title: {
-						  '#cdata': 'Privacy Policy'
+							'#cdata': 'Privacy Policy'
 						},
 						sub_text: {
-						  '@index': '1',
-						  '#cdata': 'Dont be dumb again'
+							'@index': '1',
+							'#cdata': 'Dont be dumb again'
 						},
 					},
 					type: 'NINTENDO-NETWORK-EULA',
@@ -76,11 +76,11 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
 							'#cdata': 'Dont be dumb'
 						},
 						sub_title: {
-						  '#cdata': 'Privacy Policy'
+							'#cdata': 'Privacy Policy'
 						},
 						sub_text: {
-						  '@index': '1',
-						  '#cdata': 'Dont be dumb again'
+							'@index': '1',
+							'#cdata': 'Dont be dumb again'
 						},
 					},
 					type: 'NINTENDO-NETWORK-EULA',
@@ -109,11 +109,11 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
 							'#cdata': 'Dont be dumb'
 						},
 						sub_title: {
-						  '#cdata': 'Privacy Policy'
+							'#cdata': 'Privacy Policy'
 						},
 						sub_text: {
-						  '@index': '1',
-						  '#cdata': 'Dont be dumb again'
+							'@index': '1',
+							'#cdata': 'Dont be dumb again'
 						},
 					},
 					type: 'NINTENDO-NETWORK-EULA',
