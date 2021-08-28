@@ -242,6 +242,7 @@ PNIDSchema.pre('save', async function(next) {
 	await this.generateNEXPassword();
 	await this.generateEmailValidationCode();
 	await this.generateEmailValidationToken();
+	await this.generateMiiImages();
 	
 	const primaryHash = util.nintendoPasswordHash(this.get('password'), this.get('pid'));
 	const hash = bcrypt.hashSync(primaryHash, 10);
