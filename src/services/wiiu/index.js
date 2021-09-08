@@ -2,7 +2,6 @@
 
 const express = require('express');
 const subdomain = require('express-subdomain');
-const sessionMiddleware = require('../../middleware/session');
 const pnidMiddleware = require('../../middleware/pnid');
 const logger = require('../../../logger');
 const routes = require('./routes');
@@ -11,7 +10,6 @@ const routes = require('./routes');
 const account = express.Router();
 
 logger.info('[ACCOUNT - WiiU] Importing middleware');
-account.use(sessionMiddleware);
 account.use(pnidMiddleware);
 
 // Setup routes

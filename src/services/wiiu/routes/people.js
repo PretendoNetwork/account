@@ -4,24 +4,13 @@ const moment = require('moment');
 const crypto = require('crypto');
 const { PNID } = require('../../../models/pnid');
 const clientHeaderCheck = require('../../../middleware/client-header');
+const deviceCertificateMiddleware = require('../../../middleware/device-certificate');
+const ratelimit = require('../../../middleware/ratelimit');
 const database = require('../../../database');
 const mailer = require('../../../mailer');
 require('moment-timezone');
 
 router.get('/:username', clientHeaderCheck, async (request, response) => {
-	// Status should be 1 from previous request in registration process
-	if (request.session.registration_status !== 1) {
-		response.status(400);
-
-		return response.send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
-			}
-		}).end());
-	}
-
 	const { username } = request.params;
 
 	const userExists = await database.doesUserExist(username);
@@ -39,17 +28,13 @@ router.get('/:username', clientHeaderCheck, async (request, response) => {
 		}).end());
 	}
 
-	// Bump status to allow access to next endpoint
-	// eslint-disable-next-line require-atomic-updates
-	request.session.registration_status = 2;
-
 	response.status(200);
 	response.end();
 });
 
-router.post('/', clientHeaderCheck, async (request, response) => {
-	// Status should be 3 from previous request in registration process
-	if (request.session.registration_status !== 3) {
+router.post('/', clientHeaderCheck, ratelimit, deviceCertificateMiddleware, async (request, response) => {
+	if (!request.certificate.valid) {
+		// TODO: Change this to a different error
 		response.status(400);
 
 		return response.send(xmlbuilder.create({
@@ -153,8 +138,6 @@ router.post('/', clientHeaderCheck, async (request, response) => {
 				
 				&lt;&lt;Confirmation code: ` + newUser.get('identification.email_code') + '&gt;&gt;'
 			);
-			
-			delete request.session.registration_status;
 
 			response.send(xmlbuilder.create({
 				person: {

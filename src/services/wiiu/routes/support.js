@@ -4,19 +4,6 @@ const xmlbuilder = require('xmlbuilder');
 const clientHeaderCheck = require('../../../middleware/client-header');
 
 router.post('/validate/email', clientHeaderCheck, async (request, response) => {
-	// Status should be 2 from previous request in registration process
-	if (request.session.registration_status !== 2) {
-		response.status(400);
-
-		return response.send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
-			}
-		}).end());
-	}
-
 	const { email } = request.body;
 
 	if (!email) {
@@ -44,9 +31,6 @@ router.post('/validate/email', clientHeaderCheck, async (request, response) => {
 				}
 			}).end());
 		}
-
-		// eslint-disable-next-line require-atomic-updates
-		request.session.registration_status = 3;
 
 		response.status(200);
 		response.end();

@@ -13,10 +13,6 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
 
-	// Registration process has started
-	// eslint-disable-next-line require-atomic-updates
-	request.session.registration_status = 0;
-
 	response.send(xmlbuilder.create({
 		agreements: {
 			agreement: [
@@ -134,19 +130,6 @@ router.get('/time_zones/:countryCode/:language', clientHeaderCheck, (request, re
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
 
-	// Status should be 0 from previous request in registration process
-	if (request.session.registration_status !== 0) {
-		response.status(400);
-
-		return response.send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
-			}
-		}).end());
-	}
-
 	/*
 	// Old method. Crashes WiiU when sending a list with over 32 entries, but otherwise works
 	// countryTimezones is "countries-and-timezones" module
@@ -169,10 +152,6 @@ router.get('/time_zones/:countryCode/:language', clientHeaderCheck, (request, re
 
 	const regionLanguages = timezones[countryCode];
 	const regionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
-
-	// Bump status to allow access to next endpoint
-	// eslint-disable-next-line require-atomic-updates
-	request.session.registration_status = 1;
 
 	response.send(xmlbuilder.create({
 		timezones: {
