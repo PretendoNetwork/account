@@ -11,8 +11,8 @@ const config = require('./config.json');
 const { http: { port } } = config;
 const app = express();
 
-const accountWiiU = require('./services/wiiu');
-const account3DS = require('./services/3ds');
+const account = require('./services/account');
+const nasc = require('./services/nasc');
 const datastore = require('./services/datastore');
 
 // START APPLICATION
@@ -29,8 +29,8 @@ app.use(express.urlencoded({
 app.use(xmlparser);
 
 // import the servers into one
-app.use(accountWiiU);
-app.use(account3DS);
+app.use(account);
+app.use(nasc);
 app.use(datastore);
 
 // 404 handler

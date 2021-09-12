@@ -7,14 +7,14 @@ const routes = require('./routes');
 const datastore = express.Router();
 
 // Setup routes
-logger.info('[CDN] Applying imported routes');
+logger.info('[DATASTORE] Applying imported routes');
 datastore.use(routes.UPLOAD);
 
 // Main router for endpoints
 const router = express.Router();
 
 // Create subdomains
-logger.info('[CDN] Creating \'datastore\' subdomain');
+logger.info('[DATASTORE] Creating \'datastore\' subdomain');
 router.use(subdomain('datastore', datastore));
 
 module.exports = router;

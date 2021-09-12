@@ -9,11 +9,11 @@ const routes = require('./routes');
 // Router to handle the subdomain restriction
 const account = express.Router();
 
-logger.info('[ACCOUNT - WiiU] Importing middleware');
+logger.info('[ACCOUNT] Importing middleware');
 account.use(pnidMiddleware);
 
 // Setup routes
-logger.info('[ACCOUNT - WiiU] Applying imported routes');
+logger.info('[ACCOUNT] Applying imported routes');
 account.use('/v1/api/admin', routes.ADMIN);
 account.use('/v1/api/content', routes.CONTENT);
 account.use('/v1/api/devices', routes.DEVICES);
@@ -27,7 +27,7 @@ account.use('/v1/api/support', routes.SUPPORT);
 const router = express.Router();
 
 // Create subdomains
-logger.info('[ACCOUNT - WiiU] Creating \'account\' subdomain');
+logger.info('[ACCOUNT] Creating \'account\' subdomain');
 router.use(subdomain('account', account));
 
 module.exports = router;
