@@ -136,7 +136,7 @@ router.get('/nex_token/@me', async (request, response) => {
 		date: BigInt(Date.now())
 	};
 
-	const nexUser = NEXAccount.findOne({
+	const nexUser = await NEXAccount.findOne({
 		owning_pid: pnid.get('pid')
 	});
 
