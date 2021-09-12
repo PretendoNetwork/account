@@ -17,6 +17,6 @@ router.use(subdomain('nasc', nasc));
 
 // Setup routes
 logger.info('[ACCOUNT - 3DS] Applying imported routes');
-nasc.use('/ac', routes.ACCOUNT);
+nasc.use('/ac', routes.AC);
 
 module.exports = router;

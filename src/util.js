@@ -25,6 +25,16 @@ function nintendoPasswordHash(password, pid) {
 	return hashed;
 }
 
+function nintendoBase64Decode(encoded) {
+	encoded = encoded.replaceAll('.', '+').replaceAll('-', '/').replaceAll('*', '=');
+	return Buffer.from(encoded, 'base64').toString();
+}
+
+function nintendoBase64Encode(decoded) {
+	const encoded = Buffer.from(decoded).toString('base64');
+	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
+}
+
 function generateToken(cryptoOptions, tokenOptions) {
 
 	// Access and refresh tokens use a different format since they must be much smaller
@@ -65,23 +75,37 @@ function generateToken(cryptoOptions, tokenOptions) {
 	const hmac = crypto.createHmac('sha1', cryptoOptions.hmac_secret).update(dataBuffer);
 	const signature = hmac.digest();
 
-	// Generate random AES key and IV
+	// You can thank the 3DS for the shit thats about to happen with the AES IV
+	// The 3DS only allows for strings up to 255 characters in NEX
+	// So this is done to reduce the token size as much as possible
+	// I am sorry, and have already asked every God I could think of for forgiveness
+
+	// Generate random AES key
 	const key = crypto.randomBytes(16);
-	const iv = crypto.randomBytes(16);
-
-	// Encrypt the token body with AES
-	const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);
-
-	let encryptedBody = cipher.update(dataBuffer);
-	encryptedBody = Buffer.concat([encryptedBody, cipher.final()]);
 
 	// Encrypt the AES key with RSA public key
 	const encryptedKey = publicKey.encrypt(key);
 
+	// Take two random points in the RSA encrypted key
+	const point1 = ~~((encryptedKey.length - 8) * Math.random());
+	const point2 = ~~((encryptedKey.length - 8) * Math.random());
+
+	// Build an IV from each of the two points
+	const iv = Buffer.concat([
+		Buffer.from(encryptedKey.subarray(point1, point1 + 8)),
+		Buffer.from(encryptedKey.subarray(point2, point2 + 8))
+	]);
+
+	const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);
+
+	// Encrypt the token body with AES
+	let encryptedBody = cipher.update(dataBuffer);
+	encryptedBody = Buffer.concat([encryptedBody, cipher.final()]);
+
 	// Create crypto config token section
 	const cryptoConfig = Buffer.concat([
 		encryptedKey,
-		iv
+		Buffer.from([point1, point2])
 	]);
 
 	// Build the token
@@ -126,12 +150,18 @@ function decryptToken(token) {
 		}
 	});
 
-	const cryptoConfig = token.subarray(0, 0x90);
-	const signature = token.subarray(0x90, 0xA4);
-	const encryptedBody = token.subarray(0xA4);
+	const cryptoConfig = token.subarray(0, 0x82);
+	const signature = token.subarray(0x82, 0x96);
+	const encryptedBody = token.subarray(0x96);
 
 	const encryptedAESKey = cryptoConfig.subarray(0, 128);
-	const iv = cryptoConfig.subarray(128);
+	const point1 = cryptoConfig.readInt8(0x80);
+	const point2 = cryptoConfig.readInt8(0x81);
+
+	const iv = Buffer.concat([
+		Buffer.from(encryptedAESKey.subarray(point1, point1 + 8)),
+		Buffer.from(encryptedAESKey.subarray(point2, point2 + 8))
+	]);
 
 	const decryptedAESKey = privateKey.decrypt(encryptedAESKey);
 
@@ -189,6 +219,8 @@ async function uploadCDNAsset(bucket, key, data, acl) {
 
 module.exports = {
 	nintendoPasswordHash,
+	nintendoBase64Decode,
+	nintendoBase64Encode,
 	generateToken,
 	decryptToken,
 	unpackToken,

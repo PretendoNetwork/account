@@ -3,6 +3,7 @@ const xmlbuilder = require('xmlbuilder');
 const moment = require('moment');
 const crypto = require('crypto');
 const { PNID } = require('../../../models/pnid');
+const { NEXAccount } = require('../../../models/nex-account');
 const clientHeaderCheck = require('../../../middleware/client-header');
 const deviceCertificateMiddleware = require('../../../middleware/device-certificate');
 const ratelimit = require('../../../middleware/ratelimit');
@@ -108,43 +109,33 @@ router.post('/', clientHeaderCheck, ratelimit, deviceCertificateMiddleware, asyn
 		}
 	};
 
-	const newUser = new PNID(document);
+	const newPNID = new PNID(document);
+	await newPNID.save();
 
-	newUser.save()
-		.catch(error => {
-			console.log(error);
+	const newNEXAccount = new NEXAccount({
+		owning_pid: newPNID.get('pid'),
+	});
+	await newNEXAccount.save();
 
-			response.status(400);
-
-			return response.send(xmlbuilder.create({
-				error: {
-					cause: 'Bad Request',
-					code: '1600',
-					message: 'Unable to process request'
-				}
-			}).end());
-		})
-		.then(async newUser => {
-			await mailer.send(
-				newUser.get('email'),
-				'[Prentendo Network] Please confirm your e-mail address',
-				`Hello,
+	await mailer.send(
+		newPNID.get('email'),
+		'[Prentendo Network] Please confirm your e-mail address',
+		`Hello,
 		
-				Your Prentendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.
-				
-				https://account.pretendo.cc/account/email-confirmation?token=` + newUser.get('identification.email_token') + `
-				
-				If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.
-				
-				&lt;&lt;Confirmation code: ` + newUser.get('identification.email_code') + '&gt;&gt;'
-			);
+		Your Prentendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.
+		
+		https://account.pretendo.cc/account/email-confirmation?token=` + newPNID.get('identification.email_token') + `
+		
+		If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.
+		
+		&lt;&lt;Confirmation code: ` + newPNID.get('identification.email_code') + '&gt;&gt;'
+	);
 
-			response.send(xmlbuilder.create({
-				person: {
-					pid: newUser.get('pid')
-				}
-			}).end());
-		});
+	response.send(xmlbuilder.create({
+		person: {
+			pid: newPNID.get('pid')
+		}
+	}).end());
 });
 
 /**

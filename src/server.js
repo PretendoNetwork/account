@@ -12,7 +12,7 @@ const { http: { port } } = config;
 const app = express();
 
 const accountWiiU = require('./services/wiiu');
-//const account3DS = require('./services/3ds');
+const account3DS = require('./services/3ds');
 const datastore = require('./services/datastore');
 
 // START APPLICATION
@@ -30,7 +30,7 @@ app.use(xmlparser);
 
 // import the servers into one
 app.use(accountWiiU);
-//app.use(account3DS);
+app.use(account3DS);
 app.use(datastore);
 
 // 404 handler

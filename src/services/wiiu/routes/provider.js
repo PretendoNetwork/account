@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const fs = require('fs-extra');
+const { NEXAccount } = require('../../../models/nex-account');
 const util = require('../../../util');
 const servers = require('../../../servers.json');
 
@@ -135,13 +136,17 @@ router.get('/nex_token/@me', async (request, response) => {
 		date: BigInt(Date.now())
 	};
 
+	const nexUser = NEXAccount.findOne({
+		owning_pid: pnid.get('pid')
+	});
+
 	const nexToken = util.generateToken(cryptoOptions, tokenOptions);
 
 	response.send(xmlbuilder.create({
 		nex_token: {
 			host: ip,
-			nex_password: pnid.get('nex.password'),
-			pid: pnid.get('pid'),
+			nex_password: nexUser.get('password'),
+			pid: nexUser.get('pid'),
 			port: port,
 			token: nexToken
 		}

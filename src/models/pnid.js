@@ -76,10 +76,6 @@ const PNIDSchema = new Schema({
 		off_device: Boolean
 	},
 	devices: [DeviceSchema],
-	nex: {
-		password: String,
-		token: String
-	},
 	identification: { // user identification tokens
 		email_code: {
 			type: String,
@@ -123,23 +119,6 @@ PNIDSchema.methods.generatePID = async function() {
 	pid = (inuse ? await PNID.generatePID() : pid);
 
 	this.set('pid', pid);
-};
-
-PNIDSchema.methods.generateNEXPassword = function() {
-	function character() {
-		const offset = Math.floor(Math.random() * 62);
-		if (offset < 10) return offset;
-		if (offset < 36) return String.fromCharCode(offset + 55);
-		return String.fromCharCode(offset + 61);
-	}
-
-	const output = [];
-
-	while (output.length < 16) {
-		output.push(character());
-	}
-
-	this.set('nex.password', output.join(''));
 };
 
 PNIDSchema.methods.generateEmailValidationCode = async function() {
@@ -237,7 +216,6 @@ PNIDSchema.pre('save', async function(next) {
 
 	this.set('usernameLower', this.get('username').toLowerCase());
 	await this.generatePID();
-	await this.generateNEXPassword();
 	await this.generateEmailValidationCode();
 	await this.generateEmailValidationToken();
 	await this.generateMiiImages();

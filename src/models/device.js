@@ -15,7 +15,7 @@ const DeviceSchema = new Schema({
 	},
 	console_type: {
 		type: String,
-		enum: ['wup', 'ctr', 'spr', 'ftr', 'ktr', 'red', 'jan'] // wup is WiiU, the rest are the 3DS family. Only wup is used atm
+		enum: ['wup', 'ctr', 'spr', 'ftr', 'ktr', 'red', 'jan'] // wup is WiiU, the rest are the 3DS family
 	},
 	device_id: Number,
 	device_type: Number,
@@ -24,7 +24,10 @@ const DeviceSchema = new Schema({
 	soap: {
 		token: String,
 		account_id: Number,
-	}
+	},
+	// 3DS-specific stuff
+	mac_hash: String,
+	fcdcert_hash: String
 });
 
 const Device = model('Device', DeviceSchema);
