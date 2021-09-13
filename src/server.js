@@ -41,12 +41,12 @@ app.use((request, response) => {
 
 	logger.warn(`HTTP 404 at ${fullUrl} from ${deviceId}`);
 
+	response.set('Content-Type', 'text/xml');
+	response.set('Server', 'Nintendo 3DS (http)');
+	response.set('X-Nintendo-Date', new Date().getTime());
+
 	response.status(404);
-	response.json({
-		app: 'api',
-		status: 404,
-		error: 'Route not found'
-	});
+	response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
 });
 
 // non-404 error handler
