@@ -215,7 +215,7 @@ PNIDSchema.pre('save', async function(next) {
 	}
 
 	this.set('usernameLower', this.get('username').toLowerCase());
-	await this.generatePID();
+	//await this.generatePID();
 	await this.generateEmailValidationCode();
 	await this.generateEmailValidationToken();
 	await this.generateMiiImages();

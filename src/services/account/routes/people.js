@@ -64,10 +64,18 @@ router.post('/', clientHeaderCheck, ratelimit, deviceCertificateMiddleware, asyn
 		}).end());
 	}
 
+	// Create new NEX account
+	const newNEXAccount = new NEXAccount({
+		pid: 0,
+		password: '',
+		owning_pid: 0,
+	});
+	await newNEXAccount.save();
+
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 
 	const document = {
-		pid: 1, // will be overwritten before saving
+		pid: newNEXAccount.get('pid'),
 		creation_date: creationDate,
 		updated: creationDate,
 		username: person.get('user_id'),
@@ -112,10 +120,16 @@ router.post('/', clientHeaderCheck, ratelimit, deviceCertificateMiddleware, asyn
 	const newPNID = new PNID(document);
 	await newPNID.save();
 
-	const newNEXAccount = new NEXAccount({
-		owning_pid: newPNID.get('pid'),
+	// Quick hack to get the PIDs to match
+	// TODO: Change this
+	// NN with a NNID will always use the NNID PID
+	// even if the provided NEX PID is different
+	// To fix this we make them the same PID
+	await NEXAccount.updateOne({
+		pid: newNEXAccount.get('pid')
+	}, {
+		owning_pid: newNEXAccount.get('pid')
 	});
-	await newNEXAccount.save();
 
 	await mailer.send(
 		newPNID.get('email'),
