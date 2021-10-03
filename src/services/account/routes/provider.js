@@ -140,6 +140,11 @@ router.get('/nex_token/@me', async (request, response) => {
 		owning_pid: pnid.get('pid')
 	});
 
+	if (!nexUser) {
+		response.status(404);
+		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	}
+
 	const nexToken = util.generateToken(cryptoOptions, tokenOptions);
 
 	response.send(xmlbuilder.create({
