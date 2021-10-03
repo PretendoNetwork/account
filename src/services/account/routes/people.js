@@ -237,13 +237,28 @@ router.get('/@me/devices/owner', clientHeaderCheck, async (request, response) =>
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', moment().add(5, 'h'));
-	
+
 	const { pnid } = request;
 
 	const person = await database.getUserProfileJSONByPID(pnid.get('pid'));
 
 	response.send(xmlbuilder.create({
 		person
+	}).end());
+});
+
+/**
+ * [GET]
+ * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices/status
+ * Description: Unknown use
+ */
+router.get('/@me/devices/status', clientHeaderCheck, async (request, response) => {
+	response.set('Content-Type', 'text/xml');
+	response.set('Server', 'Nintendo 3DS (http)');
+	response.set('X-Nintendo-Date', moment().add(5, 'h'));
+
+	response.send(xmlbuilder.create({
+		device: {}
 	}).end());
 });
 
@@ -260,7 +275,63 @@ router.put('/@me/miis/@primary', clientHeaderCheck, async (request, response) =>
 
 	const [name, primary, data] = [mii.get('name'), mii.get('primary'), mii.get('data')];
 
-	await pnid.updateMii({name, primary, data});
+	await pnid.updateMii({ name, primary, data });
+
+	response.send('');
+});
+
+/**
+ * [PUT]
+ * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices/@current/inactivate
+ * Description: Deactivates a user from a console
+ */
+router.put('/@me/devices/@current/inactivate', clientHeaderCheck, async (request, response) => {
+	response.set('Server', 'Nintendo 3DS (http)');
+	response.set('X-Nintendo-Date', new Date().getTime());
+
+	const { pnid } = request;
+
+	if (!pnid) {
+		response.status(400);
+
+		return response.end(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		}).end());
+	}
+
+	response.status(200);
+	response.end();
+});
+
+/**
+ * [POST]
+ * Replacement for: https://account.nintendo.net/v1/api/people/@me/deletion
+ * Description: Deletes a NNID
+ */
+router.put('/@me/deletion', clientHeaderCheck, async (request, response) => {
+	const { pnid } = request;
+
+	if (!pnid) {
+		response.status(400);
+
+		return response.end(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		}).end());
+	}
+
+	await PNID.deleteOne({ pid: pnid.get('pid') });
 
 	response.send('');
 });
