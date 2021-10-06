@@ -133,10 +133,10 @@ router.post('/', clientHeaderCheck, ratelimit, deviceCertificateMiddleware, asyn
 
 	await mailer.send(
 		newPNID.get('email'),
-		'[Prentendo Network] Please confirm your e-mail address',
+		'[Pretendo Network] Please confirm your e-mail address',
 		`Hello,
 		
-		Your Prentendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.
+		Your Pretendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.
 		
 		https://account.pretendo.cc/account/email-confirmation?token=` + newPNID.get('identification.email_token') + `
 		
