@@ -3,7 +3,7 @@ const xmlbuilder = require('xmlbuilder');
 const fs = require('fs-extra');
 const { NEXAccount } = require('../../../models/nex-account');
 const util = require('../../../util');
-const servers = require('../../../servers.json');
+const database = require('../../../database');
 
 /**
  * [GET]
@@ -14,9 +14,8 @@ router.get('/service_token/@me', async (request, response) => {
 	const { pnid } = request;
 
 	const titleId = request.headers['x-nintendo-title-id'];
-	const server = servers.find(({ title_ids }) => title_ids.includes(titleId));
-
-	console.log(titleId);
+	const serverAccessLevel = pnid.get('server_access_level');
+	const server = await database.getServerByTitleId(titleId, serverAccessLevel);
 
 	if (!server) {
 		return response.send(xmlbuilder.create({
@@ -29,9 +28,9 @@ router.get('/service_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const { name, system } = server;
+	const { service_name, service_type, device } = server;
 
-	const cryptoPath = `${__dirname}/../../../../certs/service/${name}`;
+	const cryptoPath = `${__dirname}/../../../../certs/${service_type}/${service_name}`;
 
 	if (!fs.pathExistsSync(cryptoPath)) {
 		// Need to generate keys
@@ -54,7 +53,7 @@ router.get('/service_token/@me', async (request, response) => {
 	};
 
 	const tokenOptions = {
-		system_type: system,
+		system_type: device,
 		token_type: 0x4, // service token,
 		pid: pnid.get('pid'),
 		title_id: BigInt(parseInt(titleId, 16)),
@@ -90,7 +89,8 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const server = servers.find(({ server_id }) => server_id === gameServerID);
+	const serverAccessLevel = pnid.get('server_access_level');
+	const server = await database.getServer(gameServerID, serverAccessLevel);
 
 	if (!server) {
 		return response.send(xmlbuilder.create({
@@ -103,10 +103,10 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const { name, ip, port, system } = server;
+	const { service_name, service_type, ip, port, device } = server;
 	const titleId = request.headers['x-nintendo-title-id'];
 
-	const cryptoPath = `${__dirname}/../../../../certs/nex/${name}`;
+	const cryptoPath = `${__dirname}/../../../../certs/${service_type}/${service_name}`;
 	
 	if (!fs.pathExistsSync(cryptoPath)) {
 		// Need to generate keys
@@ -129,7 +129,7 @@ router.get('/nex_token/@me', async (request, response) => {
 	};
 
 	const tokenOptions = {
-		system_type: system,
+		system_type: device,
 		token_type: 0x3, // nex token,
 		pid: pnid.get('pid'),
 		title_id: BigInt(parseInt(titleId, 16)),

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const util = require('./util');
 const { PNID } = require('./models/pnid');
+const { Server } = require('./models/server');
 const { mongoose: mongooseConfig } = require('./config.json');
 const { uri, database, options } = mongooseConfig;
 
@@ -161,6 +162,20 @@ async function getUserProfileJSONByPID(pid) {
 	};
 }
 
+function getServer(gameServerId, accessMode) {
+	return Server.findOne({
+		game_server_id: gameServerId,
+		access_mode: accessMode,
+	});
+}
+
+function getServerByTitleId(titleId, accessMode) {
+	return Server.findOne({
+		title_ids: titleId,
+		access_mode: accessMode,
+	});
+}
+
 module.exports = {
 	connect,
 	getUserByUsername,
@@ -169,4 +184,6 @@ module.exports = {
 	getUserBasic,
 	getUserBearer,
 	getUserProfileJSONByPID,
+	getServer,
+	getServerByTitleId,
 };

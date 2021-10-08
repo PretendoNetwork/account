@@ -14,6 +14,10 @@ const PNIDSchema = new Schema({
 		type: Number,
 		default: 0 // Standard user
 	},
+	server_access_level: {
+		type: String,
+		default: 'prod' // everyone is in production by default
+	},
 	pid: {
 		type: Number,
 		unique: true
@@ -70,8 +74,8 @@ const PNIDSchema = new Schema({
 			unique: true
 		},
 	},
-	flags: { // not entirely sure what these are used for
-		active: Boolean, // Is the account active? Like, not deleted maybe?
+	flags: {
+		active: Boolean,
 		marketing: Boolean,
 		off_device: Boolean
 	},
@@ -207,6 +211,12 @@ PNIDSchema.methods.generateMiiImages = async function() {
 	const miiStudioBodyUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=all_body&width=270&instanceCount=1`;
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
 	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
+};
+
+PNIDSchema.methods.getServerMode = function () {
+	const serverMode = this.get('server_mode') || 'prod';
+
+	return serverMode;
 };
 
 PNIDSchema.pre('save', async function(next) {
