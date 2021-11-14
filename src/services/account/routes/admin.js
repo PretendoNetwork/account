@@ -16,6 +16,7 @@ router.get('/mapped_ids', clientHeaderCheck, async (request, response) => {
 	if (inputType === 'user_id') {
 		inputType = 'usernameLower';
 
+		inputList = inputList.filter(name => name);
 		inputList = inputList.map(name => name.toLowerCase());
 	}
 
