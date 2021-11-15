@@ -41,10 +41,12 @@ function generateToken(cryptoOptions, tokenOptions) {
 	if ([0x1, 0x2].includes(tokenOptions.token_type)) {
 		const cryptoPath = `${__dirname}/../certs/access`;
 		const aesKey = Buffer.from(fs.readFileSync(`${cryptoPath}/aes.key`, { encoding: 'utf8' }), 'hex');
-		const dataBuffer = Buffer.alloc(4 + 8);
+		const dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
-		dataBuffer.writeUInt32LE(tokenOptions.pid, 0x0);
-		dataBuffer.writeBigUInt64LE(tokenOptions.date, 0x4);
+		dataBuffer.writeUInt8(tokenOptions.system_type, 0x0);
+		dataBuffer.writeUInt8(tokenOptions.token_type, 0x1);
+		dataBuffer.writeUInt32LE(tokenOptions.pid, 0x2);
+		dataBuffer.writeBigUInt64LE(tokenOptions.expire_time, 0x4);
 
 		const iv = Buffer.alloc(16);
 		const cipher = crypto.createCipheriv('aes-128-cbc', aesKey, iv);
@@ -69,7 +71,7 @@ function generateToken(cryptoOptions, tokenOptions) {
 	dataBuffer.writeUInt8(tokenOptions.token_type, 0x1);
 	dataBuffer.writeUInt32LE(tokenOptions.pid, 0x2);
 	dataBuffer.writeBigUInt64LE(tokenOptions.title_id, 0x6);
-	dataBuffer.writeBigUInt64LE(tokenOptions.date, 0xE);
+	dataBuffer.writeBigUInt64LE(tokenOptions.expire_time, 0xE);
 
 	// Calculate the signature of the token body
 	const hmac = crypto.createHmac('sha1', cryptoOptions.hmac_secret).update(dataBuffer);
@@ -184,8 +186,10 @@ function decryptToken(token) {
 function unpackToken(token) {
 	if (token.length <= 32) {
 		return {
-			pid: token.readUInt32LE(0x0),
-			date: token.readBigUInt64LE(0x2)
+			system_type: token.readUInt8(0x0),
+			token_type: token.readUInt8(0x1),
+			pid: token.readUInt32LE(0x2),
+			expire_time: token.readBigUInt64LE(0x6)
 		};
 	}
 
@@ -194,7 +198,7 @@ function unpackToken(token) {
 		token_type: token.readUInt8(0x1),
 		pid: token.readUInt32LE(0x2),
 		title_id: token.readBigUInt64LE(0x6),
-		date: token.readBigUInt64LE(0xE)
+		expire_time: token.readBigUInt64LE(0xE)
 	};
 }
 

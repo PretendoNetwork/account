@@ -57,7 +57,7 @@ router.get('/service_token/@me', async (request, response) => {
 		token_type: 0x4, // service token,
 		pid: pnid.get('pid'),
 		title_id: BigInt(parseInt(titleId, 16)),
-		date: BigInt(Date.now())
+		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const serviceToken = util.generateToken(cryptoOptions, tokenOptions);
@@ -133,7 +133,7 @@ router.get('/nex_token/@me', async (request, response) => {
 		token_type: 0x3, // nex token,
 		pid: pnid.get('pid'),
 		title_id: BigInt(parseInt(titleId, 16)),
-		date: BigInt(Date.now())
+		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const nexUser = await NEXAccount.findOne({

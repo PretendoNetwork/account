@@ -88,7 +88,7 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 		token_type: 0x1, // OAuth Access,
 		pid: pnid.get('pid'),
 		title_id: BigInt(parseInt(titleId, 16)),
-		date: BigInt(Date.now())
+		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const refreshTokenOptions = {
@@ -96,7 +96,7 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 		token_type: 0x2, // OAuth Refresh,
 		pid: pnid.get('pid'),
 		title_id: BigInt(parseInt(titleId, 16)),
-		date: BigInt(Date.now())
+		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const accessToken = util.generateToken(cryptoOptions, accessTokenOptions);

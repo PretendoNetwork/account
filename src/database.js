@@ -79,9 +79,9 @@ async function getUserBearer(token) {
 	const user = await getUserByPID(unpackedToken.pid);
 
 	if (user) {
-		const expireTime = Math.floor((Number(unpackedToken.date) / 1000) + 3600);
+		const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
 
-		if (Math.floor(Date.now()/1000) > expireTime) {
+		if (Math.floor(Date.now() / 1000) > expireTime) {
 			return null;
 		}
 	}
