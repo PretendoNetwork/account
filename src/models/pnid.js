@@ -12,7 +12,7 @@ const Mii = require('../mii');
 const PNIDSchema = new Schema({
 	access_level: {
 		type: Number,
-		default: 0 // Standard user
+		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
 	},
 	server_access_level: {
 		type: String,
@@ -96,6 +96,13 @@ const PNIDSchema = new Schema({
 		refresh_token: {
 			value: String,
 			ttl: Number
+		}
+	},
+	connections: {
+		discord: {
+			id: String,
+			access_token: String,
+			refresh_token: String,
 		}
 	}
 });

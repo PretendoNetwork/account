@@ -46,7 +46,7 @@ function generateToken(cryptoOptions, tokenOptions) {
 		dataBuffer.writeUInt8(tokenOptions.system_type, 0x0);
 		dataBuffer.writeUInt8(tokenOptions.token_type, 0x1);
 		dataBuffer.writeUInt32LE(tokenOptions.pid, 0x2);
-		dataBuffer.writeBigUInt64LE(tokenOptions.expire_time, 0x4);
+		dataBuffer.writeBigUInt64LE(tokenOptions.expire_time, 0x6);
 
 		const iv = Buffer.alloc(16);
 		const cipher = crypto.createCipheriv('aes-128-cbc', aesKey, iv);

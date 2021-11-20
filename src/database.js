@@ -176,6 +176,68 @@ function getServerByTitleId(titleId, accessMode) {
 	});
 }
 
+async function addUserConnection(pnid, data, type) {
+	// Add more connections later?
+	if (type === 'discord') {
+		return await addUserConnectionDiscord(pnid, data);
+	}
+}
+
+async function addUserConnectionDiscord(pnid, data) {
+	if (!data.id || !data.access_token || !data.refresh_token) {
+		return {
+			app: 'api',
+			status: 400,
+			error: 'Invalid or missing connection data'
+		};
+	}
+
+	// Support older documents
+	await PNID.updateOne({
+		pid: pnid.get('pid')
+	}, {
+		$set: {
+			connections: {
+				discord: data
+			}
+		}
+	}, { upsert: true });
+
+	return {
+		app: 'api',
+		status: 200
+	};
+}
+
+async function removeUserConnection(pnid, type) {
+	// Add more connections later?
+	if (type === 'discord') {
+		return await removeUserConnectionDiscord(pnid);
+	}
+}
+
+async function removeUserConnectionDiscord(pnid) {
+	// Support older documents
+	await PNID.updateOne({
+		pid: pnid.get('pid')
+	}, {
+		$set: {
+			connections: {
+				discord: {
+					id: '',
+					access_token: '',
+					refresh_token: ''
+				}
+			}
+		}
+	}, { upsert: true });
+
+	return {
+		app: 'api',
+		status: 200
+	};
+}
+
 module.exports = {
 	connect,
 	getUserByUsername,
@@ -186,4 +248,6 @@ module.exports = {
 	getUserProfileJSONByPID,
 	getServer,
 	getServerByTitleId,
+	addUserConnection,
+	removeUserConnection,
 };

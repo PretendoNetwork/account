@@ -14,6 +14,7 @@ const app = express();
 const account = require('./services/account');
 const nasc = require('./services/nasc');
 const datastore = require('./services/datastore');
+const api = require('./services/api');
 
 // START APPLICATION
 app.set('etag', false);
@@ -32,6 +33,7 @@ app.use(xmlparser);
 app.use(account);
 app.use(nasc);
 app.use(datastore);
+app.use(api);
 
 // 404 handler
 logger.info('Creating 404 status handler');
