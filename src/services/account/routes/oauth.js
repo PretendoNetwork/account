@@ -51,6 +51,17 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 
 	const pnid = await database.getUserByUsername(user_id);
 
+	if (pnid.get('access_level') < 0) {
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0122',
+					message: 'Device has been banned by game server'
+				}
+			}
+		}).end());
+	}
+
 	if (!pnid || !bcrypt.compareSync(password, pnid.password)) {
 		response.status(400);
 		return response.send(xmlbuilder.create({

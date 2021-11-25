@@ -42,6 +42,17 @@ async function PNIDMiddleware(request, response, next) {
 		}).end());
 	}
 
+	if (user.get('access_level') < 0) {
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0122',
+					message: 'Device has been banned by game server'
+				}
+			}
+		}).end());
+	}
+
 	request.pnid = user;
 
 	return next();
