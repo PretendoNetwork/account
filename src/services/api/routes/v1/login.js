@@ -50,6 +50,14 @@ router.post('/', async (request, response) => {
 	let pnid;
 	if (grant_type === 'password') {
 		pnid = await database.getUserByUsername(username);
+		if (!pnid) {
+			return response.status(400).json({
+				app: 'api',
+				status: 400,
+				error: 'User not found'
+			});
+		}
+
 		const hashedPassword = util.nintendoPasswordHash(password, pnid.get('pid'));
 
 		if (!pnid || !bcrypt.compareSync(hashedPassword, pnid.password)) {
