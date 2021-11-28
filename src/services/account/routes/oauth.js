@@ -12,7 +12,6 @@ const util = require('../../../util');
  * Description: Generates an access token for a user
  */
 router.post('/access_token/generate', clientHeaderCheck, async (request, response) => {
-	const titleId = request.headers['x-nintendo-title-id'];
 	const { body } = request;
 	const { grant_type, user_id, password } = body;
 
@@ -86,19 +85,10 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 		}).end());
 	}
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
-
-	const cryptoOptions = {
-		public_key: publicKey,
-		hmac_secret: hmacSecret
-	};
-
 	const accessTokenOptions = {
 		system_type: 0x1, // WiiU
 		token_type: 0x1, // OAuth Access,
 		pid: pnid.get('pid'),
-		title_id: BigInt(parseInt(titleId, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
@@ -106,12 +96,11 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 		system_type: 0x1, // WiiU
 		token_type: 0x2, // OAuth Refresh,
 		pid: pnid.get('pid'),
-		title_id: BigInt(parseInt(titleId, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken = util.generateToken(cryptoOptions, accessTokenOptions);
-	const refreshToken = util.generateToken(cryptoOptions, refreshTokenOptions);
+	const accessToken = util.generateToken(null, accessTokenOptions);
+	const refreshToken = util.generateToken(null, refreshTokenOptions);
 
 	response.send(xmlbuilder.create({
 		OAuth20: {

@@ -69,6 +69,7 @@ router.post('/', async (request, response) => {
 			system_type: 0x2, // 3DS
 			token_type: 0x3, // nex token,
 			pid: pid,
+			access_level: 0,
 			title_id: BigInt(parseInt(titleID, 16)),
 			date: BigInt(Date.now())
 		};

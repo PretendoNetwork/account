@@ -56,6 +56,7 @@ router.get('/service_token/@me', async (request, response) => {
 		system_type: device,
 		token_type: 0x4, // service token,
 		pid: pnid.get('pid'),
+		access_level: pnid.get('access_level'),
 		title_id: BigInt(parseInt(titleId, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
@@ -132,6 +133,7 @@ router.get('/nex_token/@me', async (request, response) => {
 		system_type: device,
 		token_type: 0x3, // nex token,
 		pid: pnid.get('pid'),
+		access_level: pnid.get('access_level'),
 		title_id: BigInt(parseInt(titleId, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};

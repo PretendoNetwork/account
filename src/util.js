@@ -38,7 +38,8 @@ function nintendoBase64Encode(decoded) {
 function generateToken(cryptoOptions, tokenOptions) {
 
 	// Access and refresh tokens use a different format since they must be much smaller
-	if ([0x1, 0x2].includes(tokenOptions.token_type)) {
+	// They take no extra crypto options
+	if (!cryptoOptions) {
 		const cryptoPath = `${__dirname}/../certs/access`;
 		const aesKey = Buffer.from(fs.readFileSync(`${cryptoPath}/aes.key`, { encoding: 'utf8' }), 'hex');
 		const dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
@@ -65,13 +66,14 @@ function generateToken(cryptoOptions, tokenOptions) {
 	});
 
 	// Create the buffer containing the token data
-	const dataBuffer = Buffer.alloc(1 + 1 + 4 + 8 + 8);
+	const dataBuffer = Buffer.alloc(1 + 1 + 4 + 1 + 8 + 8);
 
 	dataBuffer.writeUInt8(tokenOptions.system_type, 0x0);
 	dataBuffer.writeUInt8(tokenOptions.token_type, 0x1);
 	dataBuffer.writeUInt32LE(tokenOptions.pid, 0x2);
-	dataBuffer.writeBigUInt64LE(tokenOptions.title_id, 0x6);
-	dataBuffer.writeBigUInt64LE(tokenOptions.expire_time, 0xE);
+	dataBuffer.writeUInt8(0xf, 0x6);
+	dataBuffer.writeBigUInt64LE(tokenOptions.title_id, 0x7);
+	dataBuffer.writeBigUInt64LE(tokenOptions.expire_time, 0xF);
 
 	// Calculate the signature of the token body
 	const hmac = crypto.createHmac('sha1', cryptoOptions.hmac_secret).update(dataBuffer);
@@ -175,7 +177,7 @@ function decryptToken(token) {
 	const hmac = crypto.createHmac('sha1', cryptoOptions.hmac_secret).update(decryptedBody);
 	const calculatedSignature = hmac.digest();
 
-	if (calculatedSignature !== signature) {
+	if (!signature.equals(calculatedSignature)) {
 		console.log('Token signature did not match');
 		return null;
 	}
@@ -184,7 +186,7 @@ function decryptToken(token) {
 }
 
 function unpackToken(token) {
-	if (token.length <= 32) {
+	if (token.length <= 14) {
 		return {
 			system_type: token.readUInt8(0x0),
 			token_type: token.readUInt8(0x1),
@@ -197,8 +199,9 @@ function unpackToken(token) {
 		system_type: token.readUInt8(0x0),
 		token_type: token.readUInt8(0x1),
 		pid: token.readUInt32LE(0x2),
-		title_id: token.readBigUInt64LE(0x6),
-		expire_time: token.readBigUInt64LE(0xE)
+		access_level: token.readUInt8(0x6),
+		title_id: token.readBigUInt64LE(0x7),
+		expire_time: token.readBigUInt64LE(0xF)
 	};
 }
 

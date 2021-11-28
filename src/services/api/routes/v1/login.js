@@ -92,12 +92,20 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const cryptoOptions = {}; // OAuth keys take no extra options
+	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
+	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
+
+	const cryptoOptions = {
+		public_key: publicKey,
+		hmac_secret: hmacSecret
+	};
 
 	const accessTokenOptions = {
 		system_type: 0xF, // API
 		token_type: 0x1, // OAuth Access,
 		pid: pnid.get('pid'),
+		access_level: pnid.get('access_level'),
+		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
@@ -105,6 +113,8 @@ router.post('/', async (request, response) => {
 		system_type: 0xF, // API
 		token_type: 0x2, // OAuth Refresh,
 		pid: pnid.get('pid'),
+		access_level: pnid.get('access_level'),
+		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
