@@ -50,6 +50,16 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 
 	const pnid = await database.getUserByUsername(user_id);
 
+	if (!pnid || !bcrypt.compareSync(password, pnid.password)) {
+		response.status(400);
+		return response.send(xmlbuilder.create({
+			error: {
+				code: '0106',
+				message: 'Invalid account ID or password'
+			}
+		}).end());
+	}
+
 	if (pnid.get('access_level') < 0) {
 		return response.status(400).send(xmlbuilder.create({
 			errors: {
@@ -57,16 +67,6 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 					code: '0122',
 					message: 'Device has been banned by game server'
 				}
-			}
-		}).end());
-	}
-
-	if (!pnid || !bcrypt.compareSync(password, pnid.password)) {
-		response.status(400);
-		return response.send(xmlbuilder.create({
-			error: {
-				code: '0106',
-				message: 'Invalid account ID or password'
 			}
 		}).end());
 	}
@@ -99,8 +99,13 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken = util.generateToken(null, accessTokenOptions);
-	const refreshToken = util.generateToken(null, refreshTokenOptions);
+	let accessToken = util.generateToken(null, accessTokenOptions);
+	let refreshToken = util.generateToken(null, refreshTokenOptions);
+
+	if (request.isCemu) {
+		accessToken = Buffer.from(accessToken, 'base64').toString('hex');
+		refreshToken = Buffer.from(refreshToken, 'base64').toString('hex');
+	}
 
 	response.send(xmlbuilder.create({
 		OAuth20: {

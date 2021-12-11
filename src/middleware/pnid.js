@@ -8,8 +8,12 @@ async function PNIDMiddleware(request, response, next) {
 		return next();
 	}
 
-	const [type, token] = headers.authorization.split(' ');
+	let [type, token] = headers.authorization.split(' ');
 	let user;
+
+	if (request.isCemu) {
+		token = Buffer.from(token, 'hex').toString('base64');
+	}
 
 	if (type === 'Basic') {
 		user = await database.getUserBasic(token);

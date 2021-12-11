@@ -2,6 +2,7 @@
 
 const express = require('express');
 const subdomain = require('express-subdomain');
+const cemuMiddleware = require('../../middleware/cemu');
 const pnidMiddleware = require('../../middleware/pnid');
 const logger = require('../../../logger');
 const routes = require('./routes');
@@ -10,6 +11,7 @@ const routes = require('./routes');
 const account = express.Router();
 
 logger.info('[ACCOUNT] Importing middleware');
+account.use(cemuMiddleware);
 account.use(pnidMiddleware);
 
 // Setup routes
@@ -29,5 +31,8 @@ const router = express.Router();
 // Create subdomains
 logger.info('[ACCOUNT] Creating \'account\' subdomain');
 router.use(subdomain('account', account));
+
+logger.info('[ACCOUNT] Creating \'c.account\' subdomain');
+router.use(subdomain('c.account', account));
 
 module.exports = router;
