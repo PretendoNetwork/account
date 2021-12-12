@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const fs = require('fs-extra');
-const path = require('path');
 const database = require('../../../../database');
 const util = require('../../../../util');
 
