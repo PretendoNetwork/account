@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const database = require('../../../../database');
 
 /**
  * [GET]
@@ -34,6 +33,7 @@ router.get('/', async (request, response) => {
 			name: pnid.get('timezone.name')
 		},
 		mii: {
+			data: pnid.get('mii.data'),
 			name: pnid.get('mii.name'),
 			image_url: `https://pretendo-cdn.b-cdn.net/mii/${pnid.get('pid')}/normal_face.png`
 		},
