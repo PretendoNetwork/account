@@ -8,6 +8,17 @@ const { NEXAccount } = require('../../../../models/nex-account');
 const database = require('../../../../database');
 const util = require('../../../../util');
 
+const PNID_VALID_CHARACTERS_REGEX = /^[\w\-\.]*$/gm;
+const PNID_PUNCTUATION_START_REGEX = /^[\_\-\.]/gm;
+const PNID_PUNCTUATION_END_REGEX = /[\_\-\.]$/gm;
+const PNID_PUNCTUATION_DUPLICATE_REGEX = /[\_\-\.]{2,}/gm;
+
+// This sucks
+const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
+const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[\_\-\.]).*/;
+const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[\_\-\.]).*/;
+const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
+
 /**
  * [POST]
  * Implementation of: https://api.pretendo.cc/v1/register
@@ -15,9 +26,22 @@ const util = require('../../../../util');
  */
 router.post('/', async (request, response) => {
 	const { body } = request;
-	const { email, username, mii_name, password, password_confirm } = body;
+	
+	const email = body.email?.trim();
+	const username = body.username?.trim();
+	const miiName = body.mii_name?.trim();
+	const password = body.password?.trim();
+	const passwordConfirm = body.password_confirm?.trim();
 
-	if (!email || email.trim() === '' || !emailvalidator.validate(email)) {
+	if (!email || email === '') {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Must enter an email address'
+		});
+	}
+
+	if (!emailvalidator.validate(email)) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -25,11 +49,11 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	if (!username || username.trim() === '') {
+	if (!username || username === '') {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
-			error: 'Invalid username'
+			error: 'Must enter a username'
 		});
 	}
 
@@ -49,41 +73,113 @@ router.post('/', async (request, response) => {
 		});
 	}
 
+	if (!PNID_VALID_CHARACTERS_REGEX.test(username)) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Username contains invalid characters'
+		});
+	}
+
+	if (PNID_PUNCTUATION_START_REGEX.test(username)) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Username cannot begin with punctuation characters'
+		});
+	}
+
+	if (PNID_PUNCTUATION_END_REGEX.test(username)) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Username cannot end with punctuation characters'
+		});
+	}
+
+	if (PNID_PUNCTUATION_DUPLICATE_REGEX.test(username)) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Two or more punctuation characters cannot be used in a row'
+		});
+	}
+
 	const userExists = await database.doesUserExist(username);
 
 	if (userExists) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
-			error: 'PNID username already in use'
+			error: 'PNID already in use'
 		});
 	}
 
-	if (!mii_name || mii_name.trim() === '') {
+	if (!miiName || miiName === '') {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
-			error: 'Invalid Mii name'
+			error: 'Must enter a Mii name'
 		});
 	}
 
-	if (!password || password.trim() === '') {
+	if (!password || password === '') {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
-			error: 'Invalid password'
+			error: 'Must enter a password'
 		});
 	}
 
-	if (password !== password_confirm) {
+	if (password.length < 6) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
-			error: 'Passwords are not matching'
+			error: 'Password is too short'
 		});
 	}
 
-	const miiNameBuffer = Buffer.from(mii_name, 'utf16le'); // UTF8 to UTF16
+	if (password.length > 16) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Password is too long'
+		});
+	}
+
+	if (password.toLowerCase() === username.toLowerCase()) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Password cannot be the same as username'
+		});
+	}
+
+	if (!PASSWORD_WORD_OR_NUMBER_REGEX.test(password) && !PASSWORD_WORD_OR_PUNCTUATION_REGEX.test(password) && !PASSWORD_NUMBER_OR_PUNCTUATION_REGEX.test(password)) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Password must have combination of letters, numbers, and/or punctuation characters'
+		});
+	}
+
+	if (PASSWORD_REPEATED_CHARACTER_REGEX.test(password)) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Password may not have 3 repeating characters'
+		});
+	}
+
+	if (password !== passwordConfirm) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Passwords do not match'
+		});
+	}
+
+	const miiNameBuffer = Buffer.from(miiName, 'utf16le'); // UTF8 to UTF16
 
 	if (miiNameBuffer.length > 0x14) {
 		return response.status(400).json({
@@ -152,7 +248,7 @@ router.post('/', async (request, response) => {
 			offset: -14400 // TODO: Change this
 		},
 		mii: {
-			name: mii_name,
+			name: miiName,
 			primary: true, // TODO: Change this
 			data: MII_DATA.toString('base64'),
 			id: crypto.randomBytes(4).readUInt32LE(),
@@ -208,7 +304,7 @@ router.post('/', async (request, response) => {
 		system_type: 0xF, // API
 		token_type: 0x1, // OAuth Access,
 		pid: pnid.get('pid'),
-		access_level: pnid.get('access_level'),
+		access_level: 0,
 		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
@@ -217,7 +313,7 @@ router.post('/', async (request, response) => {
 		system_type: 0xF, // API
 		token_type: 0x2, // OAuth Refresh,
 		pid: pnid.get('pid'),
-		access_level: pnid.get('access_level'),
+		access_level: 0,
 		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
