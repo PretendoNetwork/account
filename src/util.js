@@ -71,7 +71,7 @@ function generateToken(cryptoOptions, tokenOptions) {
 	dataBuffer.writeUInt8(tokenOptions.system_type, 0x0);
 	dataBuffer.writeUInt8(tokenOptions.token_type, 0x1);
 	dataBuffer.writeUInt32LE(tokenOptions.pid, 0x2);
-	dataBuffer.writeUInt8(0xf, 0x6);
+	dataBuffer.writeUInt8(tokenOptions.access_level, 0x6);
 	dataBuffer.writeBigUInt64LE(tokenOptions.title_id, 0x7);
 	dataBuffer.writeBigUInt64LE(tokenOptions.expire_time, 0xF);
 
