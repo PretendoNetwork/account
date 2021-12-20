@@ -3,10 +3,12 @@ const emailvalidator = require('email-validator');
 const fs = require('fs-extra');
 const moment = require('moment');
 const crypto = require('crypto');
+const hcaptcha = require('hcaptcha');
 const { PNID } = require('../../../../models/pnid');
 const { NEXAccount } = require('../../../../models/nex-account');
 const database = require('../../../../database');
 const util = require('../../../../util');
+const config = require('../../../../config');
 
 const PNID_VALID_CHARACTERS_REGEX = /^[\w\-\.]*$/gm;
 const PNID_PUNCTUATION_START_REGEX = /^[\_\-\.]/gm;
@@ -32,6 +34,25 @@ router.post('/', async (request, response) => {
 	const miiName = body.mii_name?.trim();
 	const password = body.password?.trim();
 	const passwordConfirm = body.password_confirm?.trim();
+	const hCaptchaResponse = body.hCaptchaResponse?.trim();
+
+	if (!hCaptchaResponse || hCaptchaResponse === '') {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Must fill in captcha'
+		});
+	}
+
+	const captchaVerify = await hcaptcha.verify(config.hcaptcha.secret, hCaptchaResponse);
+
+	if (!captchaVerify.success) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Captcha verification failed'
+		});
+	}
 
 	if (!email || email === '') {
 		return response.status(400).json({

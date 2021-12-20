@@ -33,6 +33,7 @@
     "formidable": "^1.2.2",
     "fs-extra": "^8.1.0",
     "got": "^11.8.2",
+    "hcaptcha": "^0.1.0",
     "image-pixels": "^2.2.2",
     "kaitai-struct": "^0.9.0",
     "moment": "^2.24.0",
