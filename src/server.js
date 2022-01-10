@@ -11,6 +11,7 @@ const config = require('./config.json');
 const { http: { port } } = config;
 const app = express();
 
+const conntest = require('./services/conntest');
 const account = require('./services/account');
 const nasc = require('./services/nasc');
 const datastore = require('./services/datastore');
@@ -30,6 +31,7 @@ app.use(express.urlencoded({
 app.use(xmlparser);
 
 // import the servers into one
+app.use(conntest);
 app.use(account);
 app.use(nasc);
 app.use(datastore);
