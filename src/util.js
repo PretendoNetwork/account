@@ -226,9 +226,9 @@ async function uploadCDNAsset(bucket, key, data, acl) {
 
 function nascError(response, errorCode) {
 	const params = new URLSearchParams({
-		retry: util.nintendoBase64Encode('1'),
-		returncd: errorCode == 'null' ? errorCode : util.nintendoBase64Encode(errorCode),
-		datetime: util.nintendoBase64Encode(Date.now().toString()),
+		retry: nintendoBase64Encode('1'),
+		returncd: errorCode == 'null' ? errorCode : nintendoBase64Encode(errorCode),
+		datetime: nintendoBase64Encode(Date.now().toString()),
 	});
 
 	return response.status(200).send(params.toString());
