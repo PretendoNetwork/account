@@ -27,7 +27,7 @@ function nintendoPasswordHash(password, pid) {
 
 function nintendoBase64Decode(encoded) {
 	encoded = encoded.replaceAll('.', '+').replaceAll('-', '/').replaceAll('*', '=');
-	return Buffer.from(encoded, 'base64').toString();
+	return Buffer.from(encoded, 'base64');
 }
 
 function nintendoBase64Encode(decoded) {
@@ -224,6 +224,16 @@ async function uploadCDNAsset(bucket, key, data, acl) {
 	await s3.putObject(awsPutParams).promise();
 }
 
+function nascError(response, errorCode) {
+	const params = new URLSearchParams({
+		retry: util.nintendoBase64Encode('1'),
+		returncd: errorCode == 'null' ? errorCode : util.nintendoBase64Encode(errorCode),
+		datetime: util.nintendoBase64Encode(Date.now().toString()),
+	});
+
+	return response.status(200).send(params.toString());
+}
+
 module.exports = {
 	nintendoPasswordHash,
 	nintendoBase64Decode,
@@ -232,5 +242,6 @@ module.exports = {
 	decryptToken,
 	unpackToken,
 	fullUrl,
-	uploadCDNAsset
+	uploadCDNAsset,
+	nascError
 };

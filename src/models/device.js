@@ -13,9 +13,17 @@ const DeviceSchema = new Schema({
 		type: Boolean,
 		default: false
 	},
-	console_type: {
+	model: {
 		type: String,
-		enum: ['wup', 'ctr', 'spr', 'ftr', 'ktr', 'red', 'jan'] // wup is WiiU, the rest are the 3DS family
+		enum: [
+			'wup', // Nintendo Wii U
+			'ctr', // Nintendo 3DS
+			'spr', // Nintendo 3DS XL
+			'ftr', // Nintendo 2DS
+			'ktr', // New Nintendo 3DS
+			'red', // New Nintendo 3DS XL
+			'jan'  // New Nintendo 2DS XL 
+		]
 	},
 	device_id: Number,
 	device_type: Number,
@@ -26,8 +34,18 @@ const DeviceSchema = new Schema({
 		account_id: Number,
 	},
 	// 3DS-specific stuff
+	environment: String,
 	mac_hash: String,
-	fcdcert_hash: String
+	fcdcert_hash: String,
+	linked_pids: [Number],
+	access_level: {
+		type: Number,
+		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
+	},
+	server_access_level: {
+		type: String,
+		default: 'prod' // everyone is in production by default
+	}
 });
 
 const Device = model('Device', DeviceSchema);

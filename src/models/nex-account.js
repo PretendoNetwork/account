@@ -8,6 +8,14 @@ const NEXAccountSchema = new Schema({
 	},
 	password: String,
 	owning_pid: Number,
+	access_level: {
+		type: Number,
+		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
+	},
+	server_access_level: {
+		type: String,
+		default: 'prod' // everyone is in production by default
+	},
 });
 
 NEXAccountSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
@@ -54,7 +62,10 @@ NEXAccountSchema.methods.generatePassword = function () {
 
 NEXAccountSchema.pre('save', async function (next) {
 	await this.generatePID();
-	await this.generatePassword();
+
+	if (this.get('password') === '') {
+		await this.generatePassword();
+	}
 
 	next();
 });
