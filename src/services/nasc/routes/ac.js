@@ -6,14 +6,14 @@ const database = require('../../../database');
 router.post('/', async (request, response) => {
 	const requestParams = request.body;
 	const titleID = util.nintendoBase64Decode(requestParams.titleid).toString();
-	const { nexUser, device } = request;
+	const { nexUser } = request;
 
 	// TODO: REMOVE AFTER PUBLIC LAUNCH
 	// LET EVERYONE IN THE `test` FRIENDS SERVER
 	// THAT WAY EVERYONE CAN GET AN ASSIGNED PID
 	let serverAccessLevel = 'test';
 	if (titleID !== '0004013000003202') {
-		serverAccessLevel = device.get('server_access_level');
+		serverAccessLevel = nexUser.get('server_access_level');
 	}
 
 	const server = await database.getServerByTitleId(titleID, serverAccessLevel);

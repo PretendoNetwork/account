@@ -149,7 +149,6 @@ async function NASCMiddleware(request, response, next) {
 	}
 
 	request.nexUser = nexUser;
-	request.device = device;
 
 	return next();
 }
