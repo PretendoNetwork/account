@@ -18,7 +18,7 @@ router.post('/', async (request, response) => {
 
 	const server = await database.getServerByTitleId(titleID, serverAccessLevel);
 
-	if (!server) {
+	if (!server || !server.name || !server.ip || !server.port) {
 		return util.nascError(response, '110');
 	}
 
