@@ -96,11 +96,12 @@ async function NASCMiddleware(request, response, next) {
 			return util.nascError(response, '102');
 		}
 
-		const linkedPIDs = device.get('linked_pids');
+		if (pid) {
+			const linkedPIDs = device.get('linked_pids');
 
-		if (!linkedPIDs.includes(pid)) {
-			console.log('no linked')
-			return util.nascError(response, '102');
+			if (!linkedPIDs.includes(pid)) {
+				return util.nascError(response, '102');
+			}
 		}
 	}
 
