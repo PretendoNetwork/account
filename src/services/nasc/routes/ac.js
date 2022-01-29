@@ -18,13 +18,13 @@ router.post('/', async (request, response) => {
 
 	const server = await database.getServerByTitleId(titleID, serverAccessLevel);
 
-	if (!server || !server.name || !server.ip || !server.port) {
+	if (!server || !server.service_name || !server.ip || !server.port) {
 		return util.nascError(response, '110');
 	}
 
-	const { name, ip, port } = server;
+	const { service_name, ip, port } = server;
 
-	const cryptoPath = `${__dirname}/../../../../certs/nex/${name}`;
+	const cryptoPath = `${__dirname}/../../../../certs/nex/${service_name}`;
 
 	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
 	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
