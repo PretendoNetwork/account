@@ -12,7 +12,7 @@ const { http: { port } } = config;
 const app = express();
 
 const conntest = require('./services/conntest');
-const account = require('./services/account');
+const nnid = require('./services/nnid');
 const nasc = require('./services/nasc');
 const datastore = require('./services/datastore');
 const api = require('./services/api');
@@ -32,7 +32,7 @@ app.use(xmlparser);
 
 // import the servers into one
 app.use(conntest);
-app.use(account);
+app.use(nnid);
 app.use(nasc);
 app.use(datastore);
 app.use(api);
