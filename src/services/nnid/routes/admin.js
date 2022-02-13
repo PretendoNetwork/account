@@ -12,11 +12,10 @@ router.get('/mapped_ids', clientHeaderCheck, async (request, response) => {
 
 	let { input: inputList, input_type: inputType, output_type: outputType } = request.query;
 	inputList = inputList.split(',');
+	inputList = inputList.filter(input => input); // remove nulls
 
 	if (inputType === 'user_id') {
 		inputType = 'usernameLower';
-
-		inputList = inputList.filter(name => name);
 		inputList = inputList.map(name => name.toLowerCase());
 	}
 
@@ -24,11 +23,32 @@ router.get('/mapped_ids', clientHeaderCheck, async (request, response) => {
 		outputType = 'username';
 	}
 
-	let results = await PNID.where(inputType, inputList);
-	results = results.map(user => ({
-		in_id: user.get(inputType),
-		out_id: user.get(outputType) || ''
-	}));
+	// This is slower than PNID.where()
+	// but it ensures that each input
+	// ALWAYS has an output and filters
+	// out unwanted input/output types
+	const results = [];
+	const allowedTypes = ['pid', 'user_id'];
+	
+	for (const input of inputList) {
+		const result = {
+			in_id: input,
+			out_id: ''
+		};
+
+		if (allowedTypes.includes(request.query.input_type) && allowedTypes.includes(request.query.output_type)) {
+			const query = {};
+			query[inputType] = input;
+
+			const searchResult = await PNID.findOne(query);
+
+			if (searchResult) {
+				result.out_id = searchResult.get(outputType);
+			}
+		}
+
+		results.push(result);
+	}
 
 	response.send(xmlbuilder.create({
 		mapped_ids: {
