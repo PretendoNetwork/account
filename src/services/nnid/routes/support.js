@@ -1,14 +1,13 @@
 const router = require('express').Router();
 const dns = require('dns');
 const xmlbuilder = require('xmlbuilder');
-const clientHeaderCheck = require('../../../middleware/client-header');
 
 /**
  * [POST]
  * Replacement for: https://account.nintendo.net/v1/api/support/validate/email
  * Description: Verifies a provided email address is valid
  */
-router.post('/validate/email', clientHeaderCheck, async (request, response) => {
+router.post('/validate/email', async (request, response) => {
 	const { email } = request.body;
 
 	if (!email) {

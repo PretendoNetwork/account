@@ -2,6 +2,7 @@
 
 const express = require('express');
 const subdomain = require('express-subdomain');
+const clientHeaderCheck = require('../../middleware/client-header');
 const cemuMiddleware = require('../../middleware/cemu');
 const pnidMiddleware = require('../../middleware/pnid');
 const logger = require('../../../logger');
@@ -11,6 +12,7 @@ const routes = require('./routes');
 const nnid = express.Router();
 
 logger.info('[NNID] Importing middleware');
+nnid.use(clientHeaderCheck);
 nnid.use(cemuMiddleware);
 nnid.use(pnidMiddleware);
 

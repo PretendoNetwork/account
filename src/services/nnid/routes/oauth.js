@@ -2,7 +2,6 @@ const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const bcrypt = require('bcrypt');
 const fs = require('fs-extra');
-const clientHeaderCheck = require('../../../middleware/client-header');
 const database = require('../../../database');
 const util = require('../../../util');
 
@@ -11,7 +10,7 @@ const util = require('../../../util');
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
  * Description: Generates an access token for a user
  */
-router.post('/access_token/generate', clientHeaderCheck, async (request, response) => {
+router.post('/access_token/generate', async (request, response) => {
 	const { body } = request;
 	const { grant_type, user_id, password } = body;
 

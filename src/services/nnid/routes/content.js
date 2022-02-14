@@ -1,14 +1,13 @@
 const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const timezones = require('../timezones.json');
-const clientHeaderCheck = require('../../../middleware/client-header');
 
 /**
  * [GET]
  * Replacement for: https://account.nintendo.net/v1/api/content/agreements/TYPE/REGION/VERSION
  * Description: Sends the client requested agreement
  */
-router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, response) => {
+router.get('/agreements/:type/:region/:version', (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
@@ -125,7 +124,7 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
  * Replacement for: https://account.nintendo.net/v1/api/content/time_zones/COUNTRY/LANGUAGE
  * Description: Sends the client the requested timezones
  */
-router.get('/time_zones/:countryCode/:language', clientHeaderCheck, (request, response) => {
+router.get('/time_zones/:countryCode/:language', (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());

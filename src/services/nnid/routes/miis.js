@@ -1,14 +1,13 @@
 const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const { PNID } = require('../../../models/pnid');
-const clientHeaderCheck = require('../../../middleware/client-header');
 
 /**
  * [GET]
  * Replacement for: https://account.pretendo.cc/v1/api/miis
  * Description: Returns a list of NNID miis
  */
-router.get('/', clientHeaderCheck, async (request, response) => {
+router.get('/', async (request, response) => {
 
 	const { pids } = request.query;
 

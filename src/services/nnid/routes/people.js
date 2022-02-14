@@ -4,7 +4,6 @@ const moment = require('moment');
 const crypto = require('crypto');
 const { PNID } = require('../../../models/pnid');
 const { NEXAccount } = require('../../../models/nex-account');
-const clientHeaderCheck = require('../../../middleware/client-header');
 const deviceCertificateMiddleware = require('../../../middleware/device-certificate');
 const ratelimit = require('../../../middleware/ratelimit');
 const database = require('../../../database');
@@ -16,7 +15,7 @@ require('moment-timezone');
  * Replacement for: https://account.nintendo.net/v1/api/people/:USERNAME
  * Description: Checks if a username is in use
  */
-router.get('/:username', clientHeaderCheck, async (request, response) => {
+router.get('/:username', async (request, response) => {
 	const { username } = request.params;
 
 	const userExists = await database.doesUserExist(username);
@@ -43,7 +42,7 @@ router.get('/:username', clientHeaderCheck, async (request, response) => {
  * Replacement for: https://account.nintendo.net/v1/api/people
  * Description: Registers a new NNID
  */
-router.post('/', clientHeaderCheck, ratelimit, deviceCertificateMiddleware, async (request, response) => {
+router.post('/', ratelimit, deviceCertificateMiddleware, async (request, response) => {
 	if (!request.certificate.valid) {
 		// TODO: Change this to a different error
 		response.status(400);
@@ -167,7 +166,7 @@ router.post('/', clientHeaderCheck, ratelimit, deviceCertificateMiddleware, asyn
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/profile
  * Description: Gets a users profile
  */
-router.get('/@me/profile', clientHeaderCheck, async (request, response) => {
+router.get('/@me/profile', async (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
@@ -187,7 +186,7 @@ router.get('/@me/profile', clientHeaderCheck, async (request, response) => {
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices
  * Description: Gets user profile, seems to be the same as https://account.nintendo.net/v1/api/people/@me/profile
  */
-router.post('/@me/devices', clientHeaderCheck, async (request, response) => {
+router.post('/@me/devices', async (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
@@ -210,7 +209,7 @@ router.post('/@me/devices', clientHeaderCheck, async (request, response) => {
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices
  * Description: Returns only user devices
  */
-router.get('/@me/devices', clientHeaderCheck, async (request, response) => {
+router.get('/@me/devices', async (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
@@ -243,7 +242,7 @@ router.get('/@me/devices', clientHeaderCheck, async (request, response) => {
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices/owner
  * Description: Gets user profile, seems to be the same as https://account.nintendo.net/v1/api/people/@me/profile
  */
-router.get('/@me/devices/owner', clientHeaderCheck, async (request, response) => {
+router.get('/@me/devices/owner', async (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', moment().add(5, 'h'));
@@ -262,7 +261,7 @@ router.get('/@me/devices/owner', clientHeaderCheck, async (request, response) =>
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices/status
  * Description: Unknown use
  */
-router.get('/@me/devices/status', clientHeaderCheck, async (request, response) => {
+router.get('/@me/devices/status', async (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', moment().add(5, 'h'));
@@ -278,7 +277,7 @@ router.get('/@me/devices/status', clientHeaderCheck, async (request, response) =
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/miis/@primary
  * Description: Updates a users Mii
  */
-router.put('/@me/miis/@primary', clientHeaderCheck, async (request, response) => {
+router.put('/@me/miis/@primary', async (request, response) => {
 	const { pnid } = request;
 
 	const mii = request.body.get('mii');
@@ -295,7 +294,7 @@ router.put('/@me/miis/@primary', clientHeaderCheck, async (request, response) =>
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices/@current/inactivate
  * Description: Deactivates a user from a console
  */
-router.put('/@me/devices/@current/inactivate', clientHeaderCheck, async (request, response) => {
+router.put('/@me/devices/@current/inactivate', async (request, response) => {
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
 
@@ -324,7 +323,34 @@ router.put('/@me/devices/@current/inactivate', clientHeaderCheck, async (request
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/deletion
  * Description: Deletes a NNID
  */
-router.put('/@me/deletion', clientHeaderCheck, async (request, response) => {
+router.put('/@me/deletion', async (request, response) => {
+	const { pnid } = request;
+
+	if (!pnid) {
+		response.status(400);
+
+		return response.end(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		}).end());
+	}
+
+	await PNID.deleteOne({ pid: pnid.get('pid') });
+
+	response.send('');
+});
+
+/**
+ * [PUT]
+ * Replacement for: https://account.nintendo.net/v1/api/people/@me/
+ * Description: Updates a PNIDs account details
+ */
+router.put('/@me', async (request, response) => {
 	const { pnid } = request;
 
 	if (!pnid) {
