@@ -11,6 +11,11 @@ const database = require('../../../database');
 const mailer = require('../../../mailer');
 require('moment-timezone');
 
+/**
+ * [GET]
+ * Replacement for: https://account.nintendo.net/v1/api/people/:USERNAME
+ * Description: Checks if a username is in use
+ */
 router.get('/:username', clientHeaderCheck, async (request, response) => {
 	const { username } = request.params;
 
@@ -33,6 +38,11 @@ router.get('/:username', clientHeaderCheck, async (request, response) => {
 	response.end();
 });
 
+/**
+ * [POST]
+ * Replacement for: https://account.nintendo.net/v1/api/people
+ * Description: Registers a new NNID
+ */
 router.post('/', clientHeaderCheck, ratelimit, deviceCertificateMiddleware, async (request, response) => {
 	if (!request.certificate.valid) {
 		// TODO: Change this to a different error

@@ -6,7 +6,7 @@ const clientHeaderCheck = require('../../../middleware/client-header');
 /**
  * [GET]
  * Replacement for: https://account.nintendo.net/v1/api/admin/mapped_ids
- * Description: Maps given input to expected output
+ * Description: Maps between NNID usernames and PIDs
  */
 router.get('/mapped_ids', clientHeaderCheck, async (request, response) => {
 
@@ -29,7 +29,7 @@ router.get('/mapped_ids', clientHeaderCheck, async (request, response) => {
 	// out unwanted input/output types
 	const results = [];
 	const allowedTypes = ['pid', 'user_id'];
-	
+
 	for (const input of inputList) {
 		const result = {
 			in_id: input,

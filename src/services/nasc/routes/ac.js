@@ -3,6 +3,11 @@ const router = require('express').Router();
 const util = require('../../../util');
 const database = require('../../../database');
 
+/**
+ * [POST]
+ * Replacement for: https://nasc.nintendowifi.net/ac
+ * Description: Gets a NEX server address and token
+ */
 router.post('/', async (request, response) => {
 	const requestParams = request.body;
 	const titleID = util.nintendoBase64Decode(requestParams.titleid).toString();
