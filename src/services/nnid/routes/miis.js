@@ -19,51 +19,51 @@ router.get('/', async (request, response) => {
 
 		const miiImages = [
 			{
-				cached_url: `http://mii-images.cdn.pretendo.cc/${user.pid}/normal_face.png`,
+				cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/normal_face.png`,
 				id: mii.id,
-				url: `http://mii-images.cdn.pretendo.cc/${user.pid}/normal_face.png`,
+				url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/normal_face.png`,
 				type: 'standard'
 			},
 			{
-				cached_url: `http://mii-images.cdn.pretendo.cc/${user.pid}/frustrated.png`,
+				cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/frustrated.png`,
 				id: mii.id,
-				url: `http://mii-images.cdn.pretendo.cc/${user.pid}/frustrated.png`,
+				url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/frustrated.png`,
 				type: 'frustrated_face'
 			},
 			{
-				cached_url: `http://mii-images.cdn.pretendo.cc/${user.pid}/smile_open_mouth.png`,
+				cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/smile_open_mouth.png`,
 				id: mii.id,
-				url: `http://mii-images.cdn.pretendo.cc/${user.pid}/smile_open_mouth.png`,
+				url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/smile_open_mouth.png`,
 				type: 'happy_face'
 			},
 			{
-				cached_url: `http://mii-images.cdn.pretendo.cc/${user.pid}/wink_left.png`,
+				cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/wink_left.png`,
 				id: mii.id,
-				url: `http://mii-images.cdn.pretendo.cc/${user.pid}/wink_left.png`,
+				url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/wink_left.png`,
 				type: 'like_face'
 			},
 			{
-				cached_url: `http://mii-images.cdn.pretendo.cc/${user.pid}/normal_face.png`,
+				cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/normal_face.png`,
 				id: mii.id,
-				url: `http://mii-images.cdn.pretendo.cc/${user.pid}/normal_face.png`,
+				url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/normal_face.png`,
 				type: 'normal_face'
 			},
 			{
-				cached_url: `http://mii-images.cdn.pretendo.cc/${user.pid}/sorrow.png`,
+				cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/sorrow.png`,
 				id: mii.id,
-				url: `http://mii-images.cdn.pretendo.cc/${user.pid}/sorrow.png`,
+				url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/sorrow.png`,
 				type: 'puzzled_face'
 			},
 			{
-				cached_url: `http://mii-images.cdn.pretendo.cc/${user.pid}/surprised_open_mouth.png`,
+				cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/surprised_open_mouth.png`,
 				id: mii.id,
-				url: `http://mii-images.cdn.pretendo.cc/${user.pid}/surprised_open_mouth.png`,
+				url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/surprised_open_mouth.png`,
 				type: 'surprised_face'
 			},
 			{
-				cached_url: `http://mii-images.cdn.pretendo.cc/${user.pid}/body.png`,
+				cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/body.png`,
 				id: mii.id,
-				url: `http://mii-images.cdn.pretendo.cc/${user.pid}/body.png`,
+				url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/body.png`,
 				type: 'whole_body'
 			}
 		];
