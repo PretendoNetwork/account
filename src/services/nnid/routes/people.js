@@ -374,19 +374,14 @@ router.put('/@me', async (request, response) => {
 	const marketingFlag = person.marketing_flag ? person.marketing_flag === 'Y' : pnid.get('flags.marketing');
 	const offDeviceFlag = person.off_device_flag ? person.off_device_flag === 'Y' : pnid.get('flags.off_device');
 
-	pnid.update({
-		gender,
-		region,
-		timezone: {
-			name: timezoneName,
-			offset: (moment.tz(timezoneName).utcOffset() * 60)
-		},
-		flags: {
-			active: true,
-			marketing: marketingFlag,
-			off_device: offDeviceFlag
-		}
-	}).exec();
+	pnid.gender = gender;
+	pnid.region = region;
+	pnid.timezone.name = timezoneName;
+	pnid.timezone.offset = (moment.tz(timezoneName).utcOffset() * 60);
+	pnid.timezone.marketing = marketingFlag;
+	pnid.timezone.off_device = offDeviceFlag;
+
+	await pnid.save();
 
 	response.send('');
 });
@@ -455,18 +450,16 @@ router.put('/@me/emails/@primary', async (request, response) => {
 		}).end());
 	}
 
-	pnid.update({
-		email: {
-			address: email.address,
-			reachable: false,
-			validated: false,
-			id: crypto.randomBytes(4).readUInt32LE()
-		}
-	}).exec();
+	pnid.email.address = email.address;
+	pnid.email.reachable = false;
+	pnid.email.validated = false;
+	pnid.email.id = crypto.randomBytes(4).readUInt32LE();
 
 	// TODO: Change these, they are slow
 	await pnid.generateEmailValidationCode();
 	await pnid.generateEmailValidationToken();
+
+	await pnid.save();
 
 	await mailer.send(
 		email.address,
