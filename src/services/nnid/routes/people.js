@@ -385,8 +385,102 @@ router.put('/@me', async (request, response) => {
 			active: true,
 			marketing: marketingFlag,
 			off_device: offDeviceFlag
-		},
+		}
 	}).exec();
+
+	response.send('');
+});
+
+/**
+ * [GET]
+ * Replacement for: https://account.nintendo.net/v1/api/people/@me/emails/
+ * Description: Gets a list (why?) of PNID emails
+ */
+router.get('/@me/emails', async (request, response) => {
+	const { pnid } = request;
+
+	if (!pnid) {
+		response.status(400);
+
+		return response.end(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		}).end());
+	}
+
+	response.send(xmlbuilder.create({
+		emails: [
+			{
+				email: {
+					address: pnid.get('email.address'),
+					id: pnid.get('email.id'),
+					parent: pnid.get('email.parent') ? 'Y' : 'N',
+					primary: pnid.get('email.primary') ? 'Y' : 'N',
+					reachable: pnid.get('email.reachable') ? 'Y' : 'N',
+					type: 'DEFAULT', // what is this?
+					updated_by: 'USER', // need to actually update this
+					validated: pnid.get('email.validated') ? 'Y' : 'N',
+					validated_date: pnid.get('email.validated_date'),
+				}
+			}
+		]
+	}).end());
+});
+
+/**
+ * [PUT]
+ * Replacement for: https://account.nintendo.net/v1/api/people/@me/emails/@primary
+ * Description: Updates a users email address
+ */
+router.put('/@me/emails/@primary', async (request, response) => {
+	const { pnid } = request;
+	const { email } = request.body;
+
+	if (!pnid) {
+		response.status(400);
+
+		return response.end(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		}).end());
+	}
+
+	pnid.update({
+		email: {
+			address: email.address,
+			reachable: false,
+			validated: false,
+			id: crypto.randomBytes(4).readUInt32LE()
+		}
+	}).exec();
+
+	// TODO: Change these, they are slow
+	await pnid.generateEmailValidationCode();
+	await pnid.generateEmailValidationToken();
+
+	await mailer.send(
+		email.address,
+		'[Pretendo Network] Please confirm your e-mail address',
+		`Hello,
+		
+		Your Pretendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.
+		
+		https://account.pretendo.cc/account/email-confirmation?token=` + pnid.get('identification.email_token') + `
+		
+		If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.
+		
+		&lt;&lt;Confirmation code: ` + pnid.get('identification.email_code') + '&gt;&gt;'
+	);
 
 	response.send('');
 });
