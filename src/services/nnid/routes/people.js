@@ -2,6 +2,7 @@ const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const moment = require('moment');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const { PNID } = require('../../../models/pnid');
 const { NEXAccount } = require('../../../models/nex-account');
 const deviceCertificateMiddleware = require('../../../middleware/device-certificate');
@@ -373,6 +374,13 @@ router.put('/@me', async (request, response) => {
 	const timezoneName = person.tz_name ? person.tz_name : pnid.get('timezone.name');
 	const marketingFlag = person.marketing_flag ? person.marketing_flag === 'Y' : pnid.get('flags.marketing');
 	const offDeviceFlag = person.off_device_flag ? person.off_device_flag === 'Y' : pnid.get('flags.off_device');
+
+	if (person.password) {
+		const primaryHash = util.nintendoPasswordHash(person.password, pnid.get('pid'));
+		const hashedPassword = bcrypt.hashSync(primaryHash, 10);
+
+		pnid.password = hashedPassword;
+	}
 
 	pnid.gender = gender;
 	pnid.region = region;
