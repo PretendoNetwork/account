@@ -9,6 +9,7 @@ const deviceCertificateMiddleware = require('../../../middleware/device-certific
 const ratelimit = require('../../../middleware/ratelimit');
 const database = require('../../../database');
 const mailer = require('../../../mailer');
+const util = require('../../../util');
 require('moment-timezone');
 
 /**
