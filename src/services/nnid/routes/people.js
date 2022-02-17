@@ -2,14 +2,12 @@ const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const moment = require('moment');
 const crypto = require('crypto');
-const bcrypt = require('bcrypt');
 const { PNID } = require('../../../models/pnid');
 const { NEXAccount } = require('../../../models/nex-account');
 const deviceCertificateMiddleware = require('../../../middleware/device-certificate');
 const ratelimit = require('../../../middleware/ratelimit');
 const database = require('../../../database');
 const mailer = require('../../../mailer');
-const util = require('../../../util');
 require('moment-timezone');
 
 /**
@@ -377,10 +375,7 @@ router.put('/@me', async (request, response) => {
 	const offDeviceFlag = person.get('off_device_flag') ? person.get('off_device_flag') === 'Y' : pnid.get('flags.off_device');
 
 	if (person.get('password')) {
-		const primaryHash = util.nintendoPasswordHash(person.get('password'), pnid.get('pid'));
-		const hashedPassword = bcrypt.hashSync(primaryHash, 10);
-
-		pnid.password = hashedPassword;
+		pnid.password = person.get('password'); // this gets hashed in the pre-save function, don't worry
 	}
 
 	pnid.gender = gender;
