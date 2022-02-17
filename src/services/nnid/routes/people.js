@@ -353,7 +353,7 @@ router.put('/@me/deletion', async (request, response) => {
  */
 router.put('/@me', async (request, response) => {
 	const { pnid } = request;
-	const { person } = request.body;
+	const person = request.body.get('person');
 
 	if (!pnid) {
 		response.status(400);
@@ -369,14 +369,14 @@ router.put('/@me', async (request, response) => {
 		}).end());
 	}
 
-	const gender = person.gender ? person.gender : pnid.get('gender');
-	const region = person.region ? person.region : pnid.get('region');
-	const timezoneName = person.tz_name ? person.tz_name : pnid.get('timezone.name');
-	const marketingFlag = person.marketing_flag ? person.marketing_flag === 'Y' : pnid.get('flags.marketing');
-	const offDeviceFlag = person.off_device_flag ? person.off_device_flag === 'Y' : pnid.get('flags.off_device');
+	const gender = person.get('gender') ? person.get('gender') : pnid.get('gender');
+	const region = person.get('region') ? person.get('region') : pnid.get('region');
+	const timezoneName = person.get('tz_name') ? person.get('tz_name') : pnid.get('timezone.name');
+	const marketingFlag = person.get('marketing_flag') ? person.get('marketing_flag') === 'Y' : pnid.get('flags.marketing');
+	const offDeviceFlag = person.get('off_device_flag') ? person.get('off_device_flag') === 'Y' : pnid.get('flags.off_device');
 
-	if (person.password) {
-		const primaryHash = util.nintendoPasswordHash(person.password, pnid.get('pid'));
+	if (person.get('password')) {
+		const primaryHash = util.nintendoPasswordHash(person.get('password'), pnid.get('pid'));
 		const hashedPassword = bcrypt.hashSync(primaryHash, 10);
 
 		pnid.password = hashedPassword;
@@ -442,7 +442,7 @@ router.get('/@me/emails', async (request, response) => {
  */
 router.put('/@me/emails/@primary', async (request, response) => {
 	const { pnid } = request;
-	const { email } = request.body;
+	const email = request.body.get('email');
 
 	if (!pnid) {
 		response.status(400);
@@ -458,7 +458,7 @@ router.put('/@me/emails/@primary', async (request, response) => {
 		}).end());
 	}
 
-	pnid.email.address = email.address;
+	pnid.email.address = email.get('address');
 	pnid.email.reachable = false;
 	pnid.email.validated = false;
 	pnid.email.id = crypto.randomBytes(4).readUInt32LE();
@@ -470,7 +470,7 @@ router.put('/@me/emails/@primary', async (request, response) => {
 	await pnid.save();
 
 	await mailer.send(
-		email.address,
+		email.get('address'),
 		'[Pretendo Network] Please confirm your e-mail address',
 		`Hello,
 		
