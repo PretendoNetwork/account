@@ -352,6 +352,7 @@ router.put('/@me/deletion', async (request, response) => {
  */
 router.put('/@me', async (request, response) => {
 	const { pnid } = request;
+	const { person } = request.body;
 
 	if (!pnid) {
 		response.status(400);
@@ -367,7 +368,25 @@ router.put('/@me', async (request, response) => {
 		}).end());
 	}
 
-	await PNID.deleteOne({ pid: pnid.get('pid') });
+	const gender = person.gender ? person.gender : pnid.get('gender');
+	const region = person.region ? person.region : pnid.get('region');
+	const timezoneName = person.tz_name ? person.tz_name : pnid.get('timezone.name');
+	const marketingFlag = person.marketing_flag ? person.marketing_flag === 'Y' : pnid.get('flags.marketing');
+	const offDeviceFlag = person.off_device_flag ? person.off_device_flag === 'Y' : pnid.get('flags.off_device');
+
+	pnid.update({
+		gender,
+		region,
+		timezone: {
+			name: timezoneName,
+			offset: (moment.tz(timezoneName).utcOffset() * 60)
+		},
+		flags: {
+			active: true,
+			marketing: marketingFlag,
+			off_device: offDeviceFlag
+		},
+	}).exec();
 
 	response.send('');
 });
