@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const NodeRSA = require('node-rsa');
 const fs = require('fs-extra');
 const aws = require('aws-sdk');
-const config = require('./config.json');
+const config = require('../config.json');
 
 const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
 const s3 = new aws.S3({

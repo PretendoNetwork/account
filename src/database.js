@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const util = require('./util');
 const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
-const { mongoose: mongooseConfig } = require('./config.json');
+const { mongoose: mongooseConfig } = require('../config.json');
 const { uri, database, options } = mongooseConfig;
 
 let connection;
