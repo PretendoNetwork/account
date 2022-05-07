@@ -6,7 +6,7 @@ const xmlparser = require('./middleware/xml-parser');
 const database = require('./database');
 const util = require('./util');
 const logger = require('../logger');
-const config = require('./config.json');
+const config = require('../config.json');
 
 const { http: { port } } = config;
 const app = express();
