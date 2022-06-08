@@ -224,14 +224,14 @@ async function uploadCDNAsset(bucket, key, data, acl) {
 	await s3.putObject(awsPutParams).promise();
 }
 
-function nascError(response, errorCode) {
+function nascError(errorCode) {
 	const params = new URLSearchParams({
 		retry: nintendoBase64Encode('1'),
 		returncd: errorCode == 'null' ? errorCode : nintendoBase64Encode(errorCode),
 		datetime: nintendoBase64Encode(Date.now().toString()),
 	});
 
-	return response.status(200).send(params.toString());
+	return params;
 }
 
 module.exports = {

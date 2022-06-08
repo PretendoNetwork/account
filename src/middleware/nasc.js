@@ -14,7 +14,7 @@ async function NASCMiddleware(request, response, next) {
 		!requestParams.titleid ||
 		!requestParams.servertype
 	) {
-		return util.nascError(response, 'null'); // This is what Nintendo sends
+		return response.status(200).send(util.nascError('null')); // This is what Nintendo sends
 	}
 
 	const action = util.nintendoBase64Decode(requestParams.action).toString();
@@ -43,18 +43,18 @@ async function NASCMiddleware(request, response, next) {
 		password = util.nintendoBase64Decode(requestParams.passwd).toString();
 	}
 
-	if (action !== 'LOGIN') {
-		return util.nascError(response, 'null'); // This is what Nintendo sends
+	if (action !== 'LOGIN' && action !== 'SVCLOC') {
+		return response.status(200).send(util.nascError('null')); // This is what Nintendo sends
 	}
 
 	const cert = new NintendoCertificate(fcdcert);
 	
 	if (!cert.valid) {
-		return util.nascError(response, '121');
+		return response.status(200).send(util.nascError('121'));
 	}
 
 	if (!validNintendoMACAddress(macAddress)) {
-		return util.nascError(response, 'null');
+		return response.status(200).send(util.nascError('null'));
 	}
 
 	let model;
@@ -80,7 +80,7 @@ async function NASCMiddleware(request, response, next) {
 	}
 
 	if (!model) {
-		return util.nascError(response, 'null');
+		return response.status(200).send(util.nascError('null'));
 	}
 
 	let device = await Device.findOne({
@@ -93,14 +93,14 @@ async function NASCMiddleware(request, response, next) {
 
 	if (device) {
 		if (device.get('access_level') < 0) {
-			return util.nascError(response, '102');
+			return response.status(200).send(util.nascError('102'));
 		}
 
 		if (pid) {
 			const linkedPIDs = device.get('linked_pids');
 
 			if (!linkedPIDs.includes(pid)) {
-				return util.nascError(response, '102');
+				return response.status(200).send(util.nascError('102'));
 			}
 		}
 	}
@@ -145,7 +145,7 @@ async function NASCMiddleware(request, response, next) {
 	const nexUser = await NEXAccount.findOne({ pid });
 
 	if (!nexUser || nexUser.get('access_level') < 0) {
-		return util.nascError(response, '102');
+		return response.status(200).send(util.nascError('102'));
 	}
 
 	request.nexUser = nexUser;

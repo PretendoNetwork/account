@@ -1,7 +1,9 @@
 const fs = require('fs');
-const router = require('express').Router();
+const express = require('express');
 const util = require('../../../util');
 const database = require('../../../database');
+
+const router = express.Router();
 
 /**
  * [POST]
@@ -9,6 +11,28 @@ const database = require('../../../database');
  * Description: Gets a NEX server address and token
  */
 router.post('/', async (request, response) => {
+	const requestParams = request.body;
+	const action = util.nintendoBase64Decode(requestParams.action).toString();
+	let responseData;
+
+	switch (action) {
+		case 'LOGIN':
+			responseData = await processLoginRequest(request);
+			break;
+		case 'SVCLOC':
+			responseData = await processServiceTokenRequest(request);
+			break;
+	}
+
+	response.status(200).send(responseData.toString());
+});
+
+
+/**
+ * 
+ * @param {express.Request} request
+ */
+async function processLoginRequest(request) {
 	const requestParams = request.body;
 	const titleID = util.nintendoBase64Decode(requestParams.titleid).toString();
 	const { nexUser } = request;
@@ -24,7 +48,7 @@ router.post('/', async (request, response) => {
 	const server = await database.getServerByTitleId(titleID, serverAccessLevel);
 
 	if (!server || !server.service_name || !server.ip || !server.port) {
-		return util.nascError(response, '110');
+		return util.nascError('110');
 	}
 
 	const { service_name, ip, port } = server;
@@ -59,7 +83,24 @@ router.post('/', async (request, response) => {
 		datetime: util.nintendoBase64Encode(Date.now().toString()),
 	});
 
-	response.status(200).send(params.toString());
-});
+	return params;
+}
+
+/**
+ * 
+ * @param {express.Request} request
+ */
+async function processServiceTokenRequest(request) {
+	const params = new URLSearchParams({
+		retry: util.nintendoBase64Encode('0'),
+		returncd: util.nintendoBase64Encode('007'),
+		servicetoken: util.nintendoBase64Encode(Buffer.alloc(64).toString()), // hard coded for now
+		statusdata: util.nintendoBase64Encode('Y'),
+		svchost: util.nintendoBase64Encode('n/a'),
+		datetime: util.nintendoBase64Encode(Date.now().toString()),
+	});
+
+	return params;
+}
 
 module.exports = router;
