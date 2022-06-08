@@ -56,7 +56,7 @@ router.post('/access_token/generate', async (request, response) => {
 				code: '0106',
 				message: 'Invalid account ID or password'
 			}
-		}).end());
+		}).end({ pretty: true }));
 	}
 
 	if (pnid.get('access_level') < 0) {

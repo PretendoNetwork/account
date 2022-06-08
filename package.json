@@ -34,7 +34,7 @@
     "fs-extra": "^8.1.0",
     "got": "^11.8.2",
     "hcaptcha": "^0.1.0",
-    "image-pixels": "^2.2.2",
+    "image-pixels": "^1.1.1",
     "kaitai-struct": "^0.9.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.27",
