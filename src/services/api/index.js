@@ -3,7 +3,7 @@
 const express = require('express');
 const subdomain = require('express-subdomain');
 const cors = require('cors');
-const pnidMiddleware = require('../../middleware/pnid');
+const APIMiddleware = require('../../middleware/api');
 const logger = require('../../../logger');
 const routes = require('./routes');
 
@@ -11,7 +11,7 @@ const routes = require('./routes');
 const api = express.Router();
 
 logger.info('[USER API] Importing middleware');
-api.use(pnidMiddleware);
+api.use(APIMiddleware);
 api.use(cors());
 api.options('*', cors());
 
