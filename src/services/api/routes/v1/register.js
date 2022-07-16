@@ -296,9 +296,7 @@ router.post('/', async (request, response) => {
 	// NN with a NNID will always use the NNID PID
 	// even if the provided NEX PID is different
 	// To fix this we make them the same PID
-	await NEXAccount.updateOne({
-		pid: newNEXAccount.get('pid')
-	}, {
+	await NEXAccount.updateOne({ pid: newNEXAccount.get('pid') }, {
 		owning_pid: newNEXAccount.get('pid')
 	});
 

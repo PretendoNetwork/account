@@ -177,7 +177,6 @@ function getServerByTitleId(titleId, accessMode) {
 }
 
 async function addUserConnection(pnid, data, type) {
-	// Add more connections later?
 	if (type === 'discord') {
 		return await addUserConnectionDiscord(pnid, data);
 	}
@@ -192,16 +191,11 @@ async function addUserConnectionDiscord(pnid, data) {
 		};
 	}
 
-	// Support older documents
-	await PNID.updateOne({
-		pid: pnid.get('pid')
-	}, {
+	await PNID.updateOne({ pid: pnid.get('pid') }, {
 		$set: {
-			connections: {
-				discord: data
-			}
+			'connections.discord': data
 		}
-	}, { upsert: true });
+	});
 
 	return {
 		app: 'api',
@@ -217,20 +211,13 @@ async function removeUserConnection(pnid, type) {
 }
 
 async function removeUserConnectionDiscord(pnid) {
-	// Support older documents
-	await PNID.updateOne({
-		pid: pnid.get('pid')
-	}, {
+	await PNID.updateOne({ pid: pnid.get('pid') }, {
 		$set: {
-			connections: {
-				discord: {
-					id: '',
-					access_token: '',
-					refresh_token: ''
-				}
-			}
+			'connections.discord.id': '',
+			'connections.discord.access_token': '',
+			'connections.discord.refresh_token': ''
 		}
-	}, { upsert: true });
+	});
 
 	return {
 		app: 'api',
