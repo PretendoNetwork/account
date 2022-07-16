@@ -100,9 +100,7 @@ const PNIDSchema = new Schema({
 	},
 	connections: {
 		discord: {
-			id: String,
-			access_token: String,
-			refresh_token: String,
+			id: String
 		}
 	}
 });

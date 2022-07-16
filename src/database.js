@@ -183,7 +183,7 @@ async function addUserConnection(pnid, data, type) {
 }
 
 async function addUserConnectionDiscord(pnid, data) {
-	if (!data.id || !data.access_token || !data.refresh_token) {
+	if (!data.id) {
 		return {
 			app: 'api',
 			status: 400,
@@ -213,9 +213,7 @@ async function removeUserConnection(pnid, type) {
 async function removeUserConnectionDiscord(pnid) {
 	await PNID.updateOne({ pid: pnid.get('pid') }, {
 		$set: {
-			'connections.discord.id': '',
-			'connections.discord.access_token': '',
-			'connections.discord.refresh_token': ''
+			'connections.discord.id': ''
 		}
 	});
 

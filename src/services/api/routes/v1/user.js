@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { PNID } = require('./models/pnid');
+const { PNID } = require('../../../../models/pnid');
 
 /**
  * [GET]
@@ -43,9 +43,7 @@ router.get('/', async (request, response) => {
 		},
 		connections: {
 			discord: {
-				id: pnid.get('connections.discord.id'),
-				access_token: pnid.get('connections.discord.access_token'),
-				refresh_token: pnid.get('connections.discord.refresh_token'),
+				id: pnid.get('connections.discord.id')
 			}
 		}
 	});
@@ -99,9 +97,7 @@ router.post('/', async (request, response) => {
 		},
 		connections: {
 			discord: {
-				id: pnid.get('connections.discord.id'),
-				access_token: pnid.get('connections.discord.access_token'),
-				refresh_token: pnid.get('connections.discord.refresh_token'),
+				id: pnid.get('connections.discord.id')
 			}
 		}
 	});
