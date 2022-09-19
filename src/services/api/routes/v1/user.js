@@ -55,7 +55,7 @@ router.get('/', async (request, response) => {
  * Description: Updates PNID certain details about the current user
  */
 router.post('/', async (request, response) => {
-	const { pnid } = request;
+	const { body, pnid } = request;
 
 	if (!pnid) {
 		return response.status(400).json({
@@ -63,6 +63,14 @@ router.post('/', async (request, response) => {
 			status: 400,
 			error: 'Invalid or missing access token'
 		});
+	}
+
+	if (body.mii && typeof body.mii === 'object' && body.mii.name && body.mii.primary && body.mii.data) {
+		const name = body.mii.name;
+		const primary = body.mii.primary;
+		const data = body.mii.data;
+
+		await pnid.updateMii({ name, primary, data });
 	}
 
 	const { pid } = pnid;
