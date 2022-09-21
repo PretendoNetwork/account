@@ -6,6 +6,7 @@ const imagePixels = require('image-pixels');
 const TGA = require('tga');
 const got = require('got');
 const util = require('../util');
+const config = require('../../config.json');
 const { DeviceSchema } = require('./device');
 const Mii = require('../mii');
 

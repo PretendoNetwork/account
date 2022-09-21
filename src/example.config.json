@@ -18,6 +18,8 @@
     },
     "aws": {
         "spaces": {
+            "url": "nyc3.digitaloceanspaces.com",
+            "bucket": "pn-cdn",
             "key": "ACCESS_KEY",
             "secret": "ACCESS_SECRET"
         }

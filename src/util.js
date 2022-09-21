@@ -4,7 +4,7 @@ const fs = require('fs-extra');
 const aws = require('aws-sdk');
 const config = require('../config.json');
 
-const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
+const spacesEndpoint = new aws.Endpoint(config.aws.spaces.url);
 const s3 = new aws.S3({
 	endpoint: spacesEndpoint,
 	accessKeyId: config.aws.spaces.key,
