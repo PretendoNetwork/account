@@ -3,8 +3,8 @@ const bcrypt = require('bcrypt');
 const util = require('./util');
 const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
-const { mongoose: mongooseConfig } = require('../config.json');
-const { uri, database, options } = mongooseConfig;
+const config = require('../config.json');
+const { uri, database, options } = config.mongoose;
 
 let connection;
 
@@ -154,9 +154,9 @@ async function getUserProfileJSONByPID(pid) {
 				mii_image: {
 					// Images MUST be loaded over HTTPS or console ignores them
 					// Bunny CDN is the only CDN which seems to support TLS 1.0/1.1 (required)
-					cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
+					cached_url: `${config.cdn_base}/mii/${user.pid}/standard.tga`,
 					id: user.get('mii.image_id'),
-					url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
+					url: `${config.cdn_base}/mii/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},
