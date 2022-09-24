@@ -54,6 +54,8 @@ async function doesUserExist(username) {
 async function getUserBasic(token) {
 	verifyConnected();
 
+	// Wii U sends Basic auth as `username password`, where the password may not have spaces
+	// This is not to spec, but that is the consoles fault not ours
 	const [username, password] = Buffer.from(token, 'base64').toString().split(' ');
 	const user = await getUserByUsername(username);
 
