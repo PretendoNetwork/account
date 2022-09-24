@@ -82,7 +82,7 @@ router.post('/', async (request, response) => {
 
 	const cryptoPath = `${__dirname}/../../../../../certs/access`;
 
-	if (!fs.pathExistsSync(cryptoPath)) {
+	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
 		return response.status(500).json({
 			app: 'api',
@@ -91,12 +91,21 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
+	let publicKey = cache.getServicePublicKey('account');
+	if (publicKey === null) {
+		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
+		await cache.setServicePublicKey('account', publicKey);
+	}
+
+	let secretKey = cache.getServiceSecretKey('account');
+	if (secretKey === null) {
+		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
+		await cache.setServiceSecretKey('account', secretKey);
+	}
 
 	const cryptoOptions = {
 		public_key: publicKey,
-		hmac_secret: hmacSecret
+		hmac_secret: secretKey
 	};
 
 	const accessTokenOptions = {
