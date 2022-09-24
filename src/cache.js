@@ -8,120 +8,86 @@ async function connect() {
 	await client.connect();
 }
 
+async function setCachedFile(type, name, fileName, value) {
+	await client.set(`${type}:${name}:${fileName}`, value);
+}
+
+async function getCachedFile(type, name, fileName) {
+	const cachedFile = await client.get(`${type}:${name}:${fileName}`);
+
+	if (cachedFile !== null) {
+		return Buffer.from(cachedFile);
+	} else {
+		return cachedFile;
+	}
+}
+
 // NEX server cache functions
 
 async function getNEXPublicCert(name) {
-	const publicCert = await client.get(`nex:${name}:public_cert`);
-
-	if (publicCert !== null) {
-		return Buffer.from(publicCert);
-	} else {
-		return publicCert;
-	}
+	return await getCachedFile(`nex:${name}:public_cert`);
 }
 
 async function getNEXPrivateCert(name) {
-	const privateCert = await client.get(`nex:${name}:private_cert`);
-
-	if (privateCert !== null) {
-		return Buffer.from(privateCert);
-	} else {
-		return privateCert;
-	}
+	return await getCachedFile(`nex:${name}:private_cert`);
 }
 
 async function getNEXSecretKey(name) {
-	const secretKey = await client.get(`nex:${name}:secret_key`);
-
-	if (secretKey !== null) {
-		return Buffer.from(secretKey);
-	} else {
-		return secretKey;
-	}
+	return await getCachedFile(`nex:${name}:secret_key`);
 }
 
 async function getNEXAESKey(name) {
-	const aesKey = await client.get(`nex:${name}:aes_key`);
-
-	if (aesKey !== null) {
-		return Buffer.from(aesKey);
-	} else {
-		return aesKey;
-	}
+	return await getCachedFile(`nex:${name}:aes_key`);
 }
 
 async function setNEXPublicCert(name, value) {
-	await client.set(`nex:${name}:public_cert`, value);
+	await setCachedFile('nex', name, 'public_cert', value);
 }
 
 async function setNEXPrivateCert(name, value) {
-	await client.set(`nex:${name}:private_cert`, value);
+	await setCachedFile('nex', name, 'private_cert', value);
 }
 
 async function setNEXSecretKey(name, value) {
-	await client.set(`nex:${name}:secret_key`, value);
+	await setCachedFile('nex', name, 'secret_key', value);
 }
 
 async function setNEXAESKey(name, value) {
-	await client.set(`nex:${name}:aes_key`, value);
+	await setCachedFile('nex', name, 'aes_key', value);
 }
 
 // 3rd party service cache functions
 
 async function getServicePublicCert(name) {
-	const publicCert = await client.get(`service:${name}:public_cert`);
-
-	if (publicCert !== null) {
-		return Buffer.from(publicCert);
-	} else {
-		return publicCert;
-	}
+	return await getCachedFile(`service:${name}:public_cert`);
 }
 
 async function getServicePrivateCert(name) {
-	const privateCert = await client.get(`service:${name}:private_cert`);
-
-	if (privateCert !== null) {
-		return Buffer.from(privateCert);
-	} else {
-		return privateCert;
-	}
+	return await getCachedFile(`service:${name}:private_cert`);
 }
 
 async function getServiceSecretKey(name) {
-	const secretKey = await client.get(`service:${name}:secret_key`);
-
-	if (secretKey !== null) {
-		return Buffer.from(secretKey);
-	} else {
-		return secretKey;
-	}
+	return await getCachedFile(`service:${name}:secret_key`);
 }
 
 async function getServiceAESKey(name) {
-	const aesKey = await client.get(`service:${name}:aes_key`);
-
-	if (aesKey !== null) {
-		return Buffer.from(aesKey);
-	} else {
-		return aesKey;
-	}
+	return await getCachedFile(`service:${name}:aes_key`);
 }
 
 async function setServicePublicCert(name, value) {
-	await client.set(`service:${name}:public_cert`, value);
+	await setCachedFile('service', name, 'public_cert', value);
 }
 
 async function setServicePrivateCert(name, value) {
-	await client.set(`service:${name}:private_cert`, value);
+	await setCachedFile('service', name, 'private_cert', value);
 }
 
 async function setServiceSecretKey(name, value) {
-	await client.set(`service:${name}:secret_key`, value);
+	await setCachedFile('service', name, 'secret_key', value);
 }
 
 async function setServiceAESKey(name, value) {
-	await client.set(`service:${name}:aes_key`, value);
+	await setCachedFile('service', name, 'aes_key', value);
 }
 
 module.exports = {
