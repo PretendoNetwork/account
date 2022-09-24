@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const NodeRSA = require('node-rsa');
 const fs = require('fs-extra');
 const aws = require('aws-sdk');
+const cache = require('./cache');
 const config = require('../config.json');
 
 const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
@@ -123,12 +124,17 @@ function generateToken(cryptoOptions, tokenOptions) {
 }
 
 function decryptToken(token) {
+	const cryptoPath = `${__dirname}/../certs/access`;
 
 	// Access and refresh tokens use a different format since they must be much smaller
 	// Assume a small length means access or refresh token
 	if (token.length <= 32) {
-		const cryptoPath = `${__dirname}/../certs/access`;
-		const aesKey = Buffer.from(fs.readFileSync(`${cryptoPath}/aes.key`, { encoding: 'utf8' }), 'hex');
+		let aesKey = cache.getServiceAESKey('account', 'hex');
+
+		if (aesKey === null) {
+			aesKey = Buffer.from(fs.readFileSync(`${cryptoPath}/aes.key`, { encoding: 'utf8' }), 'hex');
+			await cache.setServiceAESKey(aesKey);
+		}
 
 		const iv = Buffer.alloc(16);
 
@@ -140,14 +146,19 @@ function decryptToken(token) {
 		return decryptedBody;
 	}
 
-	const cryptoPath = `${__dirname}/../certs/access`;
+	let privateKeyBytes = cache.getServicePrivateKey('account');
+	if (privateKeyBytes === null) {
+		privateKeyBytes = fs.readFileSync(`${cryptoPath}/private.pem`);
+		await cache.setServicePrivateKey(privateKeyBytes);
+	}
 
-	const cryptoOptions = {
-		private_key: fs.readFileSync(`${cryptoPath}/private.pem`),
-		hmac_secret: fs.readFileSync(`${cryptoPath}/secret.key`)
-	};
+	let secretKey = cache.getServiceSecretKey('account');
+	if (secretKey === null) {
+		secretKey = fs.readFileSync(`${cryptoPath}/secret.key`);
+		await cache.setServiceSecretKey(secretKey);
+	}
 
-	const privateKey = new NodeRSA(cryptoOptions.private_key, 'pkcs1-private-pem', {
+	const privateKey = new NodeRSA(privateKeyBytes, 'pkcs1-private-pem', {
 		environment: 'browser',
 		encryptionScheme: {
 			'hash': 'sha256',
@@ -174,7 +185,7 @@ function decryptToken(token) {
 	let decryptedBody = decipher.update(encryptedBody);
 	decryptedBody = Buffer.concat([decryptedBody, decipher.final()]);
 
-	const hmac = crypto.createHmac('sha1', cryptoOptions.hmac_secret).update(decryptedBody);
+	const hmac = crypto.createHmac('sha1', secretKey).update(decryptedBody);
 	const calculatedSignature = hmac.digest();
 
 	if (!signature.equals(calculatedSignature)) {
