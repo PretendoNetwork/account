@@ -36,13 +36,19 @@ function nintendoBase64Encode(decoded) {
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
-function generateToken(cryptoOptions, tokenOptions) {
+async function generateToken(cryptoOptions, tokenOptions) {
 
 	// Access and refresh tokens use a different format since they must be much smaller
 	// They take no extra crypto options
 	if (!cryptoOptions) {
-		const cryptoPath = `${__dirname}/../certs/access`;
-		const aesKey = Buffer.from(fs.readFileSync(`${cryptoPath}/aes.key`, { encoding: 'utf8' }), 'hex');
+		let aesKey = cache.getServiceAESKey('account', 'hex');
+
+		if (aesKey === null) {
+			const fileBuffer = await fs.readFile(`${__dirname}/../certs/access/aes.key`, { encoding: 'utf8' });
+			aesKey = Buffer.from(fileBuffer, 'hex');
+			await cache.setServiceAESKey('account', aesKey);
+		}
+
 		const dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
 		dataBuffer.writeUInt8(tokenOptions.system_type, 0x0);

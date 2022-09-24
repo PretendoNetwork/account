@@ -98,8 +98,8 @@ router.post('/access_token/generate', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let accessToken = util.generateToken(null, accessTokenOptions);
-	let refreshToken = util.generateToken(null, refreshTokenOptions);
+	let accessToken = await util.generateToken(null, accessTokenOptions);
+	let refreshToken = await util.generateToken(null, refreshTokenOptions);
 
 	if (request.isCemu) {
 		accessToken = Buffer.from(accessToken, 'base64').toString('hex');

@@ -337,8 +337,8 @@ router.post('/', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken = util.generateToken(cryptoOptions, accessTokenOptions);
-	const refreshToken = util.generateToken(cryptoOptions, refreshTokenOptions);
+	const accessToken = await util.generateToken(cryptoOptions, accessTokenOptions);
+	const refreshToken = await util.generateToken(cryptoOptions, refreshTokenOptions);
 
 	response.json({
 		access_token: accessToken,

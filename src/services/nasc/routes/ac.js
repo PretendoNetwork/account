@@ -72,7 +72,7 @@ async function processLoginRequest(request) {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let nexToken = util.generateToken(cryptoOptions, tokenOptions);
+	let nexToken = await util.generateToken(cryptoOptions, tokenOptions);
 	nexToken = util.nintendoBase64Encode(Buffer.from(nexToken, 'base64'));
 
 	const params = new URLSearchParams({
