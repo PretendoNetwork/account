@@ -134,7 +134,7 @@ async function decryptToken(token) {
 		if (aesKey === null) {
 			const fileBuffer = await fs.readFile(`${cryptoPath}/aes.key`, { encoding: 'utf8' });
 			aesKey = Buffer.from(fileBuffer, 'hex');
-			await cache.setServiceAESKey(aesKey);
+			await cache.setServiceAESKey('account', aesKey);
 		}
 
 		const iv = Buffer.alloc(16);
@@ -150,13 +150,13 @@ async function decryptToken(token) {
 	let privateKeyBytes = cache.getServicePrivateKey('account');
 	if (privateKeyBytes === null) {
 		privateKeyBytes = await fs.readFile(`${cryptoPath}/private.pem`);
-		await cache.setServicePrivateKey(privateKeyBytes);
+		await cache.setServicePrivateKey('account', privateKeyBytes);
 	}
 
 	let secretKey = cache.getServiceSecretKey('account');
 	if (secretKey === null) {
 		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
-		await cache.setServiceSecretKey(secretKey);
+		await cache.setServiceSecretKey('account', secretKey);
 	}
 
 	const privateKey = new NodeRSA(privateKeyBytes, 'pkcs1-private-pem', {

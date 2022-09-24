@@ -47,13 +47,13 @@ router.get('/service_token/@me', async (request, response) => {
 	let publicKey = cache.getServicePublicKey(service_name);
 	if (publicKey === null) {
 		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
-		await cache.setServicePublicKey(publicKey);
+		await cache.setServicePublicKey(service_name, publicKey);
 	}
 
 	let secretKey = cache.getServiceSecretKey(service_name);
 	if (secretKey === null) {
 		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
-		await cache.setServiceSecretKey(secretKey);
+		await cache.setServiceSecretKey(service_name, secretKey);
 	}
 
 	const cryptoOptions = {
