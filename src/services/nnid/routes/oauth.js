@@ -49,7 +49,7 @@ router.post('/access_token/generate', async (request, response) => {
 
 	const pnid = await database.getUserByUsername(user_id);
 
-	if (!pnid || !bcrypt.compareSync(password, pnid.password)) {
+	if (!pnid || !await bcrypt.compare(password, pnid.password)) {
 		response.status(400);
 		return response.send(xmlbuilder.create({
 			error: {
@@ -72,7 +72,7 @@ router.post('/access_token/generate', async (request, response) => {
 
 	const cryptoPath = `${__dirname}/../../../../certs/access`;
 
-	if (!fs.pathExistsSync(cryptoPath)) {
+	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
 		return response.send(xmlbuilder.create({
 			errors: {
