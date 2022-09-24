@@ -11,19 +11,43 @@ async function connect() {
 // NEX server cache functions
 
 async function getNEXPublicCert(name) {
-	return Buffer.from(await client.get(`nex:${name}:public_cert`));
+	const publicCert = await client.get(`nex:${name}:public_cert`);
+
+	if (publicCert !== null) {
+		return Buffer.from(publicCert);
+	} else {
+		return publicCert;
+	}
 }
 
 async function getNEXPrivateCert(name) {
-	return Buffer.from(await client.get(`nex:${name}:private_cert`));
+	const privateCert = await client.get(`nex:${name}:private_cert`);
+
+	if (privateCert !== null) {
+		return Buffer.from(privateCert);
+	} else {
+		return privateCert;
+	}
 }
 
 async function getNEXSecretKey(name) {
-	return Buffer.from(await client.get(`nex:${name}:secret_key`));
+	const secretKey = await client.get(`nex:${name}:secret_key`);
+
+	if (secretKey !== null) {
+		return Buffer.from(secretKey);
+	} else {
+		return secretKey;
+	}
 }
 
 async function getNEXAESKey(name) {
-	return Buffer.from(await client.get(`nex:${name}:aes_key`));
+	const aesKey = await client.get(`nex:${name}:aes_key`);
+
+	if (aesKey !== null) {
+		return Buffer.from(aesKey);
+	} else {
+		return aesKey;
+	}
 }
 
 async function setNEXPublicCert(name, value) {
@@ -45,19 +69,43 @@ async function setNEXAESKey(name, value) {
 // 3rd party service cache functions
 
 async function getServicePublicCert(name) {
-	return Buffer.from(await client.get(`service:${name}:public_cert`));
+	const publicCert = await client.get(`service:${name}:public_cert`);
+
+	if (publicCert !== null) {
+		return Buffer.from(publicCert);
+	} else {
+		return publicCert;
+	}
 }
 
 async function getServicePrivateCert(name) {
-	return Buffer.from(await client.get(`service:${name}:private_cert`));
+	const privateCert = await client.get(`service:${name}:private_cert`);
+
+	if (privateCert !== null) {
+		return Buffer.from(privateCert);
+	} else {
+		return privateCert;
+	}
 }
 
 async function getServiceSecretKey(name) {
-	return Buffer.from(await client.get(`service:${name}:secret_key`));
+	const secretKey = await client.get(`service:${name}:secret_key`);
+
+	if (secretKey !== null) {
+		return Buffer.from(secretKey);
+	} else {
+		return secretKey;
+	}
 }
 
 async function getServiceAESKey(name) {
-	return Buffer.from(await client.get(`service:${name}:aes_key`));
+	const aesKey = await client.get(`service:${name}:aes_key`);
+
+	if (aesKey !== null) {
+		return Buffer.from(aesKey);
+	} else {
+		return aesKey;
+	}
 }
 
 async function setServicePublicCert(name, value) {
