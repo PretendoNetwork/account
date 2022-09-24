@@ -3,6 +3,7 @@ process.title = 'Pretendo - Account';
 const express = require('express');
 const morgan = require('morgan');
 const xmlparser = require('./middleware/xml-parser');
+const cache = require('./cache');
 const database = require('./database');
 const util = require('./util');
 const logger = require('../logger');
@@ -70,11 +71,15 @@ app.use((error, request, response) => {
 	});
 });
 
-// Starts the server
-logger.info('Starting server');
+async function main() {
+	// Starts the server
+	logger.info('Starting server');
 
-database.connect().then(() => {
+	await database.connect();
+	await cache.connect();
+
 	app.listen(port, () => {
 		logger.success(`Server started on port ${port}`);
 	});
-});
+}
+
