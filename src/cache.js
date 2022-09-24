@@ -24,12 +24,12 @@ async function getCachedFile(type, name, fileName, encoding) {
 
 // NEX server cache functions
 
-async function getNEXPublicCert(name, encoding) {
-	return await getCachedFile(`nex:${name}:public_cert`, encoding);
+async function getNEXPublicKey(name, encoding) {
+	return await getCachedFile(`nex:${name}:public_key`, encoding);
 }
 
-async function getNEXPrivateCert(name, encoding) {
-	return await getCachedFile(`nex:${name}:private_cert`, encoding);
+async function getNEXPrivateKey(name, encoding) {
+	return await getCachedFile(`nex:${name}:private_key`, encoding);
 }
 
 async function getNEXSecretKey(name, encoding) {
@@ -40,12 +40,12 @@ async function getNEXAESKey(name, encoding) {
 	return await getCachedFile(`nex:${name}:aes_key`, encoding);
 }
 
-async function setNEXPublicCert(name, value) {
-	await setCachedFile('nex', name, 'public_cert', value);
+async function setNEXPublicKey(name, value) {
+	await setCachedFile('nex', name, 'public_key', value);
 }
 
-async function setNEXPrivateCert(name, value) {
-	await setCachedFile('nex', name, 'private_cert', value);
+async function setNEXPrivateKey(name, value) {
+	await setCachedFile('nex', name, 'private_key', value);
 }
 
 async function setNEXSecretKey(name, value) {
@@ -58,12 +58,12 @@ async function setNEXAESKey(name, value) {
 
 // 3rd party service cache functions
 
-async function getServicePublicCert(name, encoding) {
-	return await getCachedFile(`service:${name}:public_cert`, encoding);
+async function getServicePublicKey(name, encoding) {
+	return await getCachedFile(`service:${name}:public_key`, encoding);
 }
 
-async function getServicePrivateCert(name, encoding) {
-	return await getCachedFile(`service:${name}:private_cert`, encoding);
+async function getServicePrivateKey(name, encoding) {
+	return await getCachedFile(`service:${name}:private_key`, encoding);
 }
 
 async function getServiceSecretKey(name, encoding) {
@@ -74,12 +74,12 @@ async function getServiceAESKey(name, encoding) {
 	return await getCachedFile(`service:${name}:aes_key`, encoding);
 }
 
-async function setServicePublicCert(name, value) {
-	await setCachedFile('service', name, 'public_cert', value);
+async function setServicePublicKey(name, value) {
+	await setCachedFile('service', name, 'public_key', value);
 }
 
-async function setServicePrivateCert(name, value) {
-	await setCachedFile('service', name, 'private_cert', value);
+async function setServicePrivateKey(name, value) {
+	await setCachedFile('service', name, 'private_key', value);
 }
 
 async function setServiceSecretKey(name, value) {
@@ -92,20 +92,20 @@ async function setServiceAESKey(name, value) {
 
 module.exports = {
 	connect,
-	getNEXPublicCert,
-	getNEXPrivateCert,
+	getNEXPublicKey,
+	getNEXPrivateKey,
 	getNEXSecretKey,
 	getNEXAESKey,
-	setNEXPublicCert,
-	setNEXPrivateCert,
+	setNEXPublicKey,
+	setNEXPrivateKey,
 	setNEXSecretKey,
 	setNEXAESKey,
-	getServicePublicCert,
-	getServicePrivateCert,
+	getServicePublicKey,
+	getServicePrivateKey,
 	getServiceSecretKey,
 	getServiceAESKey,
-	setServicePublicCert,
-	setServicePrivateCert,
+	setServicePublicKey,
+	setServicePrivateKey,
 	setServiceSecretKey,
 	setServiceAESKey,
 };
