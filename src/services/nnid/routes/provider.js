@@ -32,7 +32,7 @@ router.get('/service_token/@me', async (request, response) => {
 
 	const cryptoPath = `${__dirname}/../../../../certs/${service_type}/${service_name}`;
 
-	if (!fs.pathExistsSync(cryptoPath)) {
+	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
 		return response.send(xmlbuilder.create({
 			errors: {
@@ -44,12 +44,21 @@ router.get('/service_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
+	let publicKey = cache.getServicePublicKey(service_name);
+	if (publicKey === null) {
+		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
+		await cache.setServicePublicKey(publicKey);
+	}
+
+	let secretKey = cache.getServiceSecretKey(service_name);
+	if (secretKey === null) {
+		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
+		await cache.setServiceSecretKey(secretKey);
+	}
 
 	const cryptoOptions = {
 		public_key: publicKey,
-		hmac_secret: hmacSecret
+		hmac_secret: secretKey
 	};
 
 	const tokenOptions = {
