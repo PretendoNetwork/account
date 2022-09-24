@@ -4,17 +4,17 @@ const logger = require('../../../logger');
 const routes = require('./routes');
 
 // Router to handle the subdomain
-const miiImagesCDN = express.Router();
+const datastore = express.Router();
 
 // Setup routes
-logger.info('[CDN] Applying imported routes');
-miiImagesCDN.use(routes.MII_IMAGES);
+logger.info('[DATASTORE] Applying imported routes');
+datastore.use(routes.UPLOAD);
 
 // Main router for endpoints
 const router = express.Router();
 
 // Create subdomains
-logger.info('[CDN] Creating \'mii-images.cdn\' subdomain');
-router.use(subdomain('mii-images.cdn', miiImagesCDN));
+logger.info('[DATASTORE] Creating \'datastore\' subdomain');
+router.use(subdomain('datastore', datastore));
 
 module.exports = router;

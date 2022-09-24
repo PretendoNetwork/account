@@ -2,7 +2,6 @@ const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const bcrypt = require('bcrypt');
 const fs = require('fs-extra');
-const clientHeaderCheck = require('../../../middleware/client-header');
 const database = require('../../../database');
 const util = require('../../../util');
 
@@ -11,8 +10,7 @@ const util = require('../../../util');
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
  * Description: Generates an access token for a user
  */
-router.post('/access_token/generate', clientHeaderCheck, async (request, response) => {
-	const titleId = request.headers['x-nintendo-title-id'];
+router.post('/access_token/generate', async (request, response) => {
 	const { body } = request;
 	const { grant_type, user_id, password } = body;
 
@@ -58,6 +56,17 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 				code: '0106',
 				message: 'Invalid account ID or password'
 			}
+		}).end({ pretty: true }));
+	}
+
+	if (pnid.get('access_level') < 0) {
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0122',
+					message: 'Device has been banned by game server'
+				}
+			}
 		}).end());
 	}
 
@@ -75,32 +84,27 @@ router.post('/access_token/generate', clientHeaderCheck, async (request, respons
 		}).end());
 	}
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
-
-	const cryptoOptions = {
-		public_key: publicKey,
-		hmac_secret: hmacSecret
-	};
-
 	const accessTokenOptions = {
 		system_type: 0x1, // WiiU
 		token_type: 0x1, // OAuth Access,
 		pid: pnid.get('pid'),
-		title_id: BigInt(parseInt(titleId, 16)),
-		date: BigInt(Date.now())
+		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const refreshTokenOptions = {
 		system_type: 0x1, // WiiU
 		token_type: 0x2, // OAuth Refresh,
 		pid: pnid.get('pid'),
-		title_id: BigInt(parseInt(titleId, 16)),
-		date: BigInt(Date.now())
+		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken = util.generateToken(cryptoOptions, accessTokenOptions);
-	const refreshToken = util.generateToken(cryptoOptions, refreshTokenOptions);
+	let accessToken = util.generateToken(null, accessTokenOptions);
+	let refreshToken = util.generateToken(null, refreshTokenOptions);
+
+	if (request.isCemu) {
+		accessToken = Buffer.from(accessToken, 'base64').toString('hex');
+		refreshToken = Buffer.from(refreshToken, 'base64').toString('hex');
+	}
 
 	response.send(xmlbuilder.create({
 		OAuth20: {

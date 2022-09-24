@@ -2,8 +2,6 @@ const { Schema, model } = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const fs = require('fs-extra');
-const path = require('path');
 const imagePixels = require('image-pixels');
 const TGA = require('tga');
 const got = require('got');
@@ -14,7 +12,11 @@ const Mii = require('../mii');
 const PNIDSchema = new Schema({
 	access_level: {
 		type: Number,
-		default: 0 // Standard user
+		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
+	},
+	server_access_level: {
+		type: String,
+		default: 'prod' // everyone is in production by default
 	},
 	pid: {
 		type: Number,
@@ -72,16 +74,12 @@ const PNIDSchema = new Schema({
 			unique: true
 		},
 	},
-	flags: { // not entirely sure what these are used for
-		active: Boolean, // Is the account active? Like, not deleted maybe?
+	flags: {
+		active: Boolean,
 		marketing: Boolean,
 		off_device: Boolean
 	},
 	devices: [DeviceSchema],
-	nex: {
-		password: String,
-		token: String
-	},
 	identification: { // user identification tokens
 		email_code: {
 			type: String,
@@ -98,6 +96,11 @@ const PNIDSchema = new Schema({
 		refresh_token: {
 			value: String,
 			ttl: Number
+		}
+	},
+	connections: {
+		discord: {
+			id: String
 		}
 	}
 });
@@ -125,23 +128,6 @@ PNIDSchema.methods.generatePID = async function() {
 	pid = (inuse ? await PNID.generatePID() : pid);
 
 	this.set('pid', pid);
-};
-
-PNIDSchema.methods.generateNEXPassword = function() {
-	function character() {
-		const offset = Math.floor(Math.random() * 62);
-		if (offset < 10) return offset;
-		if (offset < 36) return String.fromCharCode(offset + 55);
-		return String.fromCharCode(offset + 61);
-	}
-
-	const output = [];
-
-	while (output.length < 16) {
-		output.push(character());
-	}
-
-	this.set('nex.password', output.join(''));
 };
 
 PNIDSchema.methods.generateEmailValidationCode = async function() {
@@ -200,31 +186,42 @@ PNIDSchema.methods.updateMii = async function({name, primary, data}) {
 	this.set('mii.id', crypto.randomBytes(4).readUInt32LE());
 	this.set('mii.image_id', crypto.randomBytes(4).readUInt32LE());
 
-	const studioMii = new Mii(Buffer.from(data, 'base64'));
+	await this.generateMiiImages();
+
+	await this.save();
+};
+
+PNIDSchema.methods.generateMiiImages = async function() {
+	const miiData = this.get('mii.data');
+	const studioMii = new Mii(Buffer.from(miiData, 'base64'));
 	const converted = studioMii.toStudioMii();
 	const encodedStudioMiiData = converted.toString('hex');
 	const miiStudioUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&width=128&instanceCount=1`;
 	const miiStudioNormalFaceImageData = await got(miiStudioUrl).buffer();
 	const pngData = await imagePixels(miiStudioNormalFaceImageData);
 	const tga = TGA.createTgaBuffer(pngData.width, pngData.height, pngData.data);
-	
-	const userMiiPath = path.normalize(`${__dirname}/../../cdn/${this.get('pid')}/miis`);
-	fs.ensureDirSync(userMiiPath);
-	fs.writeFileSync(`${userMiiPath}/standard.tga`, tga);
-	fs.writeFileSync(`${userMiiPath}/normal_face.png`, miiStudioNormalFaceImageData);
+
+	const userMiiKey = `mii/${this.get('pid')}`;
+
+	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/standard.tga`, tga, 'public-read');
+	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
 
 	const expressions = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
 	for (const expression of expressions) {
 		const miiStudioExpressionUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&expression=${expression}&width=128&instanceCount=1`;
 		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
-		fs.writeFileSync(`${userMiiPath}/${expression}.png`, miiStudioExpressionImageData);
+		await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
 	}
 
 	const miiStudioBodyUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=all_body&width=270&instanceCount=1`;
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
-	fs.writeFileSync(`${userMiiPath}/body.png`, miiStudioBodyImageData);
+	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
+};
 
-	await this.save();
+PNIDSchema.methods.getServerMode = function () {
+	const serverMode = this.get('server_mode') || 'prod';
+
+	return serverMode;
 };
 
 PNIDSchema.pre('save', async function(next) {
@@ -233,10 +230,10 @@ PNIDSchema.pre('save', async function(next) {
 	}
 
 	this.set('usernameLower', this.get('username').toLowerCase());
-	await this.generatePID();
-	await this.generateNEXPassword();
+	//await this.generatePID();
 	await this.generateEmailValidationCode();
 	await this.generateEmailValidationToken();
+	await this.generateMiiImages();
 	
 	const primaryHash = util.nintendoPasswordHash(this.get('password'), this.get('pid'));
 	const hash = bcrypt.hashSync(primaryHash, 10);

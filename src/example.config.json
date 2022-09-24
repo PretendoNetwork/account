@@ -15,5 +15,14 @@
             "user": "email@address.com",
             "pass": "password"
         }
+    },
+    "aws": {
+        "spaces": {
+            "key": "ACCESS_KEY",
+            "secret": "ACCESS_SECRET"
+        }
+    },
+    "hcaptcha": {
+        "secret": "0x0000000000000000000000000000000000000000"
     }
 }

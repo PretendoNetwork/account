@@ -1,22 +1,13 @@
 const router = require('express').Router();
 const dns = require('dns');
 const xmlbuilder = require('xmlbuilder');
-const clientHeaderCheck = require('../../../middleware/client-header');
 
-router.post('/validate/email', clientHeaderCheck, async (request, response) => {
-	// Status should be 2 from previous request in registration process
-	if (request.session.registration_status !== 2) {
-		response.status(400);
-
-		return response.send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
-			}
-		}).end());
-	}
-
+/**
+ * [POST]
+ * Replacement for: https://account.nintendo.net/v1/api/support/validate/email
+ * Description: Verifies a provided email address is valid
+ */
+router.post('/validate/email', async (request, response) => {
 	const { email } = request.body;
 
 	if (!email) {
@@ -44,8 +35,6 @@ router.post('/validate/email', clientHeaderCheck, async (request, response) => {
 				}
 			}).end());
 		}
-
-		request.session.registration_status = 3;
 
 		response.status(200);
 		response.end();

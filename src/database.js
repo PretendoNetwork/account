@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const util = require('./util');
 const { PNID } = require('./models/pnid');
-const { mongoose: mongooseConfig } = require('./config.json');
+const { Server } = require('./models/server');
+const { mongoose: mongooseConfig } = require('../config.json');
 const { uri, database, options } = mongooseConfig;
 
 let connection;
@@ -78,9 +79,9 @@ async function getUserBearer(token) {
 	const user = await getUserByPID(unpackedToken.pid);
 
 	if (user) {
-		const expireTime = Math.floor((Number(unpackedToken.date) / 1000) + 3600);
+		const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
 
-		if (Math.floor(Date.now()/1000) > expireTime) {
+		if (Math.floor(Date.now() / 1000) > expireTime) {
 			return null;
 		}
 	}
@@ -144,9 +145,10 @@ async function getUserProfileJSONByPID(pid) {
 			mii_images: {
 				mii_image: {
 					// Images MUST be loaded over HTTPS or console ignores them
-					cached_url: `https://mii-images.cdn.pretendo.cc/${user.pid}/standard.tga`,
+					// Bunny CDN is the only CDN which seems to support TLS 1.0/1.1 (required)
+					cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
 					id: user.get('mii.image_id'),
-					url: `https://mii-images.cdn.pretendo.cc/${user.pid}/standard.tga`,
+					url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},
@@ -160,6 +162,67 @@ async function getUserProfileJSONByPID(pid) {
 	};
 }
 
+function getServer(gameServerId, accessMode) {
+	return Server.findOne({
+		game_server_id: gameServerId,
+		access_mode: accessMode,
+	});
+}
+
+function getServerByTitleId(titleId, accessMode) {
+	return Server.findOne({
+		title_ids: titleId,
+		access_mode: accessMode,
+	});
+}
+
+async function addUserConnection(pnid, data, type) {
+	if (type === 'discord') {
+		return await addUserConnectionDiscord(pnid, data);
+	}
+}
+
+async function addUserConnectionDiscord(pnid, data) {
+	if (!data.id) {
+		return {
+			app: 'api',
+			status: 400,
+			error: 'Invalid or missing connection data'
+		};
+	}
+
+	await PNID.updateOne({ pid: pnid.get('pid') }, {
+		$set: {
+			'connections.discord': data
+		}
+	});
+
+	return {
+		app: 'api',
+		status: 200
+	};
+}
+
+async function removeUserConnection(pnid, type) {
+	// Add more connections later?
+	if (type === 'discord') {
+		return await removeUserConnectionDiscord(pnid);
+	}
+}
+
+async function removeUserConnectionDiscord(pnid) {
+	await PNID.updateOne({ pid: pnid.get('pid') }, {
+		$set: {
+			'connections.discord.id': ''
+		}
+	});
+
+	return {
+		app: 'api',
+		status: 200
+	};
+}
+
 module.exports = {
 	connect,
 	getUserByUsername,
@@ -168,4 +231,8 @@ module.exports = {
 	getUserBasic,
 	getUserBearer,
 	getUserProfileJSONByPID,
+	getServer,
+	getServerByTitleId,
+	addUserConnection,
+	removeUserConnection,
 };

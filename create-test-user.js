@@ -1,6 +1,5 @@
 const prompt = require('prompt');
 const crypto = require('crypto');
-const util = require('./src/util');
 const database = require('./src/database');
 const { PNID } = require('./src/models/pnid');
 
@@ -15,10 +14,11 @@ const properties = [
 	}
 ];
 
-prompt.get(properties, function (error, { username, email, password }) {
+prompt.get(properties, (error, { username, email, password }) => {
 	const date = new Date().toISOString();
-	const miiHash = crypto.createHash('md5').update(date).digest('hex');
-	
+	// Sample Mii data
+	const miiData = 'AwAAQOlVognnx0GC2X0LLQOzuI0n2QAAAUBiAGUAbABsAGEAAABFAAAAAAAAAEBAEgCBAQRoQxggNEYUgRIXaA0AACkDUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP6G';
+
 	const document = {
 		pid: 1,
 		creation_date: date.split('.')[0],
@@ -35,7 +35,7 @@ prompt.get(properties, function (error, { username, email, password }) {
 			parent: true,
 			reachable: true,
 			validated: true,
-			id: util.generateRandomInt(10)
+			id: crypto.randomBytes(4).readUInt32LE()
 		},
 		region: 0x310B0000,
 		timezone: {
@@ -45,11 +45,11 @@ prompt.get(properties, function (error, { username, email, password }) {
 		mii: {
 			name: 'bella',
 			primary: true,
-			data: 'AwAAQOlVognnx0GC2X0LLQOzuI0n2QAAAUBiAGUAbABsAGEAAABFAAAAAAAAAEBAEgCBAQRoQxggNEYUgRIXaA0AACkDUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP6G', // hardcoded for now. currently testing
-			id: 1330180812,
-			hash: '1o54mkuuxfg8t',
-			image_url: 'https://mii-secure.account.nintendo.net/1o54mkuuxfg8t_standard.tga',
-			image_id: 1330180887
+			data: miiData,
+			id: crypto.randomBytes(4).readUInt32LE(),
+			hash: crypto.randomBytes(7).toString('hex'),
+			image_url: '', // Deprecated, will be removed
+			image_id: crypto.randomBytes(4).readUInt32LE()
 		},
 		flags: {
 			active: true,
@@ -59,8 +59,8 @@ prompt.get(properties, function (error, { username, email, password }) {
 		validation: {
 			// These values are temp and will be overwritten before the document saves
 			// These values are only being defined to get around the `E11000 duplicate key error collection` error
-			email_code: Date.now(),
-			email_token: Date.now().toString()
+			email_code: 1,
+			email_token: ''
 		}
 	};
 

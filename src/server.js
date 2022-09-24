@@ -6,14 +6,16 @@ const xmlparser = require('./middleware/xml-parser');
 const database = require('./database');
 const util = require('./util');
 const logger = require('../logger');
-const config = require('./config.json');
+const config = require('../config.json');
 
 const { http: { port } } = config;
 const app = express();
 
-const accountWiiU = require('./services/wiiu');
-//const account3DS = require('./services/3ds');
-const cdnService = require('./services/cdn');
+const conntest = require('./services/conntest');
+const nnid = require('./services/nnid');
+const nasc = require('./services/nasc');
+const datastore = require('./services/datastore');
+const api = require('./services/api');
 
 // START APPLICATION
 app.set('etag', false);
@@ -29,9 +31,11 @@ app.use(express.urlencoded({
 app.use(xmlparser);
 
 // import the servers into one
-app.use(accountWiiU);
-//app.use(account3DS);
-app.use(cdnService);
+app.use(conntest);
+app.use(nnid);
+app.use(nasc);
+app.use(datastore);
+app.use(api);
 
 // 404 handler
 logger.info('Creating 404 status handler');
@@ -41,12 +45,12 @@ app.use((request, response) => {
 
 	logger.warn(`HTTP 404 at ${fullUrl} from ${deviceId}`);
 
+	response.set('Content-Type', 'text/xml');
+	response.set('Server', 'Nintendo 3DS (http)');
+	response.set('X-Nintendo-Date', new Date().getTime());
+
 	response.status(404);
-	response.json({
-		app: 'api',
-		status: 404,
-		error: 'Route not found'
-	});
+	response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
 });
 
 // non-404 error handler

@@ -8,8 +8,12 @@ async function PNIDMiddleware(request, response, next) {
 		return next();
 	}
 
-	const [type, token] = headers.authorization.split(' ');
+	let [type, token] = headers.authorization.split(' ');
 	let user;
+
+	if (request.isCemu) {
+		token = Buffer.from(token, 'hex').toString('base64');
+	}
 
 	if (type === 'Basic') {
 		user = await database.getUserBasic(token);
@@ -37,6 +41,17 @@ async function PNIDMiddleware(request, response, next) {
 				error: {
 					code: '1105',
 					message: 'Email address, username, or password, is not valid'
+				}
+			}
+		}).end());
+	}
+
+	if (user.get('access_level') < 0) {
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0122',
+					message: 'Device has been banned by game server'
 				}
 			}
 		}).end());

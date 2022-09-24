@@ -1,20 +1,16 @@
 const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const timezones = require('../timezones.json');
-const clientHeaderCheck = require('../../../middleware/client-header');
 
 /**
  * [GET]
  * Replacement for: https://account.nintendo.net/v1/api/content/agreements/TYPE/REGION/VERSION
  * Description: Sends the client requested agreement
  */
-router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, response) => {
+router.get('/agreements/:type/:region/:version', (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
-
-	// Registration process has started
-	request.session.registration_status = 0;
 
 	response.send(xmlbuilder.create({
 		agreements: {
@@ -39,8 +35,15 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
 						},
 						main_text: {
 							'@index': '1',
-							'#cdata': 'Dont be dumb'
-						}
+							'#cdata': 'Welcome to Pretendo\'s Christmas public beta! This is supplied with no liability or warranty, and is a stress test of our current services.This test is not expected to last long- term, and the data may be kept for later testing; this data will not be shared outside of Pretendo, and will be deleted at the end of our testing period.'
+						},
+						sub_title: {
+							'#cdata': 'Privacy Policy'
+						},
+						sub_text: {
+							'@index': '1',
+							'#cdata': 'Welcome to Pretendo\'s Christmas public beta! This is supplied with no liability or warranty, and is a stress test of our current services.This test is not expected to last long- term, and the data may be kept for later testing; this data will not be shared outside of Pretendo, and will be deleted at the end of our testing period.'
+						},
 					},
 					type: 'NINTENDO-NETWORK-EULA',
 					version: '0300',
@@ -65,8 +68,15 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
 						},
 						main_text: {
 							'@index': '1',
-							'#cdata': 'Dont be dumb'
-						}
+							'#cdata': 'Welcome to Pretendo\'s Christmas public beta! This is supplied with no liability or warranty, and is a stress test of our current services.This test is not expected to last long- term, and the data may be kept for later testing; this data will not be shared outside of Pretendo, and will be deleted at the end of our testing period.'
+						},
+						sub_title: {
+							'#cdata': 'Privacy Policy'
+						},
+						sub_text: {
+							'@index': '1',
+							'#cdata': 'Welcome to Pretendo\'s Christmas public beta! This is supplied with no liability or warranty, and is a stress test of our current services.This test is not expected to last long- term, and the data may be kept for later testing; this data will not be shared outside of Pretendo, and will be deleted at the end of our testing period.'
+						},
 					},
 					type: 'NINTENDO-NETWORK-EULA',
 					version: '0300',
@@ -91,8 +101,15 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
 						},
 						main_text: {
 							'@index': '1',
-							'#cdata': 'Dont be dumb'
-						}
+							'#cdata': 'Welcome to Pretendo\'s Christmas public beta! This is supplied with no liability or warranty, and is a stress test of our current services.This test is not expected to last long- term, and the data may be kept for later testing; this data will not be shared outside of Pretendo, and will be deleted at the end of our testing period.'
+						},
+						sub_title: {
+							'#cdata': 'Privacy Policy'
+						},
+						sub_text: {
+							'@index': '1',
+							'#cdata': 'Welcome to Pretendo\'s Christmas public beta! This is supplied with no liability or warranty, and is a stress test of our current services.This test is not expected to last long- term, and the data may be kept for later testing; this data will not be shared outside of Pretendo, and will be deleted at the end of our testing period.'
+						},
 					},
 					type: 'NINTENDO-NETWORK-EULA',
 					version: '0300',
@@ -107,23 +124,10 @@ router.get('/agreements/:type/:region/:version', clientHeaderCheck, (request, re
  * Replacement for: https://account.nintendo.net/v1/api/content/time_zones/COUNTRY/LANGUAGE
  * Description: Sends the client the requested timezones
  */
-router.get('/time_zones/:countryCode/:language', clientHeaderCheck, (request, response) => {
+router.get('/time_zones/:countryCode/:language', (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
-
-	// Status should be 0 from previous request in registration process
-	if (request.session.registration_status !== 0) {
-		response.status(400);
-
-		return response.send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
-			}
-		}).end());
-	}
 
 	/*
 	// Old method. Crashes WiiU when sending a list with over 32 entries, but otherwise works
@@ -147,9 +151,6 @@ router.get('/time_zones/:countryCode/:language', clientHeaderCheck, (request, re
 
 	const regionLanguages = timezones[countryCode];
 	const regionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
-
-	// Bump status to allow access to next endpoint
-	request.session.registration_status = 1;
 
 	response.send(xmlbuilder.create({
 		timezones: {
