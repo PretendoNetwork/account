@@ -75,20 +75,26 @@ async function getUserBasic(token) {
 async function getUserBearer(token) {
 	verifyConnected();
 
-	const decryptedToken = await util.decryptToken(Buffer.from(token, 'base64'));
-	const unpackedToken = util.unpackToken(decryptedToken);
+	try {
+		const decryptedToken = await util.decryptToken(Buffer.from(token, 'base64'));
+		const unpackedToken = util.unpackToken(decryptedToken);
 
-	const user = await getUserByPID(unpackedToken.pid);
+		const user = await getUserByPID(unpackedToken.pid);
 
-	if (user) {
-		const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
+		if (user) {
+			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
 
-		if (Math.floor(Date.now() / 1000) > expireTime) {
-			return null;
+			if (Math.floor(Date.now() / 1000) > expireTime) {
+				return null;
+			}
 		}
-	}
 
-	return user;
+		return user;
+	} catch (error) {
+		// TODO: Handle error
+		return null;
+	}
+	
 }
 
 async function getUserProfileJSONByPID(pid) {
