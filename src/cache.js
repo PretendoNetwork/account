@@ -11,7 +11,7 @@ async function connect() {
 // NEX server cache functions
 
 async function getNEXPublicCert(name) {
-	return Buffer.from(await client.get(`nex:${name}:public_cert`));	
+	return Buffer.from(await client.get(`nex:${name}:public_cert`));
 }
 
 async function getNEXPrivateCert(name) {
