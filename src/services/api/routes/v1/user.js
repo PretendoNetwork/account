@@ -99,7 +99,7 @@ router.post('/', async (request, response) => {
 		mii: {
 			data: pnid.get('mii.data'),
 			name: pnid.get('mii.name'),
-			image_url: `https://pretendo-cdn.b-cdn.net/mii/${pnid.get('pid')}/normal_face.png`
+			image_url: `${config.cdn_base}/mii/${pnid.get('pid')}/normal_face.png`
 		},
 		flags: {
 			marketing: pnid.get('flags.marketing')
