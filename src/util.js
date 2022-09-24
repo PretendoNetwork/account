@@ -123,7 +123,7 @@ function generateToken(cryptoOptions, tokenOptions) {
 	return token.toString('base64'); // Encode to base64 for transport
 }
 
-function decryptToken(token) {
+async function decryptToken(token) {
 	const cryptoPath = `${__dirname}/../certs/access`;
 
 	// Access and refresh tokens use a different format since they must be much smaller
@@ -132,7 +132,8 @@ function decryptToken(token) {
 		let aesKey = cache.getServiceAESKey('account', 'hex');
 
 		if (aesKey === null) {
-			aesKey = Buffer.from(fs.readFileSync(`${cryptoPath}/aes.key`, { encoding: 'utf8' }), 'hex');
+			const fileBuffer = await fs.readFile(`${cryptoPath}/aes.key`, { encoding: 'utf8' });
+			aesKey = Buffer.from(fileBuffer, 'hex');
 			await cache.setServiceAESKey(aesKey);
 		}
 
@@ -148,13 +149,13 @@ function decryptToken(token) {
 
 	let privateKeyBytes = cache.getServicePrivateKey('account');
 	if (privateKeyBytes === null) {
-		privateKeyBytes = fs.readFileSync(`${cryptoPath}/private.pem`);
+		privateKeyBytes = await fs.readFile(`${cryptoPath}/private.pem`);
 		await cache.setServicePrivateKey(privateKeyBytes);
 	}
 
 	let secretKey = cache.getServiceSecretKey('account');
 	if (secretKey === null) {
-		secretKey = fs.readFileSync(`${cryptoPath}/secret.key`);
+		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
 		await cache.setServiceSecretKey(secretKey);
 	}
 

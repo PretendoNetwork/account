@@ -67,7 +67,7 @@ router.post('/', async (request, response) => {
 			});
 		}
 	} else {
-		const decryptedToken = util.decryptToken(Buffer.from(refresh_token, 'base64'));
+		const decryptedToken = await util.decryptToken(Buffer.from(refresh_token, 'base64'));
 		const unpackedToken = util.unpackToken(decryptedToken);
 
 		pnid = await database.getUserByPID(unpackedToken.pid);

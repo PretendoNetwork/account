@@ -75,7 +75,7 @@ async function getUserBasic(token) {
 async function getUserBearer(token) {
 	verifyConnected();
 
-	const decryptedToken = util.decryptToken(Buffer.from(token, 'base64'));
+	const decryptedToken = await util.decryptToken(Buffer.from(token, 'base64'));
 	const unpackedToken = util.unpackToken(decryptedToken);
 
 	const user = await getUserByPID(unpackedToken.pid);
