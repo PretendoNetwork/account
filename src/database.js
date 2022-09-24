@@ -48,14 +48,14 @@ async function getUserByPID(pid) {
 async function doesUserExist(username) {
 	verifyConnected();
 
-	return !!await this.getUserByUsername(username);
+	return !!await getUserByUsername(username);
 }
 
 async function getUserBasic(token) {
 	verifyConnected();
 
 	const [username, password] = Buffer.from(token, 'base64').toString().split(' ');
-	const user = await this.getUserByUsername(username);
+	const user = await getUserByUsername(username);
 
 	if (!user) {
 		return null;
@@ -92,7 +92,7 @@ async function getUserBearer(token) {
 async function getUserProfileJSONByPID(pid) {
 	verifyConnected();
 
-	const user = await this.getUserByPID(pid);
+	const user = await getUserByPID(pid);
 	const device = user.get('devices')[0]; // Just grab the first device
 	let device_attributes;
 
