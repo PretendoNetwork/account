@@ -233,6 +233,7 @@ async function removeUserConnectionDiscord(pnid) {
 
 module.exports = {
 	connect,
+	connection,
 	getUserByUsername,
 	getUserByPID,
 	doesUserExist,
