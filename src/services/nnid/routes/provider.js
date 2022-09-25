@@ -44,13 +44,13 @@ router.get('/service_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	let publicKey = cache.getServicePublicKey(service_name);
+	let publicKey= await cache.getServicePublicKey(service_name);
 	if (publicKey === null) {
 		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
 		await cache.setServicePublicKey(service_name, publicKey);
 	}
 
-	let secretKey = cache.getServiceSecretKey(service_name);
+	let secretKey= await cache.getServiceSecretKey(service_name);
 	if (secretKey === null) {
 		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
 		await cache.setServiceSecretKey(service_name, secretKey);
@@ -134,13 +134,13 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	let publicKey = cache.getNEXPublicKey(service_name);
+	let publicKey= await cache.getNEXPublicKey(service_name);
 	if (publicKey === null) {
 		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
 		await cache.setNEXPublicKey(service_name, publicKey);
 	}
 
-	let secretKey = cache.getNEXSecretKey(service_name);
+	let secretKey= await cache.getNEXSecretKey(service_name);
 	if (secretKey === null) {
 		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
 		await cache.setNEXSecretKey(service_name, secretKey);

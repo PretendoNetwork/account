@@ -41,7 +41,7 @@ async function generateToken(cryptoOptions, tokenOptions) {
 	// Access and refresh tokens use a different format since they must be much smaller
 	// They take no extra crypto options
 	if (!cryptoOptions) {
-		let aesKey = cache.getServiceAESKey('account', 'hex');
+		let aesKey = await cache.getServiceAESKey('account', 'hex');
 
 		if (aesKey === null) {
 			const fileBuffer = await fs.readFile(`${__dirname}/../certs/access/aes.key`, { encoding: 'utf8' });
@@ -135,7 +135,7 @@ async function decryptToken(token) {
 	// Access and refresh tokens use a different format since they must be much smaller
 	// Assume a small length means access or refresh token
 	if (token.length <= 32) {
-		let aesKey = cache.getServiceAESKey('account', 'hex');
+		let aesKey = await cache.getServiceAESKey('account', 'hex');
 
 		if (aesKey === null) {
 			const fileBuffer = await fs.readFile(`${cryptoPath}/aes.key`, { encoding: 'utf8' });
@@ -153,13 +153,13 @@ async function decryptToken(token) {
 		return decryptedBody;
 	}
 
-	let privateKeyBytes = cache.getServicePrivateKey('account');
+	let privateKeyBytes = await cache.getServicePrivateKey('account');
 	if (privateKeyBytes === null) {
 		privateKeyBytes = await fs.readFile(`${cryptoPath}/private.pem`);
 		await cache.setServicePrivateKey('account', privateKeyBytes);
 	}
 
-	let secretKey = cache.getServiceSecretKey('account');
+	let secretKey = await cache.getServiceSecretKey('account');
 	if (secretKey === null) {
 		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
 		await cache.setServiceSecretKey('account', secretKey);

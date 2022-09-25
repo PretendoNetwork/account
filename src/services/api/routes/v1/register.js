@@ -311,13 +311,13 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	let publicKey = cache.getServicePublicKey('account');
+	let publicKey= await cache.getServicePublicKey('account');
 	if (publicKey === null) {
 		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
 		await cache.setServicePublicKey('account', publicKey);
 	}
 
-	let secretKey = cache.getServiceSecretKey('account');
+	let secretKey= await cache.getServiceSecretKey('account');
 	if (secretKey === null) {
 		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
 		await cache.setServiceSecretKey('account', secretKey);
