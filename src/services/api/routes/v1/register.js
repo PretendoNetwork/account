@@ -8,7 +8,7 @@ const { PNID } = require('../../../../models/pnid');
 const { NEXAccount } = require('../../../../models/nex-account');
 const database = require('../../../../database');
 const util = require('../../../../util');
-const config = require('../../../../../config');
+const config = require('../../../../../config.json');
 
 const PNID_VALID_CHARACTERS_REGEX = /^[\w\-\.]*$/gm;
 const PNID_PUNCTUATION_START_REGEX = /^[\_\-\.]/gm;

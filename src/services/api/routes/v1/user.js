@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { PNID } = require('../../../../models/pnid');
-const config = require('../../../../config.json');
+const config = require('../../../../../config.json');
 
 /**
  * [GET]
