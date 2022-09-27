@@ -7,6 +7,7 @@ const hcaptcha = require('hcaptcha');
 const { PNID } = require('../../../../models/pnid');
 const { NEXAccount } = require('../../../../models/nex-account');
 const database = require('../../../../database');
+const cache = require('../../../../cache');
 const util = require('../../../../util');
 const config = require('../../../../../config.json');
 

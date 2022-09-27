@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const { NEXAccount } = require('../../../models/nex-account');
 const util = require('../../../util');
 const database = require('../../../database');
+const cache = require('../../../cache');
 
 /**
  * [GET]
@@ -134,7 +135,7 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	let publicKey= await cache.getNEXPublicKey(service_name);
+	let publicKey = await cache.getNEXPublicKey(service_name);
 	if (publicKey === null) {
 		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
 		await cache.setNEXPublicKey(service_name, publicKey);

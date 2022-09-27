@@ -2,6 +2,7 @@ const fs = require('fs-extra');
 const express = require('express');
 const util = require('../../../util');
 const database = require('../../../database');
+const cache = require('../../../cache');
 
 const router = express.Router();
 
