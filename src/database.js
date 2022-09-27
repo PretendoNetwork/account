@@ -9,10 +9,12 @@ const { uri, database, options } = config.mongoose;
 let connection;
 
 async function connect() {
-	await mongoose.connect(`${uri}/${database}`, options);
+	await mongoose.connect(`${uri}/${database}?replicaSet=rs0`, options);
 	
 	connection = mongoose.connection;
 	connection.on('error', console.error.bind(console, 'connection error:'));
+
+	module.exports.connection = connection;
 }
 
 function verifyConnected() {
