@@ -1,10 +1,16 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const joi = require('joi');
 const util = require('./util');
 const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
 const config = require('../config.json');
 const { uri, database, options } = config.mongoose;
+
+// TODO: Extend this later with more settings
+const discordConnectionSchema = joi.object({
+	id: joi.string()
+});
 
 let connection;
 
@@ -193,7 +199,9 @@ async function addUserConnection(pnid, data, type) {
 }
 
 async function addUserConnectionDiscord(pnid, data) {
-	if (!data.id) {
+	const valid = discordConnectionSchema.validate(data);
+
+	if (valid.error) {
 		return {
 			app: 'api',
 			status: 400,
@@ -203,7 +211,7 @@ async function addUserConnectionDiscord(pnid, data) {
 
 	await PNID.updateOne({ pid: pnid.get('pid') }, {
 		$set: {
-			'connections.discord': data
+			'connections.discord.id': data.id
 		}
 	});
 
