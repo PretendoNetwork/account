@@ -68,10 +68,7 @@ router.post('/', async (request, response) => {
 			});
 		}
 	} else {
-		const decryptedToken = await util.decryptToken(Buffer.from(refresh_token, 'base64'));
-		const unpackedToken = util.unpackToken(decryptedToken);
-
-		pnid = await database.getUserByPID(unpackedToken.pid);
+		pnid = await database.getUserBearer(refresh_token);
 		if (!pnid) {
 			return response.status(400).json({
 				app: 'api',
