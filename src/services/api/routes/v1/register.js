@@ -9,6 +9,7 @@ const { NEXAccount } = require('../../../../models/nex-account');
 const database = require('../../../../database');
 const cache = require('../../../../cache');
 const util = require('../../../../util');
+const logger = require('../../../../../logger');
 const config = require('../../../../../config.json');
 
 const PNID_VALID_CHARACTERS_REGEX = /^[\w\-\.]*$/gm;
@@ -236,6 +237,7 @@ router.post('/', async (request, response) => {
 
 	const MII_DATA = Buffer.concat([MII_DATA_FIRST, MII_DATA_NAME, MII_DATA_LAST]); // Build Mii data
 
+	/*
 	// Create new NEX account
 	const newNEXAccount = new NEXAccount({
 		pid: 0,
@@ -300,6 +302,94 @@ router.post('/', async (request, response) => {
 	await NEXAccount.updateOne({ pid: newNEXAccount.get('pid') }, {
 		owning_pid: newNEXAccount.get('pid')
 	});
+	*/
+
+	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
+	let pnid;
+	let nexAccount;
+
+	const session = await database.connection.startSession();
+	await session.startTransaction();
+
+	try {
+		const nexAccountResult = await NEXAccount.create([{
+			pid: 0,
+			password: '',
+			owning_pid: 0,
+		}], { session });
+
+		nexAccount = nexAccountResult[0];
+
+		const pnidResult = await PNID.create([{
+			pid: nexAccount.get('pid'),
+			creation_date: creationDate,
+			updated: creationDate,
+			username: username,
+			password: password, // will be hashed before saving
+			birthdate: '1990-01-01', // TODO: Change this
+			gender: 'M', // TODO: Change this
+			country: 'US', // TODO: Change this
+			language: 'en', // TODO: Change this
+			email: {
+				address: email,
+				primary: true, // TODO: Change this
+				parent: true, // TODO: Change this
+				reachable: false, // TODO: Change this
+				validated: false, // TODO: Change this
+				id: crypto.randomBytes(4).readUInt32LE()
+			},
+			region: 0x310B0000, // TODO: Change this
+			timezone: {
+				name: 'America/New_York', // TODO: Change this
+				offset: -14400 // TODO: Change this
+			},
+			mii: {
+				name: miiName,
+				primary: true, // TODO: Change this
+				data: MII_DATA.toString('base64'),
+				id: crypto.randomBytes(4).readUInt32LE(),
+				hash: crypto.randomBytes(7).toString('hex'),
+				image_url: '', // deprecated, will be removed in the future
+				image_id: crypto.randomBytes(4).readUInt32LE()
+			},
+			flags: {
+				active: true, // TODO: Change this
+				marketing: true, // TODO: Change this
+				off_device: true // TODO: Change this
+			},
+			validation: {
+				email_code: 1, // will be overwritten before saving
+				email_token: '' // will be overwritten before saving
+			}
+		}], { session });
+
+		pnid = pnidResult[0];
+
+		// Quick hack to get the PIDs to match
+		// TODO: Change this
+		// NN with a NNID will always use the NNID PID
+		// even if the provided NEX PID is different
+		// To fix this we make them the same PID
+		await NEXAccount.updateOne({ pid: nexAccount.get('pid') }, {
+			owning_pid: nexAccount.get('pid')
+		}, { session });
+
+		await session.commitTransaction();
+	} catch (error) {
+		logger.error('[POST] /v1/api/people: ' + error);
+
+		await session.abortTransaction();
+
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Password must have combination of letters, numbers, and/or punctuation characters'
+		});
+	} finally {
+		// * This runs regardless of failure
+		// * Returning on catch will not prevent this from running
+		await session.endSession();
+	}
 
 	const cryptoPath = `${__dirname}/../../../../../certs/access`;
 

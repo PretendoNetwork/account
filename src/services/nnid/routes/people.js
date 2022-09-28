@@ -131,7 +131,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 				email_code: 1, // will be overwritten before saving
 				email_token: '' // will be overwritten before saving
 			}
-		}], { session })
+		}], { session });
 		
 		pnid = pnidResult[0];
 
