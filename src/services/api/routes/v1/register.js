@@ -248,19 +248,26 @@ router.post('/', async (request, response) => {
 	try {
 		// * PNIDs can only be registered from a Wii U
 		// * So assume website users are WiiU NEX accounts
-		const nexAccountResult = await NEXAccount.create([{
+		nexAccount = new NEXAccount({
 			device_type: 'wiiu',
-		}], { session });
-
-		nexAccount = nexAccountResult[0];
+		});
 
 		await nexAccount.generatePID();
 		await nexAccount.generatePassword();
 
+		// Quick hack to get the PIDs to match
+		// TODO: Change this maybe?
+		// NN with a NNID will always use the NNID PID
+		// even if the provided NEX PID is different
+		// To fix this we make them the same PID
+		nexAccount.owning_pid = nexAccount.get('pid');
+
+		await nexAccount.save({ session });
+
 		const primaryPasswordHash = util.nintendoPasswordHash(password, nexAccount.get('pid'));
 		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
 
-		const pnidResult = await PNID.create([{
+		pnid = new PNID({
 			pid: nexAccount.get('pid'),
 			creation_date: creationDate,
 			updated: creationDate,
@@ -302,22 +309,13 @@ router.post('/', async (request, response) => {
 				email_code: 1, // will be overwritten before saving
 				email_token: '' // will be overwritten before saving
 			}
-		}], { session });
-
-		pnid = pnidResult[0];
+		});
 
 		await pnid.generateEmailValidationCode();
 		await pnid.generateEmailValidationToken();
 		await pnid.generateMiiImages();
 
-		// Quick hack to get the PIDs to match
-		// TODO: Change this
-		// NN with a NNID will always use the NNID PID
-		// even if the provided NEX PID is different
-		// To fix this we make them the same PID
-		await NEXAccount.updateOne({ pid: nexAccount.get('pid') }, {
-			owning_pid: nexAccount.get('pid')
-		}, { session });
+		await pnid.save({ session });
 
 		await session.commitTransaction();
 	} catch (error) {

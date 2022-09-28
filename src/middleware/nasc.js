@@ -115,19 +115,18 @@ async function NASCMiddleware(request, response, next) {
 
 			try {
 				// Create new NEX account
-				const nexAccountResult = await NEXAccount.create([{
+				const nexAccount = await new NEXAccount({
 					device_type: '3ds',
-				}], { session });
-
-				const nexAccount = nexAccountResult[0];
+					password
+				});
 
 				await nexAccount.generatePID();
-				await nexAccount.generatePassword();
+
+				await nexAccount.save({ session });
 
 				pid = nexAccount.get('pid');
 
 				// Set password
-				await NEXAccount.updateOne({ pid }, { password }, { session });
 
 				if (!device) {
 					device = new Device({
