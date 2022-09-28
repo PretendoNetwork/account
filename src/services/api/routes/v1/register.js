@@ -246,13 +246,16 @@ router.post('/', async (request, response) => {
 	await session.startTransaction();
 
 	try {
+		// * PNIDs can only be registered from a Wii U
+		// * So assume website users are WiiU NEX accounts
 		const nexAccountResult = await NEXAccount.create([{
-			pid: 0,
-			password: '',
-			owning_pid: 0,
+			device_type: 'wiiu',
 		}], { session });
 
 		nexAccount = nexAccountResult[0];
+
+		await nexAccount.generatePID();
+		await nexAccount.generatePassword();
 
 		const primaryPasswordHash = util.nintendoPasswordHash(password, nexAccount.get('pid'));
 		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
@@ -295,7 +298,7 @@ router.post('/', async (request, response) => {
 				marketing: true, // TODO: Change this
 				off_device: true // TODO: Change this
 			},
-			validation: {
+			identification: {
 				email_code: 1, // will be overwritten before saving
 				email_token: '' // will be overwritten before saving
 			}
@@ -318,7 +321,7 @@ router.post('/', async (request, response) => {
 
 		await session.commitTransaction();
 	} catch (error) {
-		logger.error('[POST] /v1/api/people: ' + error);
+		logger.error('[POST] /v1/register: ' + error);
 
 		await session.abortTransaction();
 

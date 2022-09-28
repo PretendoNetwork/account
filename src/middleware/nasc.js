@@ -116,12 +116,13 @@ async function NASCMiddleware(request, response, next) {
 			try {
 				// Create new NEX account
 				const nexAccountResult = await NEXAccount.create([{
-					pid: 0,
-					password: '',
-					owning_pid: 0,
+					device_type: '3ds',
 				}], { session });
 
 				const nexAccount = nexAccountResult[0];
+
+				await nexAccount.generatePID();
+				await nexAccount.generatePassword();
 
 				pid = nexAccount.get('pid');
 

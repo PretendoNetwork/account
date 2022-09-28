@@ -84,12 +84,13 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 
 	try {
 		const nexAccountResult = await NEXAccount.create([{
-			pid: 0,
-			password: '',
-			owning_pid: 0,
+			device_type: 'wiiu',
 		}], { session });
 
 		nexAccount = nexAccountResult[0];
+
+		await nexAccount.generatePID();
+		await nexAccount.generatePassword();
 
 		const primaryPasswordHash = util.nintendoPasswordHash(person.get('password'), nexAccount.get('pid'));
 		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
@@ -132,7 +133,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 				marketing: person.get('marketing_flag') === 'Y',
 				off_device: person.get('off_device_flag') === 'Y'
 			},
-			validation: {
+			identification: {
 				email_code: 1, // will be overwritten before saving
 				email_token: '' // will be overwritten before saving
 			}

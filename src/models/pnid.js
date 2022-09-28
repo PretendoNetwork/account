@@ -136,7 +136,7 @@ PNIDSchema.methods.generateEmailValidationCode = async function() {
 	const inuse = await PNID.findOne({
 		'identification.email_code': code
 	});
-		
+	
 	code = (inuse ? await PNID.generateEmailValidationCode() : code);
 
 	this.set('identification.email_code', code);
