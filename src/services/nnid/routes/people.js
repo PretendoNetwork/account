@@ -2,6 +2,7 @@ const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const moment = require('moment');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const { PNID } = require('../../../models/pnid');
 const { NEXAccount } = require('../../../models/nex-account');
 const deviceCertificateMiddleware = require('../../../middleware/device-certificate');
@@ -90,12 +91,16 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 
 		nexAccount = nexAccountResult[0];
 
+		const primaryPasswordHash = util.nintendoPasswordHash(person.get('password'), nexAccount.get('pid'));
+		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
+
 		const pnidResult = await PNID.create([{
 			pid: nexAccount.get('pid'),
 			creation_date: creationDate,
 			updated: creationDate,
 			username: person.get('user_id'),
-			password: person.get('password'), // will be hashed before saving
+			usernameLower: person.get('user_id').toLowerCase(),
+			password: passwordHash,
 			birthdate: person.get('birth_date'),
 			gender: person.get('gender'),
 			country: person.get('country'),
@@ -134,6 +139,10 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 		}], { session });
 		
 		pnid = pnidResult[0];
+
+		await pnid.generateEmailValidationCode();
+		await pnid.generateEmailValidationToken();
+		await pnid.generateMiiImages();
 
 		// Quick hack to get the PIDs to match
 		// TODO: Change this

@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const moment = require('moment');
 const crypto = require('crypto');
 const hcaptcha = require('hcaptcha');
+const bcrypt = require('bcrypt');
 const { PNID } = require('../../../../models/pnid');
 const { NEXAccount } = require('../../../../models/nex-account');
 const database = require('../../../../database');
@@ -253,12 +254,16 @@ router.post('/', async (request, response) => {
 
 		nexAccount = nexAccountResult[0];
 
+		const primaryPasswordHash = util.nintendoPasswordHash(password, nexAccount.get('pid'));
+		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
+
 		const pnidResult = await PNID.create([{
 			pid: nexAccount.get('pid'),
 			creation_date: creationDate,
 			updated: creationDate,
 			username: username,
-			password: password, // will be hashed before saving
+			usernameLower: username.toLowerCase(),
+			password: passwordHash,
 			birthdate: '1990-01-01', // TODO: Change this
 			gender: 'M', // TODO: Change this
 			country: 'US', // TODO: Change this
@@ -297,6 +302,10 @@ router.post('/', async (request, response) => {
 		}], { session });
 
 		pnid = pnidResult[0];
+
+		await pnid.generateEmailValidationCode();
+		await pnid.generateEmailValidationToken();
+		await pnid.generateMiiImages();
 
 		// Quick hack to get the PIDs to match
 		// TODO: Change this

@@ -224,24 +224,6 @@ PNIDSchema.methods.getServerMode = function () {
 	return serverMode;
 };
 
-PNIDSchema.pre('save', async function(next) {
-	if (!this.isModified('password')) {
-		return next();
-	}
-
-	this.set('usernameLower', this.get('username').toLowerCase());
-	//await this.generatePID();
-	await this.generateEmailValidationCode();
-	await this.generateEmailValidationToken();
-	await this.generateMiiImages();
-	
-	const primaryHash = util.nintendoPasswordHash(this.get('password'), this.get('pid'));
-	const hash = bcrypt.hashSync(primaryHash, 10);
-
-	this.set('password', hash);
-	next();
-});
-
 const PNID = model('PNID', PNIDSchema);
 
 module.exports = {
