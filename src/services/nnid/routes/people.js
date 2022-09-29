@@ -2,12 +2,14 @@ const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const moment = require('moment');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const { PNID } = require('../../../models/pnid');
 const { NEXAccount } = require('../../../models/nex-account');
 const deviceCertificateMiddleware = require('../../../middleware/device-certificate');
 const ratelimit = require('../../../middleware/ratelimit');
 const database = require('../../../database');
 const mailer = require('../../../mailer');
+const logger = require('../../../../logger');
 require('moment-timezone');
 
 /**
@@ -73,88 +75,121 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 		}).end());
 	}
 
-	// Create new NEX account
-	const newNEXAccount = new NEXAccount({
-		pid: 0,
-		password: '',
-		owning_pid: 0,
-	});
-	await newNEXAccount.save();
-
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
+	let pnid;
+	let nexAccount;
 
-	const document = {
-		pid: newNEXAccount.get('pid'),
-		creation_date: creationDate,
-		updated: creationDate,
-		username: person.get('user_id'),
-		password: person.get('password'), // will be hashed before saving
-		birthdate: person.get('birth_date'),
-		gender: person.get('gender'),
-		country: person.get('country'),
-		language: person.get('language'),
-		email: {
-			address: person.get('email').get('address'),
-			primary: person.get('email').get('primary') === 'Y',
-			parent: person.get('email').get('parent') === 'Y',
-			reachable: false,
-			validated: person.get('email').get('validated') === 'Y',
-			id: crypto.randomBytes(4).readUInt32LE()
-		},
-		region: person.get('region'),
-		timezone: {
-			name: person.get('tz_name'),
-			offset: (moment.tz(person.get('tz_name')).utcOffset() * 60)
-		},
-		mii: {
-			name: person.get('mii').get('name'),
-			primary: person.get('mii').get('name') === 'Y',
-			data: person.get('mii').get('data'),
-			id: crypto.randomBytes(4).readUInt32LE(),
-			hash: crypto.randomBytes(7).toString('hex'),
-			image_url: '', // deprecated, will be removed in the future
-			image_id: crypto.randomBytes(4).readUInt32LE()
-		},
-		flags: {
-			active: true,
-			marketing: person.get('marketing_flag') === 'Y',
-			off_device: person.get('off_device_flag') === 'Y'
-		},
-		validation: {
-			email_code: 1, // will be overwritten before saving
-			email_token: '' // will be overwritten before saving
-		}
-	};
+	const session = await database.connection.startSession();
+	await session.startTransaction();
 
-	const newPNID = new PNID(document);
-	await newPNID.save();
+	try {
+		nexAccount = new NEXAccount({
+			device_type: 'wiiu',
+		});
 
-	// Quick hack to get the PIDs to match
-	// TODO: Change this
-	// NN with a NNID will always use the NNID PID
-	// even if the provided NEX PID is different
-	// To fix this we make them the same PID
-	await NEXAccount.updateOne({ pid: newNEXAccount.get('pid') }, {
-		owning_pid: newNEXAccount.get('pid')
-	});
+		await nexAccount.generatePID();
+		await nexAccount.generatePassword();
+
+		// Quick hack to get the PIDs to match
+		// TODO: Change this maybe?
+		// NN with a NNID will always use the NNID PID
+		// even if the provided NEX PID is different
+		// To fix this we make them the same PID
+		nexAccount.owning_pid = nexAccount.get('pid');
+
+		await nexAccount.save({ session });
+
+		const primaryPasswordHash = util.nintendoPasswordHash(password, nexAccount.get('pid'));
+		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
+
+		pnid = new PNID({
+			pid: nexAccount.get('pid'),
+			creation_date: creationDate,
+			updated: creationDate,
+			username: person.get('user_id'),
+			usernameLower: person.get('user_id').toLowerCase(),
+			password: passwordHash,
+			birthdate: person.get('birth_date'),
+			gender: person.get('gender'),
+			country: person.get('country'),
+			language: person.get('language'),
+			email: {
+				address: person.get('email').get('address'),
+				primary: person.get('email').get('primary') === 'Y',
+				parent: person.get('email').get('parent') === 'Y',
+				reachable: false,
+				validated: person.get('email').get('validated') === 'Y',
+				id: crypto.randomBytes(4).readUInt32LE()
+			},
+			region: person.get('region'),
+			timezone: {
+				name: person.get('tz_name'),
+				offset: (moment.tz(person.get('tz_name')).utcOffset() * 60)
+			},
+			mii: {
+				name: person.get('mii').get('name'),
+				primary: person.get('mii').get('name') === 'Y',
+				data: person.get('mii').get('data'),
+				id: crypto.randomBytes(4).readUInt32LE(),
+				hash: crypto.randomBytes(7).toString('hex'),
+				image_url: '', // deprecated, will be removed in the future
+				image_id: crypto.randomBytes(4).readUInt32LE()
+			},
+			flags: {
+				active: true,
+				marketing: person.get('marketing_flag') === 'Y',
+				off_device: person.get('off_device_flag') === 'Y'
+			},
+			identification: {
+				email_code: 1, // will be overwritten before saving
+				email_token: '' // will be overwritten before saving
+			}
+		});
+
+		await pnid.generateEmailValidationCode();
+		await pnid.generateEmailValidationToken();
+		await pnid.generateMiiImages();
+
+		await pnid.save({ session });
+
+		await session.commitTransaction();
+	} catch (error) {
+		logger.error('[POST] /v1/api/people: ' + error);
+
+		await session.abortTransaction();
+
+		response.status(400);
+
+		return response.send(xmlbuilder.create({
+			error: {
+				cause: 'Bad Request',
+				code: '1600',
+				message: 'Unable to process request'
+			}
+		}).end());
+	} finally {
+		// * This runs regardless of failure
+		// * Returning on catch will not prevent this from running
+		await session.endSession();
+	}
 
 	await mailer.send(
-		newPNID.get('email'),
+		pnid.get('email'),
 		'[Pretendo Network] Please confirm your e-mail address',
 		`Hello,
 		
 		Your Pretendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.
 		
-		https://account.pretendo.cc/account/email-confirmation?token=` + newPNID.get('identification.email_token') + `
+		https://account.pretendo.cc/account/email-confirmation?token=` + pnid.get('identification.email_token') + `
 		
 		If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.
 		
-		&lt;&lt;Confirmation code: ` + newPNID.get('identification.email_code') + '&gt;&gt;'
+		&lt;&lt;Confirmation code: ` + pnid.get('identification.email_code') + '&gt;&gt;'
 	);
 
 	response.send(xmlbuilder.create({
 		person: {
-			pid: newPNID.get('pid')
+			pid: pnid.get('pid')
 		}
 	}).end());
 });

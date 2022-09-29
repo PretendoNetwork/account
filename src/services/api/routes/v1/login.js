@@ -2,6 +2,7 @@ const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const fs = require('fs-extra');
 const database = require('../../../../database');
+const cache = require('../../../../cache');
 const util = require('../../../../util');
 
 /**
@@ -67,10 +68,7 @@ router.post('/', async (request, response) => {
 			});
 		}
 	} else {
-		const decryptedToken = util.decryptToken(Buffer.from(refresh_token, 'base64'));
-		const unpackedToken = util.unpackToken(decryptedToken);
-
-		pnid = await database.getUserByPID(unpackedToken.pid);
+		pnid = await database.getUserBearer(refresh_token);
 		if (!pnid) {
 			return response.status(400).json({
 				app: 'api',
@@ -82,7 +80,7 @@ router.post('/', async (request, response) => {
 
 	const cryptoPath = `${__dirname}/../../../../../certs/access`;
 
-	if (!fs.pathExistsSync(cryptoPath)) {
+	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
 		return response.status(500).json({
 			app: 'api',
@@ -91,12 +89,21 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
+	let publicKey= await cache.getServicePublicKey('account');
+	if (publicKey === null) {
+		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
+		await cache.setServicePublicKey('account', publicKey);
+	}
+
+	let secretKey= await cache.getServiceSecretKey('account');
+	if (secretKey === null) {
+		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
+		await cache.setServiceSecretKey('account', secretKey);
+	}
 
 	const cryptoOptions = {
 		public_key: publicKey,
-		hmac_secret: hmacSecret
+		hmac_secret: secretKey
 	};
 
 	const accessTokenOptions = {
@@ -117,8 +124,8 @@ router.post('/', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken = util.generateToken(cryptoOptions, accessTokenOptions);
-	const refreshToken = util.generateToken(cryptoOptions, refreshTokenOptions);
+	const accessToken = await util.generateToken(cryptoOptions, accessTokenOptions);
+	const refreshToken = await util.generateToken(cryptoOptions, refreshTokenOptions);
 
 	response.json({
 		access_token: accessToken,

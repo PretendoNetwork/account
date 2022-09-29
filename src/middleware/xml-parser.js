@@ -22,7 +22,17 @@ function XMLMiddleware(request, response, next) {
 				request.body = xmlParser(body);
 				request.body = request.body.toObject();
 			} catch (error) {
-				return next();
+				response.status(401);
+
+				// TODO: This is not a real error code, check to see if better one exists
+				return response.send(xmlbuilder.create({
+					errors: {
+						error: {
+							code: '0004',
+							message: 'XML parse error'
+						}
+					}
+				}).end());
 			}
 
 			next();

@@ -1,5 +1,16 @@
 const router = require('express').Router();
+const joi = require('joi');
 const { PNID } = require('../../../../models/pnid');
+const config = require('../../../../../config.json');
+
+// TODO: Extend this later with more settings
+const userSchema = joi.object({
+	mii: joi.object({
+		name: joi.string(),
+		primary: joi.string(),
+		data: joi.string(),
+	})
+});
 
 /**
  * [GET]
@@ -36,7 +47,7 @@ router.get('/', async (request, response) => {
 		mii: {
 			data: pnid.get('mii.data'),
 			name: pnid.get('mii.name'),
-			image_url: `https://pretendo-cdn.b-cdn.net/mii/${pnid.get('pid')}/normal_face.png`
+			image_url: `${config.cdn_base}/mii/${pnid.get('pid')}/normal_face.png`
 		},
 		flags: {
 			marketing: pnid.get('flags.marketing')
@@ -65,12 +76,14 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	if (body.mii && typeof body.mii === 'object' && body.mii.name && body.mii.primary && body.mii.data) {
-		const name = body.mii.name;
-		const primary = body.mii.primary;
-		const data = body.mii.data;
+	const valid = userSchema.validate(body);
 
-		await pnid.updateMii({ name, primary, data });
+	if (valid.error) {
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: valid.error
+		});
 	}
 
 	const { pid } = pnid;
@@ -98,7 +111,7 @@ router.post('/', async (request, response) => {
 		mii: {
 			data: pnid.get('mii.data'),
 			name: pnid.get('mii.name'),
-			image_url: `https://pretendo-cdn.b-cdn.net/mii/${pnid.get('pid')}/normal_face.png`
+			image_url: `${config.cdn_base}/mii/${pnid.get('pid')}/normal_face.png`
 		},
 		flags: {
 			marketing: pnid.get('flags.marketing')

@@ -4,11 +4,14 @@ const fs = require('fs-extra');
 const moment = require('moment');
 const crypto = require('crypto');
 const hcaptcha = require('hcaptcha');
+const bcrypt = require('bcrypt');
 const { PNID } = require('../../../../models/pnid');
 const { NEXAccount } = require('../../../../models/nex-account');
 const database = require('../../../../database');
+const cache = require('../../../../cache');
 const util = require('../../../../util');
-const config = require('../../../../../config');
+const logger = require('../../../../../logger');
+const config = require('../../../../../config.json');
 
 const PNID_VALID_CHARACTERS_REGEX = /^[\w\-\.]*$/gm;
 const PNID_PUNCTUATION_START_REGEX = /^[\_\-\.]/gm;
@@ -235,74 +238,105 @@ router.post('/', async (request, response) => {
 
 	const MII_DATA = Buffer.concat([MII_DATA_FIRST, MII_DATA_NAME, MII_DATA_LAST]); // Build Mii data
 
-	// Create new NEX account
-	const newNEXAccount = new NEXAccount({
-		pid: 0,
-		password: '',
-		owning_pid: 0,
-	});
-	await newNEXAccount.save();
-
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
+	let pnid;
+	let nexAccount;
 
-	const document = {
-		pid: newNEXAccount.get('pid'),
-		creation_date: creationDate,
-		updated: creationDate,
-		username: username,
-		password: password, // will be hashed before saving
-		birthdate: '1990-01-01', // TODO: Change this
-		gender: 'M', // TODO: Change this
-		country: 'US', // TODO: Change this
-		language: 'en', // TODO: Change this
-		email: {
-			address: email,
-			primary: true, // TODO: Change this
-			parent: true, // TODO: Change this
-			reachable: false, // TODO: Change this
-			validated: false, // TODO: Change this
-			id: crypto.randomBytes(4).readUInt32LE()
-		},
-		region: 0x310B0000, // TODO: Change this
-		timezone: {
-			name: 'America/New_York', // TODO: Change this
-			offset: -14400 // TODO: Change this
-		},
-		mii: {
-			name: miiName,
-			primary: true, // TODO: Change this
-			data: MII_DATA.toString('base64'),
-			id: crypto.randomBytes(4).readUInt32LE(),
-			hash: crypto.randomBytes(7).toString('hex'),
-			image_url: '', // deprecated, will be removed in the future
-			image_id: crypto.randomBytes(4).readUInt32LE()
-		},
-		flags: {
-			active: true, // TODO: Change this
-			marketing: true, // TODO: Change this
-			off_device: true // TODO: Change this
-		},
-		validation: {
-			email_code: 1, // will be overwritten before saving
-			email_token: '' // will be overwritten before saving
-		}
-	};
+	const session = await database.connection.startSession();
+	await session.startTransaction();
 
-	const pnid = new PNID(document);
-	await pnid.save();
+	try {
+		// * PNIDs can only be registered from a Wii U
+		// * So assume website users are WiiU NEX accounts
+		nexAccount = new NEXAccount({
+			device_type: 'wiiu',
+		});
 
-	// Quick hack to get the PIDs to match
-	// TODO: Change this
-	// NN with a NNID will always use the NNID PID
-	// even if the provided NEX PID is different
-	// To fix this we make them the same PID
-	await NEXAccount.updateOne({ pid: newNEXAccount.get('pid') }, {
-		owning_pid: newNEXAccount.get('pid')
-	});
+		await nexAccount.generatePID();
+		await nexAccount.generatePassword();
+
+		// Quick hack to get the PIDs to match
+		// TODO: Change this maybe?
+		// NN with a NNID will always use the NNID PID
+		// even if the provided NEX PID is different
+		// To fix this we make them the same PID
+		nexAccount.owning_pid = nexAccount.get('pid');
+
+		await nexAccount.save({ session });
+
+		const primaryPasswordHash = util.nintendoPasswordHash(password, nexAccount.get('pid'));
+		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
+
+		pnid = new PNID({
+			pid: nexAccount.get('pid'),
+			creation_date: creationDate,
+			updated: creationDate,
+			username: username,
+			usernameLower: username.toLowerCase(),
+			password: passwordHash,
+			birthdate: '1990-01-01', // TODO: Change this
+			gender: 'M', // TODO: Change this
+			country: 'US', // TODO: Change this
+			language: 'en', // TODO: Change this
+			email: {
+				address: email,
+				primary: true, // TODO: Change this
+				parent: true, // TODO: Change this
+				reachable: false, // TODO: Change this
+				validated: false, // TODO: Change this
+				id: crypto.randomBytes(4).readUInt32LE()
+			},
+			region: 0x310B0000, // TODO: Change this
+			timezone: {
+				name: 'America/New_York', // TODO: Change this
+				offset: -14400 // TODO: Change this
+			},
+			mii: {
+				name: miiName,
+				primary: true, // TODO: Change this
+				data: MII_DATA.toString('base64'),
+				id: crypto.randomBytes(4).readUInt32LE(),
+				hash: crypto.randomBytes(7).toString('hex'),
+				image_url: '', // deprecated, will be removed in the future
+				image_id: crypto.randomBytes(4).readUInt32LE()
+			},
+			flags: {
+				active: true, // TODO: Change this
+				marketing: true, // TODO: Change this
+				off_device: true // TODO: Change this
+			},
+			identification: {
+				email_code: 1, // will be overwritten before saving
+				email_token: '' // will be overwritten before saving
+			}
+		});
+
+		await pnid.generateEmailValidationCode();
+		await pnid.generateEmailValidationToken();
+		await pnid.generateMiiImages();
+
+		await pnid.save({ session });
+
+		await session.commitTransaction();
+	} catch (error) {
+		logger.error('[POST] /v1/register: ' + error);
+
+		await session.abortTransaction();
+
+		return response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Password must have combination of letters, numbers, and/or punctuation characters'
+		});
+	} finally {
+		// * This runs regardless of failure
+		// * Returning on catch will not prevent this from running
+		await session.endSession();
+	}
 
 	const cryptoPath = `${__dirname}/../../../../../certs/access`;
 
-	if (!fs.pathExistsSync(cryptoPath)) {
+	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
 		return response.status(500).json({
 			app: 'api',
@@ -311,12 +345,21 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
+	let publicKey= await cache.getServicePublicKey('account');
+	if (publicKey === null) {
+		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
+		await cache.setServicePublicKey('account', publicKey);
+	}
+
+	let secretKey= await cache.getServiceSecretKey('account');
+	if (secretKey === null) {
+		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
+		await cache.setServiceSecretKey('account', secretKey);
+	}
 
 	const cryptoOptions = {
 		public_key: publicKey,
-		hmac_secret: hmacSecret
+		hmac_secret: secretKey
 	};
 
 	const accessTokenOptions = {
@@ -337,8 +380,8 @@ router.post('/', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken = util.generateToken(cryptoOptions, accessTokenOptions);
-	const refreshToken = util.generateToken(cryptoOptions, refreshTokenOptions);
+	const accessToken = await util.generateToken(cryptoOptions, accessTokenOptions);
+	const refreshToken = await util.generateToken(cryptoOptions, refreshTokenOptions);
 
 	response.json({
 		access_token: accessToken,

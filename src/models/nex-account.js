@@ -2,10 +2,15 @@ const { Schema, model } = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 
 const NEXAccountSchema = new Schema({
-	pid: {
-		type: Number,
-		unique: true
+	device_type: {
+		type: String,
+		enum: [
+			// Only track the family here not the model
+			'wiiu',
+			'3ds',
+		]
 	},
+	pid: Number,
 	password: String,
 	owning_pid: Number,
 	access_level: {
@@ -17,6 +22,8 @@ const NEXAccountSchema = new Schema({
 		default: 'prod' // everyone is in production by default
 	},
 });
+
+NEXAccountSchema.index({ device_type: 1, pid: 1 }, { unique: true })
 
 NEXAccountSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 
@@ -35,7 +42,8 @@ NEXAccountSchema.methods.generatePID = async function () {
 	let pid = Math.floor(Math.random() * (max - min + 1) + min);
 
 	const inuse = await NEXAccount.findOne({
-		pid
+		pid,
+		device_type: this.get('device_type')
 	});
 
 	pid = (inuse ? await NEXAccount.generatePID() : pid);
@@ -59,16 +67,6 @@ NEXAccountSchema.methods.generatePassword = function () {
 
 	this.set('password', output.join(''));
 };
-
-NEXAccountSchema.pre('save', async function (next) {
-	await this.generatePID();
-
-	if (this.get('password') === '') {
-		await this.generatePassword();
-	}
-
-	next();
-});
 
 const NEXAccount = model('NEXAccount', NEXAccountSchema);
 

@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const { NEXAccount } = require('../../../models/nex-account');
 const util = require('../../../util');
 const database = require('../../../database');
+const cache = require('../../../cache');
 
 /**
  * [GET]
@@ -32,7 +33,7 @@ router.get('/service_token/@me', async (request, response) => {
 
 	const cryptoPath = `${__dirname}/../../../../certs/${service_type}/${service_name}`;
 
-	if (!fs.pathExistsSync(cryptoPath)) {
+	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
 		return response.send(xmlbuilder.create({
 			errors: {
@@ -44,12 +45,21 @@ router.get('/service_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
+	let publicKey= await cache.getServicePublicKey(service_name);
+	if (publicKey === null) {
+		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
+		await cache.setServicePublicKey(service_name, publicKey);
+	}
+
+	let secretKey= await cache.getServiceSecretKey(service_name);
+	if (secretKey === null) {
+		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
+		await cache.setServiceSecretKey(service_name, secretKey);
+	}
 
 	const cryptoOptions = {
 		public_key: publicKey,
-		hmac_secret: hmacSecret
+		hmac_secret: secretKey
 	};
 
 	const tokenOptions = {
@@ -61,7 +71,7 @@ router.get('/service_token/@me', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let serviceToken = util.generateToken(cryptoOptions, tokenOptions);
+	let serviceToken = await util.generateToken(cryptoOptions, tokenOptions);
 
 	if (request.isCemu) {
 		serviceToken = Buffer.from(serviceToken, 'base64').toString('hex');
@@ -113,7 +123,7 @@ router.get('/nex_token/@me', async (request, response) => {
 
 	const cryptoPath = `${__dirname}/../../../../certs/${service_type}/${service_name}`;
 	
-	if (!fs.pathExistsSync(cryptoPath)) {
+	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
 		return response.send(xmlbuilder.create({
 			errors: {
@@ -125,12 +135,21 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
+	let publicKey = await cache.getNEXPublicKey(service_name);
+	if (publicKey === null) {
+		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
+		await cache.setNEXPublicKey(service_name, publicKey);
+	}
+
+	let secretKey= await cache.getNEXSecretKey(service_name);
+	if (secretKey === null) {
+		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
+		await cache.setNEXSecretKey(service_name, secretKey);
+	}
 
 	const cryptoOptions = {
 		public_key: publicKey,
-		hmac_secret: hmacSecret
+		hmac_secret: secretKey
 	};
 
 	const tokenOptions = {
@@ -151,7 +170,7 @@ router.get('/nex_token/@me', async (request, response) => {
 		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
 	}
 
-	let nexToken = util.generateToken(cryptoOptions, tokenOptions);
+	let nexToken = await util.generateToken(cryptoOptions, tokenOptions);
 
 	if (request.isCemu) {
 		nexToken = Buffer.from(nexToken, 'base64').toString('hex');

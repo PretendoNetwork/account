@@ -1,7 +1,8 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const express = require('express');
 const util = require('../../../util');
 const database = require('../../../database');
+const cache = require('../../../cache');
 
 const router = express.Router();
 
@@ -55,12 +56,21 @@ async function processLoginRequest(request) {
 
 	const cryptoPath = `${__dirname}/../../../../certs/nex/${service_name}`;
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
+	let publicKey= await cache.getNEXPublicKey(service_name);
+	if (publicKey === null) {
+		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
+		await cache.setNEXPublicKey(service_name, publicKey);
+	}
+
+	let secretKey= await cache.getNEXSecretKey(service_name);
+	if (secretKey === null) {
+		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
+		await cache.setNEXSecretKey(service_name, secretKey);
+	}
 
 	const cryptoOptions = {
 		public_key: publicKey,
-		hmac_secret: hmacSecret
+		hmac_secret: secretKey
 	};
 
 	const tokenOptions = {
@@ -72,7 +82,7 @@ async function processLoginRequest(request) {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let nexToken = util.generateToken(cryptoOptions, tokenOptions);
+	let nexToken = await util.generateToken(cryptoOptions, tokenOptions);
 	nexToken = util.nintendoBase64Encode(Buffer.from(nexToken, 'base64'));
 
 	const params = new URLSearchParams({

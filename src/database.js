@@ -1,18 +1,26 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const joi = require('joi');
 const util = require('./util');
 const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
-const { mongoose: mongooseConfig } = require('../config.json');
-const { uri, database, options } = mongooseConfig;
+const config = require('../config.json');
+const { uri, database, options } = config.mongoose;
+
+// TODO: Extend this later with more settings
+const discordConnectionSchema = joi.object({
+	id: joi.string()
+});
 
 let connection;
 
 async function connect() {
-	await mongoose.connect(`${uri}/${database}`, options);
+	await mongoose.connect(`${uri}/${database}?replicaSet=rs0`, options);
 	
 	connection = mongoose.connection;
 	connection.on('error', console.error.bind(console, 'connection error:'));
+
+	module.exports.connection = connection;
 }
 
 function verifyConnected() {
@@ -48,14 +56,16 @@ async function getUserByPID(pid) {
 async function doesUserExist(username) {
 	verifyConnected();
 
-	return !!await this.getUserByUsername(username);
+	return !!await getUserByUsername(username);
 }
 
 async function getUserBasic(token) {
 	verifyConnected();
 
+	// Wii U sends Basic auth as `username password`, where the password may not have spaces
+	// This is not to spec, but that is the consoles fault not ours
 	const [username, password] = Buffer.from(token, 'base64').toString().split(' ');
-	const user = await this.getUserByUsername(username);
+	const user = await getUserByUsername(username);
 
 	if (!user) {
 		return null;
@@ -73,26 +83,32 @@ async function getUserBasic(token) {
 async function getUserBearer(token) {
 	verifyConnected();
 
-	const decryptedToken = util.decryptToken(Buffer.from(token, 'base64'));
-	const unpackedToken = util.unpackToken(decryptedToken);
+	try {
+		const decryptedToken = await util.decryptToken(Buffer.from(token, 'base64'));
+		const unpackedToken = util.unpackToken(decryptedToken);
 
-	const user = await getUserByPID(unpackedToken.pid);
+		const user = await getUserByPID(unpackedToken.pid);
 
-	if (user) {
-		const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
+		if (user) {
+			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
 
-		if (Math.floor(Date.now() / 1000) > expireTime) {
-			return null;
+			if (Math.floor(Date.now() / 1000) > expireTime) {
+				return null;
+			}
 		}
-	}
 
-	return user;
+		return user;
+	} catch (error) {
+		// TODO: Handle error
+		return null;
+	}
+	
 }
 
 async function getUserProfileJSONByPID(pid) {
 	verifyConnected();
 
-	const user = await this.getUserByPID(pid);
+	const user = await getUserByPID(pid);
 	const device = user.get('devices')[0]; // Just grab the first device
 	let device_attributes;
 
@@ -146,9 +162,9 @@ async function getUserProfileJSONByPID(pid) {
 				mii_image: {
 					// Images MUST be loaded over HTTPS or console ignores them
 					// Bunny CDN is the only CDN which seems to support TLS 1.0/1.1 (required)
-					cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
+					cached_url: `${config.cdn_base}/mii/${user.pid}/standard.tga`,
 					id: user.get('mii.image_id'),
-					url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
+					url: `${config.cdn_base}/mii/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},
@@ -183,7 +199,9 @@ async function addUserConnection(pnid, data, type) {
 }
 
 async function addUserConnectionDiscord(pnid, data) {
-	if (!data.id) {
+	const valid = discordConnectionSchema.validate(data);
+
+	if (valid.error) {
 		return {
 			app: 'api',
 			status: 400,
@@ -193,7 +211,7 @@ async function addUserConnectionDiscord(pnid, data) {
 
 	await PNID.updateOne({ pid: pnid.get('pid') }, {
 		$set: {
-			'connections.discord': data
+			'connections.discord.id': data.id
 		}
 	});
 
@@ -225,6 +243,7 @@ async function removeUserConnectionDiscord(pnid) {
 
 module.exports = {
 	connect,
+	connection,
 	getUserByUsername,
 	getUserByPID,
 	doesUserExist,
