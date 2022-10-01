@@ -10,7 +10,10 @@ const NEXAccountSchema = new Schema({
 			'3ds',
 		]
 	},
-	pid: Number,
+	pid: {
+		type: Number,
+		unique: true
+	},
 	password: String,
 	owning_pid: Number,
 	access_level: {
@@ -22,8 +25,6 @@ const NEXAccountSchema = new Schema({
 		default: 'prod' // everyone is in production by default
 	},
 });
-
-NEXAccountSchema.index({ device_type: 1, pid: 1 }, { unique: true })
 
 NEXAccountSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 
@@ -41,10 +42,7 @@ NEXAccountSchema.methods.generatePID = async function () {
 
 	let pid = Math.floor(Math.random() * (max - min + 1) + min);
 
-	const inuse = await NEXAccount.findOne({
-		pid,
-		device_type: this.get('device_type')
-	});
+	const inuse = await NEXAccount.findOne({ pid });
 
 	pid = (inuse ? await NEXAccount.generatePID() : pid);
 
