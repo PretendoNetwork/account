@@ -245,6 +245,33 @@ async function sendEmailConfirmedEmail(pnid) {
 	});
 }
 
+async function sendForgotPasswordEmail(pnid) {
+	const publicKey = await cache.getServicePublicKey('account');
+	const secretKey = await cache.getServiceSecretKey('account');
+
+	const cryptoOptions = {
+		public_key: publicKey,
+		hmac_secret: secretKey
+	};
+
+	const tokenOptions = {
+		system_type: 0xF, // API
+		token_type: 0x5, // Password reset
+		pid: pnid.get('pid'),
+		access_level: pnid.get('access_level'),
+		title_id: BigInt(0),
+		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // Only valid for 24 hours
+	};
+
+	const passwordResetToken = await generateToken(cryptoOptions, tokenOptions);
+
+	await mailer.sendMail({
+		to: pnid.get('email.address'),
+		subject: '[Pretendo Network] Forgot Password',
+		html: `Visit this link to reset your password ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
+	});
+}
+
 module.exports = {
 	nintendoPasswordHash,
 	nintendoBase64Decode,
@@ -256,5 +283,6 @@ module.exports = {
 	uploadCDNAsset,
 	nascError,
 	sendConfirmationEmail,
-	sendEmailConfirmedEmail
+	sendEmailConfirmedEmail,
+	sendForgotPasswordEmail
 };

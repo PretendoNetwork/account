@@ -19,8 +19,10 @@ api.options('*', cors());
 logger.info('[USER API] Applying imported routes');
 api.use('/v1/connections', routes.V1.CONNECTIONS);
 api.use('/v1/email', routes.V1.EMAIL);
+api.use('/v1/forgot-password', routes.V1.FORGOT_PASSWORD);
 api.use('/v1/login', routes.V1.LOGIN);
 api.use('/v1/register', routes.V1.REGISTER);
+api.use('/v1/reset-password', routes.V1.RESET_PASSWORD);
 api.use('/v1/user', routes.V1.USER);
 
 

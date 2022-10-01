@@ -28,5 +28,6 @@
     "hcaptcha": {
         "secret": "0x0000000000000000000000000000000000000000"
     },
-    "cdn_base": "https://example.com"
+    "cdn_base": "https://example.com",
+    "website_base": "https://example.com"
 }

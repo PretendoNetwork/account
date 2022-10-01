@@ -261,7 +261,7 @@ router.post('/', async (request, response) => {
 			country: 'US', // TODO: Change this
 			language: 'en', // TODO: Change this
 			email: {
-				address: email,
+				address: email.toLowerCase(),
 				primary: true, // TODO: Change this
 				parent: true, // TODO: Change this
 				reachable: false, // TODO: Change this

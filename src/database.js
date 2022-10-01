@@ -54,6 +54,16 @@ async function getUserByPID(pid) {
 	return user;
 }
 
+async function getUserByEmailAddress(email) {
+	verifyConnected();
+
+	const user = await PNID.findOne({
+		'email.address': email.toLowerCase()
+	});
+
+	return user;
+}
+
 async function doesUserExist(username) {
 	verifyConnected();
 
@@ -252,6 +262,7 @@ module.exports = {
 	connection,
 	getUserByUsername,
 	getUserByPID,
+	getUserByEmailAddress,
 	doesUserExist,
 	getUserBasic,
 	getUserBearer,

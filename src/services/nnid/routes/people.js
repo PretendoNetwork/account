@@ -114,7 +114,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 			country: person.get('country'),
 			language: person.get('language'),
 			email: {
-				address: person.get('email').get('address'),
+				address: person.get('email').get('address').toLowerCase(),
 				primary: person.get('email').get('primary') === 'Y',
 				parent: person.get('email').get('parent') === 'Y',
 				reachable: false,
@@ -474,7 +474,7 @@ router.put('/@me/emails/@primary', async (request, response) => {
 		}).end());
 	}
 
-	pnid.set('email.address', email.get('address'));
+	pnid.set('email.address', email.get('address').toLowerCase());
 	pnid.set('email.reachable', false);
 	pnid.set('email.validated', false);
 	pnid.set('email.validated_date', '');
