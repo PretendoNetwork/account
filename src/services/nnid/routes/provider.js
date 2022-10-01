@@ -45,17 +45,8 @@ router.get('/service_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	let publicKey= await cache.getServicePublicKey(service_name);
-	if (publicKey === null) {
-		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
-		await cache.setServicePublicKey(service_name, publicKey);
-	}
-
-	let secretKey= await cache.getServiceSecretKey(service_name);
-	if (secretKey === null) {
-		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
-		await cache.setServiceSecretKey(service_name, secretKey);
-	}
+	const publicKey = await cache.getServicePublicKey(service_name);
+	const secretKey = await cache.getServiceSecretKey(service_name);
 
 	const cryptoOptions = {
 		public_key: publicKey,
@@ -122,7 +113,7 @@ router.get('/nex_token/@me', async (request, response) => {
 	const titleId = request.headers['x-nintendo-title-id'];
 
 	const cryptoPath = `${__dirname}/../../../../certs/${service_type}/${service_name}`;
-	
+
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
 		return response.send(xmlbuilder.create({
@@ -135,17 +126,8 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	let publicKey = await cache.getNEXPublicKey(service_name);
-	if (publicKey === null) {
-		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
-		await cache.setNEXPublicKey(service_name, publicKey);
-	}
-
-	let secretKey= await cache.getNEXSecretKey(service_name);
-	if (secretKey === null) {
-		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
-		await cache.setNEXSecretKey(service_name, secretKey);
-	}
+	const publicKey = await cache.getNEXPublicKey(service_name);
+	const secretKey= await cache.getNEXSecretKey(service_name);
 
 	const cryptoOptions = {
 		public_key: publicKey,

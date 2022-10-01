@@ -4,6 +4,7 @@ const joi = require('joi');
 const util = require('./util');
 const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
+const logger = require('../logger');
 const config = require('../config.json');
 const { uri, database, options } = config.mongoose;
 
@@ -16,7 +17,7 @@ let connection;
 
 async function connect() {
 	await mongoose.connect(`${uri}/${database}?replicaSet=rs0`, options);
-	
+
 	connection = mongoose.connection;
 	connection.on('error', console.error.bind(console, 'connection error:'));
 
@@ -100,9 +101,9 @@ async function getUserBearer(token) {
 		return user;
 	} catch (error) {
 		// TODO: Handle error
+		logger.error(error);
 		return null;
 	}
-	
 }
 
 async function getUserProfileJSONByPID(pid) {
@@ -118,7 +119,7 @@ async function getUserProfileJSONByPID(pid) {
 				name,
 				value
 			};
-	
+
 			if (created_date) {
 				deviceAttributeDocument.created_date = created_date;
 			}

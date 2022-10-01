@@ -78,7 +78,7 @@ router.post('/', async (request, response) => {
 		}
 	}
 
-	const cryptoPath = `${__dirname}/../../../../../certs/access`;
+	const cryptoPath = `${__dirname}/../../../../../certs/service/account`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
@@ -89,17 +89,8 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	let publicKey= await cache.getServicePublicKey('account');
-	if (publicKey === null) {
-		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
-		await cache.setServicePublicKey('account', publicKey);
-	}
-
-	let secretKey= await cache.getServiceSecretKey('account');
-	if (secretKey === null) {
-		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
-		await cache.setServiceSecretKey('account', secretKey);
-	}
+	const publicKey = await cache.getServicePublicKey('account');
+	const secretKey = await cache.getServiceSecretKey('account');
 
 	const cryptoOptions = {
 		public_key: publicKey,

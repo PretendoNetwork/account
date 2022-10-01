@@ -56,17 +56,8 @@ async function processLoginRequest(request) {
 
 	const cryptoPath = `${__dirname}/../../../../certs/nex/${service_name}`;
 
-	let publicKey= await cache.getNEXPublicKey(service_name);
-	if (publicKey === null) {
-		publicKey = await fs.readFile(`${cryptoPath}/public.pem`);
-		await cache.setNEXPublicKey(service_name, publicKey);
-	}
-
-	let secretKey= await cache.getNEXSecretKey(service_name);
-	if (secretKey === null) {
-		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
-		await cache.setNEXSecretKey(service_name, secretKey);
-	}
+	const publicKey = await cache.getNEXPublicKey(service_name);
+	const secretKey = await cache.getNEXSecretKey(service_name);
 
 	const cryptoOptions = {
 		public_key: publicKey,

@@ -1,5 +1,9 @@
+const fs = require('fs-extra');
 const redis = require('redis');
 let client;
+
+const SERVICE_CERTS_BASE = `${__dirname}/../certs/service`;
+const NEX_CERTS_BASE = `${__dirname}/../certs/nex`;
 
 async function connect() {
 	client = redis.createClient();
@@ -25,19 +29,49 @@ async function getCachedFile(type, name, fileName, encoding) {
 // NEX server cache functions
 
 async function getNEXPublicKey(name, encoding) {
-	return await getCachedFile(`nex:${name}:public_key`, encoding);
+	let publicKey = await getCachedFile(`nex:${name}:public_key`, encoding);
+
+	if (publicKey === null) {
+		publicKey = await fs.readFile(`${NEX_CERTS_BASE}/${name}/public.pem`, { encoding });
+		await setNEXPublicKey(name, publicKey);
+	}
+
+	return publicKey;
 }
 
 async function getNEXPrivateKey(name, encoding) {
-	return await getCachedFile(`nex:${name}:private_key`, encoding);
+	let privateKey = await getCachedFile(`nex:${name}:private_key`, encoding);
+
+	if (privateKey === null) {
+		privateKey = await fs.readFile(`${NEX_CERTS_BASE}/${name}/private.pem`, { encoding });
+		await setNEXPrivateKey(name, privateKey);
+	}
+
+	return privateKey;
 }
 
 async function getNEXSecretKey(name, encoding) {
-	return await getCachedFile(`nex:${name}:secret_key`, encoding);
+	let secretKey = await getCachedFile(`nex:${name}:secret_key`, encoding);
+
+	if (secretKey === null) {
+		const fileBuffer = await fs.readFile(`${NEX_CERTS_BASE}/${name}/secret.key`, { encoding: 'utf8' });
+		secretKey = Buffer.from(fileBuffer, encoding);
+		await setNEXSecretKey(name, secretKey);
+	}
+
+	return secretKey;
 }
 
 async function getNEXAESKey(name, encoding) {
-	return await getCachedFile(`nex:${name}:aes_key`, encoding);
+	let aesKey = await getCachedFile(`nex:${name}:aes_key`, encoding);
+
+	if (aesKey === null) {
+		const fileBuffer = await fs.readFile(`${NEX_CERTS_BASE}/${name}/aes.key`, { encoding: 'utf8' });
+		aesKey = Buffer.from(fileBuffer, encoding);
+		await setNEXAESKey(name, aesKey);
+	}
+
+	return secretKey;
 }
 
 async function setNEXPublicKey(name, value) {
@@ -59,19 +93,49 @@ async function setNEXAESKey(name, value) {
 // 3rd party service cache functions
 
 async function getServicePublicKey(name, encoding) {
-	return await getCachedFile(`service:${name}:public_key`, encoding);
+	let publicKey = await getCachedFile(`service:${name}:public_key`, encoding);
+
+	if (publicKey === null) {
+		publicKey = await fs.readFile(`${SERVICE_CERTS_BASE}/${name}/public.pem`, { encoding });
+		await setServicePublicKey(name, publicKey);
+	}
+
+	return publicKey;
 }
 
 async function getServicePrivateKey(name, encoding) {
-	return await getCachedFile(`service:${name}:private_key`, encoding);
+	let privateKey = await getCachedFile(`service:${name}:private_key`, encoding);
+
+	if (privateKey === null) {
+		privateKey = await fs.readFile(`${SERVICE_CERTS_BASE}/${name}/private.pem`, { encoding });
+		await setServicePrivateKey(name, privateKey);
+	}
+
+	return privateKey;
 }
 
 async function getServiceSecretKey(name, encoding) {
-	return await getCachedFile(`service:${name}:secret_key`, encoding);
+	let secretKey = await getCachedFile(`service:${name}:secret_key`, encoding);
+
+	if (secretKey === null) {
+		const fileBuffer = await fs.readFile(`${SERVICE_CERTS_BASE}/${name}/secret.key`, { encoding: 'utf8' });
+		secretKey = Buffer.from(fileBuffer, encoding);
+		await setServiceSecretKey(name, secretKey);
+	}
+
+	return secretKey;
 }
 
 async function getServiceAESKey(name, encoding) {
-	return await getCachedFile(`service:${name}:aes_key`, encoding);
+	let aesKey = await getCachedFile(`service:${name}:aes_key`, encoding);
+
+	if (aesKey === null) {
+		const fileBuffer = await fs.readFile(`${SERVICE_CERTS_BASE}/${name}/aes.key`, { encoding: 'utf8' });
+		aesKey = Buffer.from(fileBuffer, encoding);
+		await setServiceAESKey(name, aesKey);
+	}
+
+	return aesKey;
 }
 
 async function setServicePublicKey(name, value) {

@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "node-rsa": "^1.0.7",
-    "prompt": "^1.0.0"
+    "prompt": "^1.0.0",
+    "yesno": "^0.4.0"
   }
 }

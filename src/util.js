@@ -1,6 +1,5 @@
 const crypto = require('crypto');
 const NodeRSA = require('node-rsa');
-const fs = require('fs-extra');
 const aws = require('aws-sdk');
 const cache = require('./cache');
 const config = require('../config.json');
@@ -41,14 +40,8 @@ async function generateToken(cryptoOptions, tokenOptions) {
 	// Access and refresh tokens use a different format since they must be much smaller
 	// They take no extra crypto options
 	if (!cryptoOptions) {
-		let aesKey = await cache.getServiceAESKey('account', 'hex');
-
-		if (aesKey === null) {
-			const fileBuffer = await fs.readFile(`${__dirname}/../certs/access/aes.key`, { encoding: 'utf8' });
-			aesKey = Buffer.from(fileBuffer, 'hex');
-			await cache.setServiceAESKey('account', aesKey);
-		}
-
+		const aesKey = await cache.getServiceAESKey('account', 'hex');
+		
 		const dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
 		dataBuffer.writeUInt8(tokenOptions.system_type, 0x0);
@@ -130,18 +123,10 @@ async function generateToken(cryptoOptions, tokenOptions) {
 }
 
 async function decryptToken(token) {
-	const cryptoPath = `${__dirname}/../certs/access`;
-
 	// Access and refresh tokens use a different format since they must be much smaller
 	// Assume a small length means access or refresh token
 	if (token.length <= 32) {
-		let aesKey = await cache.getServiceAESKey('account', 'hex');
-
-		if (aesKey === null) {
-			const fileBuffer = await fs.readFile(`${cryptoPath}/aes.key`, { encoding: 'utf8' });
-			aesKey = Buffer.from(fileBuffer, 'hex');
-			await cache.setServiceAESKey('account', aesKey);
-		}
+		const aesKey = await cache.getServiceAESKey('account', 'hex');
 
 		const iv = Buffer.alloc(16);
 
@@ -153,17 +138,8 @@ async function decryptToken(token) {
 		return decryptedBody;
 	}
 
-	let privateKeyBytes = await cache.getServicePrivateKey('account');
-	if (privateKeyBytes === null) {
-		privateKeyBytes = await fs.readFile(`${cryptoPath}/private.pem`);
-		await cache.setServicePrivateKey('account', privateKeyBytes);
-	}
-
-	let secretKey = await cache.getServiceSecretKey('account');
-	if (secretKey === null) {
-		secretKey = await fs.readFile(`${cryptoPath}/secret.key`);
-		await cache.setServiceSecretKey('account', secretKey);
-	}
+	const privateKeyBytes = await cache.getServicePrivateKey('account');
+	const secretKey = await cache.getServiceSecretKey('account');
 
 	const privateKey = new NodeRSA(privateKeyBytes, 'pkcs1-private-pem', {
 		environment: 'browser',

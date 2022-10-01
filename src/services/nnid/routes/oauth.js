@@ -35,7 +35,7 @@ router.post('/access_token/generate', async (request, response) => {
 			}
 		}).end());
 	}
-	
+
 	if (!password || password.trim() === '') {
 		response.status(400);
 		return response.send(xmlbuilder.create({
@@ -70,7 +70,7 @@ router.post('/access_token/generate', async (request, response) => {
 		}).end());
 	}
 
-	const cryptoPath = `${__dirname}/../../../../certs/access`;
+	const cryptoPath = `${__dirname}/../../../../certs/service/account`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
@@ -78,7 +78,7 @@ router.post('/access_token/generate', async (request, response) => {
 			errors: {
 				error: {
 					code: '0000',
-					message: 'Could not find access key crypto path'
+					message: 'Could not find account access key crypto path'
 				}
 			}
 		}).end());
