@@ -335,6 +335,8 @@ router.post('/', async (request, response) => {
 		await session.endSession();
 	}
 
+	await util.sendConfirmationEmail(pnid);
+
 	const cryptoPath = `${__dirname}/../../../../../certs/service/account`;
 
 	if (!await fs.pathExists(cryptoPath)) {
