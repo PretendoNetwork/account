@@ -1,10 +1,11 @@
+const xmlbuilder = require('xmlbuilder');
 const { document: xmlParser } = require('xmlbuilder2');
 
 function XMLMiddleware(request, response, next) {
 	if (request.method == 'POST' || request.method == 'PUT') {
 		const headers = request.headers;
 		let body = '';
-		
+
 		if (
 			!headers['content-type'] ||
 			!headers['content-type'].toLowerCase().includes('xml')
