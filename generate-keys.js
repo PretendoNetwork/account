@@ -40,7 +40,6 @@ async function main() {
 		usage();
 		return;
 	}
-	
 
 	if (type === 'service' && name === 'account') {
 		logger.error('Cannot use service name \'account\'. Reserved');
@@ -48,7 +47,7 @@ async function main() {
 		return;
 	}
 
-	const path = path = `${__dirname}/certs/${type}/${name}`;
+	const path = `${__dirname}/certs/${type}/${name}`;
 
 	if (fs.pathExistsSync(path)) {
 		const overwrite = await yesno({
