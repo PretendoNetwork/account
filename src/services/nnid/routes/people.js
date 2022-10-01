@@ -99,7 +99,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 
 		await nexAccount.save({ session });
 
-		const primaryPasswordHash = util.nintendoPasswordHash(password, nexAccount.get('pid'));
+		const primaryPasswordHash = util.nintendoPasswordHash(person.get('password'), nexAccount.get('pid'));
 		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid = new PNID({
