@@ -395,7 +395,10 @@ router.put('/@me', async (request, response) => {
 	const offDeviceFlag = person.get('off_device_flag') ? person.get('off_device_flag') === 'Y' : pnid.get('flags.off_device');
 
 	if (person.get('password')) {
-		pnid.password = person.get('password'); // this gets hashed in the pre-save function, don't worry
+		const primaryPasswordHash = util.nintendoPasswordHash(person.get('password'), pnid.get('pid'));
+		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
+		
+		pnid.password = passwordHash;
 	}
 
 	pnid.gender = gender;
