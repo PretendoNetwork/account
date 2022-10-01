@@ -1,79 +1,129 @@
 const NodeRSA = require('node-rsa');
 const crypto = require('crypto');
 const fs = require('fs-extra');
+const yesno = require('yesno');
+const logger = require('./logger');
 require('colors');
 
-const args = process.argv.slice(2);
+const ALLOWED_CHARS_REGEX = /[^a-zA-Z0-9_-]/g;
 
-if (args.length < 1) {
-	usage();
-	return;
-}
+async function main() {
+	const args = process.argv.slice(2);
 
-const [type, name] = args;
-
-if (!['nex', 'service', 'access'].includes(type)) {
-	usage();
-	return;
-}
-
-if (type !== 'access' && (!name || name.trim() === '')) {
-	usage();
-	return;
-}
-
-let path;
-
-if (type === 'access') {
-	path = `${__dirname}/certs/${type}`;
-} else {
-	path = `${__dirname}/certs/${type}/${name}`;
-}
-
-// Ensure the output directories exist
-console.log('Creating output directories'.brightGreen);
-fs.ensureDirSync(path);
-
-// Generate new AES key
-console.log('Generating AES key'.brightGreen);
-const aesKey = crypto.randomBytes(16);
-
-// Saving AES key
-fs.writeFileSync(`${path}/aes.key`, aesKey.toString('hex'));
-console.log(`Saved AES key to file ${path}/aes.key`.brightBlue);
-
-const key = new NodeRSA({ b: 1024}, null, {
-	environment: 'browser',
-	encryptionScheme: {
-		'hash': 'sha256',
+	if (args.length < 1) {
+		logger.error('Must pass in type and optional name');
+		usage();
+		return;
 	}
-});
 
-// Generate new key pair
-console.log('Generating RSA key pair'.brightGreen, '(this may take a while)'.yellow.bold);
-key.generateKeyPair(1024);
+	let [type, name] = args;
 
-// Export the keys
-console.log('Exporting public key'.brightGreen);
-const publickKey = key.exportKey('public');
+	type = type.toLowerCase().trim();
 
-// Saving public key
-fs.writeFileSync(`${path}/public.pem`, publickKey);
-console.log(`Saved public key to file ${path}/public.pem`.brightBlue);
+	if (name) {
+		name = name.toLowerCase().trim();
 
-console.log('Exporting private key'.brightGreen);
-const privatekKey = key.exportKey('private');
+		if (ALLOWED_CHARS_REGEX.test(name)) {
+			logger.error(`Invalid name. Names must only contain [^a-zA-Z0-9_-]. Got ${name}`);
+			return;
+		}
+	}
 
-// Saving private key
-fs.writeFileSync(`${path}/private.pem`, privatekKey);
-console.log(`Saved public key to file ${path}/private.pem`.brightBlue);
+	if (!['nex', 'service', 'account'].includes(type)) {
+		logger.error(`Invalid type. Expected nex, service, or account. Got ${type}`);
+		usage();
+		return;
+	}
 
-// Create HMAC secret key
-console.log('Generating HMAC secret'.brightGreen);
-const secret = crypto.randomBytes(16);
-fs.writeFileSync(`${path}/secret.key`, secret.toString('hex'));
+	if (type !== 'account' && (!name || name === '')) {
+		logger.error('If type is not account, a name MUST be passed');
+		usage();
+		return;
+	}
+	
 
-console.log(`Saved HMAC secret to file ${path}/secret.key`.brightBlue);
+	if (type === 'service' && name === 'account') {
+		logger.error('Cannot use service name \'account\'. Reserved');
+		usage();
+		return;
+	}
+
+	const path = path = `${__dirname}/certs/${type}/${name}`;
+
+	if (fs.pathExistsSync(path)) {
+		const overwrite = await yesno({
+			question: 'Keys found for type name, overwrite existing keys?'
+		});
+
+		if (!overwrite) {
+			logger.info('Not overwriting existing keys. Exiting program');
+			return;
+		}
+	}
+
+	const publicKeyPath = `${path}/public.pem`;
+	const privateKeyPath = `${path}/private.pem`;
+	const aesKeyPath = `${path}/aes.key`;
+	const secretKeyPath = `${path}/secret.key`;
+
+	// Ensure the output directories exist
+	logger.info('Creating output directories...');
+	fs.ensureDirSync(path);
+	logger.success('Created output directories!');
+
+	const key = new NodeRSA({ b: 1024 }, null, {
+		environment: 'browser',
+		encryptionScheme: {
+			'hash': 'sha256',
+		}
+	});
+
+	// Generate new key pair
+	logger.info('Generating RSA key pair...');
+	logger.warn('(this may take a while)')
+	key.generateKeyPair(1024);
+	logger.success('Generated RSA key pair!');
+
+	// Export the keys
+	logger.info('Exporting public key...');
+	const publicKey = key.exportKey('public');
+	logger.success('Exported public key!');
+
+	// Saving public key
+	logger.info('Saving public key to disk...');
+	fs.writeFileSync(publicKeyPath, publicKey);
+	logger.success(`Saved public key to ${publicKeyPath}!`);
+
+	logger.info('Exporting private key...');
+	const privateKey = key.exportKey('private');
+	logger.success('Exported private key!');
+
+	// Saving private key
+	logger.info('Saving private key to disk...');
+	fs.writeFileSync(privateKeyPath, privateKey);
+	logger.success(`Saved private key to ${privateKeyPath}!`);
+
+	// Generate new AES key
+	logger.info('Generating AES key...');
+	const aesKey = crypto.randomBytes(16);
+	logger.success('Generated AES key!');
+
+	// Saving AES key
+	logger.info('Saving AES key to disk...');
+	fs.writeFileSync(aesKeyPath, aesKey.toString('hex'));
+	logger.success(`Saved AES key to ${aesKeyPath}!`);
+
+	// Create HMAC secret key
+	logger.info('Generating HMAC secret...');
+	const secret = crypto.randomBytes(16);
+	logger.success('Generated RSA key pair!');
+
+	logger.info('Saving HMAC secret to disk...');
+	fs.writeFileSync(secretKeyPath, secret.toString('hex'));
+	logger.success(`Saved HMAC secret to ${secretKeyPath}!`);
+
+	logger.success('Keys generated successfully');
+}
 
 // Display usage information
 function usage() {
@@ -82,7 +132,9 @@ function usage() {
 	console.log('Types:');
 	console.log('     - nex');
 	console.log('     - service');
-	console.log('     - access');
+	console.log('     - account');
 
-	console.log('Name: service or nex server name. Not used in access type');
+	console.log('Name: Service or NEX server name. Not used in account type');
 }
+
+main().catch(logger.error);
