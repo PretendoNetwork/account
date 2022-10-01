@@ -47,7 +47,13 @@ async function main() {
 		return;
 	}
 
-	const path = `${__dirname}/certs/${type}/${name}`;
+	let path;
+
+	if (type === 'account') {
+		path = `${__dirname}/certs/service/account`;
+	} else {
+		path = `${__dirname}/certs/${type}/${name}`;
+	}
 
 	if (fs.pathExistsSync(path)) {
 		const overwrite = await yesno({
