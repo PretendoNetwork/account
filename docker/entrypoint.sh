@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # this doesnt check game server specific certs, only static file paths
-files='config.json certs/nex/datastore/secret.key certs/access/secret.key certs/access/aes.key certs/access/private.pem certs/access/public.pem'
+files='config.json certs/nex/datastore/secret.key certs/service/account/secret.key certs/service/account/aes.key certs/service/account/private.pem certs/service/account/public.pem'
 
 for file in $files; do
     if [ ! -f $file ]; then
