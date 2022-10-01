@@ -116,4 +116,33 @@ router.get('/resend_confirmation', async (request, response) => {
 	response.status(200).send('');
 });
 
+/**
+ * [GET]
+ * Replacement for: https://account.nintendo.net/v1/api/support/forgotten_password/PID
+ * Description: Sends the user a password reset email
+ * NOTE: On NN this was a temp password that expired after 24 hours. We do not do that
+ */
+router.get('/forgotten_password/:pid', async (request, response) => {
+	const { pid } = request.params;
+
+	const pnid = await database.getUserByPID(pid);
+
+	if (!pnid) {
+		// TODO - Better errors
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'device_id',
+					code: '0113',
+					message: 'Unauthorized device'
+				}
+			}
+		}).end());
+	}
+
+	await util.sendForgotPasswordEmail(pnid);
+
+	response.status(200).send('');
+});
+
 module.exports = router;
