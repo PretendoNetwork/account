@@ -17,10 +17,12 @@ api.options('*', cors());
 
 // Setup routes
 logger.info('[USER API] Applying imported routes');
-api.use('/v1/register', routes.V1.REGISTER);
-api.use('/v1/login', routes.V1.LOGIN);
-api.use('/v1/user', routes.V1.USER);
 api.use('/v1/connections', routes.V1.CONNECTIONS);
+api.use('/v1/email', routes.V1.EMAIL);
+api.use('/v1/login', routes.V1.LOGIN);
+api.use('/v1/register', routes.V1.REGISTER);
+api.use('/v1/user', routes.V1.USER);
+
 
 // Main router for endpoints
 const router = express.Router();
