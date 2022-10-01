@@ -130,7 +130,7 @@ async function getUserProfileJSONByPID(pid) {
 		});
 	}
 
-	return {
+	const userObject = {
 		//accounts: {}, We need to figure this out, no idea what these values mean or what they do
 		active_flag: user.get('flags.active') ? 'Y' : 'N',
 		birth_date: user.get('birthdate'),
@@ -150,9 +150,8 @@ async function getUserProfileJSONByPID(pid) {
 			primary: user.get('email.primary') ? 'Y' : 'N',
 			reachable: user.get('email.reachable') ? 'Y' : 'N',
 			type: 'DEFAULT',
-			updated_by: 'INTERNAL WS', // Can also be INTERNAL WS, don't know the difference
-			validated: user.get('email.validated') ? 'Y' : 'N',
-			//validated_date: user.get('email.validated_date') // not used atm
+			updated_by: 'USER', // Can also be INTERNAL WS, don't know the difference
+			validated: user.get('email.validated') ? 'Y' : 'N'
 		},
 		mii: {
 			status: 'COMPLETED',
@@ -177,6 +176,12 @@ async function getUserProfileJSONByPID(pid) {
 		user_id: user.get('username'),
 		utc_offset: user.get('timezone.offset')
 	};
+
+	if (user.get('email.validated')) {
+		userObject.email.validated_date = user.get('email.validated_date');
+	}
+
+	return userObject;
 }
 
 function getServer(gameServerId, accessMode) {

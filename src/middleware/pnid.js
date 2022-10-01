@@ -23,7 +23,7 @@ async function PNIDMiddleware(request, response, next) {
 
 	if (!user) {
 		response.status(401);
-	
+
 		if (type === 'Bearer') {
 			return response.send(xmlbuilder.create({
 				errors: {
@@ -35,7 +35,7 @@ async function PNIDMiddleware(request, response, next) {
 				}
 			}).end());
 		}
-		
+
 		return response.send(xmlbuilder.create({
 			errors: {
 				error: {

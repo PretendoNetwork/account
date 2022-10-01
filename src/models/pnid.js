@@ -131,13 +131,9 @@ PNIDSchema.methods.generatePID = async function() {
 };
 
 PNIDSchema.methods.generateEmailValidationCode = async function() {
-	let code = Math.random().toFixed(6).split('.')[1]; // Dirty one-liner to generate numbers of 6 length and padded 0
-
-	const inuse = await PNID.findOne({
-		'identification.email_code': code
-	});
-	
-	code = (inuse ? await PNID.generateEmailValidationCode() : code);
+	// WiiU passes the PID along with the email code
+	// Does not actually need to be unique to all users
+	const code = Math.random().toFixed(6).split('.')[1]; // Dirty one-liner to generate numbers of 6 length and padded 0
 
 	this.set('identification.email_code', code);
 };

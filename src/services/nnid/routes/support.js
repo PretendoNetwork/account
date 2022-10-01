@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const dns = require('dns');
 const xmlbuilder = require('xmlbuilder');
+const moment = require('moment');
+const database = require('../../../database');
 
 /**
  * [POST]
@@ -39,6 +41,49 @@ router.post('/validate/email', async (request, response) => {
 		response.status(200);
 		response.end();
 	});
+});
+
+/**
+ * [PUT]
+ * Replacement for: https://account.nintendo.net/v1/api/support/email_confirmation/:pid/:code
+ * Description: Verifies a users email via 6 digit code
+ */
+router.put('/email_confirmation/:pid/:code', async (request, response) => {
+	const { pid, code } = request.params;
+
+	const pnid = await database.getUserByPID(pid);
+
+	if (!pnid) {
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0130',
+					message: 'PID has not been registered yet'
+				}
+			}
+		}).end());
+	}
+
+	if (pnid.get('identification.email_code') !== code) {
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0116',
+					message: 'Missing or invalid verification code'
+				}
+			}
+		}).end());
+	}
+
+	const validatedDate = moment().format('YYYY-MM-DDTHH:MM:SS');
+
+	pnid.set('email.reachable', true);
+	pnid.set('email.validated', true);
+	pnid.set('email.validated_date', validatedDate);
+
+	await pnid.save();
+
+	response.status(200).send('');
 });
 
 module.exports = router;

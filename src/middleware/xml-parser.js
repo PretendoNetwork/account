@@ -13,6 +13,13 @@ function XMLMiddleware(request, response, next) {
 			return next();
 		}
 
+		if (
+			!headers['content-length'] ||
+			parseInt(headers['content-length']) === 0
+		) {
+			return next();
+		}
+
 		request.setEncoding('utf-8');
 		request.on('data', (chunk) => {
 			body += chunk;
