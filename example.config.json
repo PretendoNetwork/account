@@ -10,11 +10,14 @@
         }
     },
     "email": {
-        "service": "gmail",
+        "host": "smtp.gmail.com",
+        "port": 587,
+        "secure": false,
         "auth": {
-            "user": "email@address.com",
+            "user": "username",
             "pass": "password"
-        }
+        },
+        "from": "Company Name <user@company.net>"
     },
     "aws": {
         "spaces": {
