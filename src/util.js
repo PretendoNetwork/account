@@ -233,7 +233,7 @@ async function sendConfirmationEmail(pnid) {
 	await mailer.sendMail({
 		to: pnid.get('email.address'),
 		subject: '[Pretendo Network] Please confirm your e-mail address',
-		html: `Hello,\n\nYour Pretendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.\n\nhttps://account.pretendo.cc/account/email-confirmation?token=${pnid.get('identification.email_token')}\n\nIf you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.\n\n&lt;&lt;Confirmation code: ${pnid.get('identification.email_code')}&gt;&gt;`
+		html: `Hello,<br><br>Your Pretendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.<br><br>https://account.pretendo.cc/account/email-confirmation?token=${pnid.get('identification.email_token')}<br><br>If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.<br><br>&lt;&lt;Confirmation code: ${pnid.get('identification.email_code')}&gt;&gt;`
 	});
 }
 
