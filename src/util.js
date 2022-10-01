@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const NodeRSA = require('node-rsa');
 const aws = require('aws-sdk');
+const mailer = require('./mailer');
 const cache = require('./cache');
 const config = require('../config.json');
 
@@ -41,7 +42,7 @@ async function generateToken(cryptoOptions, tokenOptions) {
 	// They take no extra crypto options
 	if (!cryptoOptions) {
 		const aesKey = await cache.getServiceAESKey('account', 'hex');
-		
+
 		const dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
 		dataBuffer.writeUInt8(tokenOptions.system_type, 0x0);
@@ -228,6 +229,14 @@ function nascError(errorCode) {
 	return params;
 }
 
+async function sendConfirmationEmail(pnid) {
+	await mailer.sendMail({
+		to: pnid.get('email.address'),
+		subject: '[Pretendo Network] Please confirm your e-mail address',
+		html: `Hello,\n\nYour Pretendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.\n\nhttps://account.pretendo.cc/account/email-confirmation?token=${pnid.get('identification.email_token')}\n\nIf you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.\n\n&lt;&lt;Confirmation code: ${pnid.get('identification.email_code')}&gt;&gt;`
+	});
+}
+
 module.exports = {
 	nintendoPasswordHash,
 	nintendoBase64Decode,
@@ -237,5 +246,6 @@ module.exports = {
 	unpackToken,
 	fullUrl,
 	uploadCDNAsset,
-	nascError
+	nascError,
+	sendConfirmationEmail
 };

@@ -8,7 +8,7 @@ const { NEXAccount } = require('../../../models/nex-account');
 const deviceCertificateMiddleware = require('../../../middleware/device-certificate');
 const ratelimit = require('../../../middleware/ratelimit');
 const database = require('../../../database');
-const mailer = require('../../../mailer');
+const util = require('../../../util');
 const logger = require('../../../../logger');
 require('moment-timezone');
 
@@ -173,19 +173,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 		await session.endSession();
 	}
 
-	await mailer.send(
-		pnid.get('email'),
-		'[Pretendo Network] Please confirm your e-mail address',
-		`Hello,
-		
-		Your Pretendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.
-		
-		https://account.pretendo.cc/account/email-confirmation?token=` + pnid.get('identification.email_token') + `
-		
-		If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.
-		
-		&lt;&lt;Confirmation code: ` + pnid.get('identification.email_code') + '&gt;&gt;'
-	);
+	await util.sendConfirmationEmail(pnid);
 
 	response.send(xmlbuilder.create({
 		person: {
@@ -203,8 +191,7 @@ router.get('/@me/profile', async (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
-	
-	
+
 	const { pnid } = request;
 
 	const person = await database.getUserProfileJSONByPID(pnid.get('pid'));
@@ -246,7 +233,7 @@ router.get('/@me/devices', async (request, response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime());
-	
+
 	const { pnid, headers } = request;
 
 	response.send(xmlbuilder.create({
@@ -487,30 +474,18 @@ router.put('/@me/emails/@primary', async (request, response) => {
 		}).end());
 	}
 
-	pnid.email.address = email.get('address');
-	pnid.email.reachable = false;
-	pnid.email.validated = false;
-	pnid.email.id = crypto.randomBytes(4).readUInt32LE();
+	pnid.set('email.address', email.get('address'));
+	pnid.set('email.reachable', false);
+	pnid.set('email.validated', false);
+	pnid.set('email.validated_date', '');
+	pnid.set('email.id', crypto.randomBytes(4).readUInt32LE());
 
-	// TODO: Change these, they are slow
 	await pnid.generateEmailValidationCode();
 	await pnid.generateEmailValidationToken();
 
 	await pnid.save();
 
-	await mailer.send(
-		email.get('address'),
-		'[Pretendo Network] Please confirm your e-mail address',
-		`Hello,
-		
-		Your Pretendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.
-		
-		https://account.pretendo.cc/account/email-confirmation?token=` + pnid.get('identification.email_token') + `
-		
-		If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.
-		
-		&lt;&lt;Confirmation code: ` + pnid.get('identification.email_code') + '&gt;&gt;'
-	);
+	await util.sendConfirmationEmail(pnid);
 
 	response.send('');
 });
