@@ -5,6 +5,7 @@ const moment = require('moment');
 const crypto = require('crypto');
 const hcaptcha = require('hcaptcha');
 const bcrypt = require('bcrypt');
+const Mii = require('mii-js');
 const { PNID } = require('../../../../models/pnid');
 const { NEXAccount } = require('../../../../models/nex-account');
 const database = require('../../../../database');
@@ -24,6 +25,8 @@ const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[\_\-\.]).*/;
 const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[\_\-\.]).*/;
 const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
 
+const DEFAULT_MII_DATA = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9', 'base64');
+
 /**
  * [POST]
  * Implementation of: https://api.pretendo.cc/v1/register
@@ -31,7 +34,7 @@ const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
  */
 router.post('/', async (request, response) => {
 	const { body } = request;
-	
+
 	const email = body.email?.trim();
 	const username = body.username?.trim();
 	const miiName = body.mii_name?.trim();
@@ -214,30 +217,8 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	// Default Mii data before Mii name
-	const MII_DATA_FIRST = Buffer.from([
-		0x03, 0x00, 0x00, 0x40, 0xE9, 0x55, 0xA2, 0x09,
-		0xE7, 0xC7, 0x41, 0x82, 0xDA, 0xA8, 0xE1, 0x77,
-		0x03, 0xB3, 0xB8, 0x8D, 0x27, 0xD9, 0x00, 0x00,
-		0x00, 0x60
-	]);
-
-	const MII_DATA_NAME = Buffer.alloc(0x14); // Max Mii name length
-
-	// Default Mii data after Mii name
-	const MII_DATA_LAST = Buffer.from([
-		0x40, 0x40, 0x00, 0x00, 0x21, 0x01, 0x02, 0x68,
-		0x44, 0x18, 0x26, 0x34, 0x46, 0x14, 0x81, 0x12,
-		0x17, 0x68, 0x0D, 0x00, 0x00, 0x29, 0x00, 0x52,
-		0x48, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x7C, 0x2E
-	]);
-
-	miiNameBuffer.copy(MII_DATA_NAME); // Move Mii name into padded buffer
-
-	const MII_DATA = Buffer.concat([MII_DATA_FIRST, MII_DATA_NAME, MII_DATA_LAST]); // Build Mii data
+	const mii = new Mii(DEFAULT_MII_DATA);
+	mii.miiName = miiName;
 
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid;
@@ -295,7 +276,7 @@ router.post('/', async (request, response) => {
 			mii: {
 				name: miiName,
 				primary: true, // TODO: Change this
-				data: MII_DATA.toString('base64'),
+				data: mii.encode().toString('base64'),
 				id: crypto.randomBytes(4).readUInt32LE(),
 				hash: crypto.randomBytes(7).toString('hex'),
 				image_url: '', // deprecated, will be removed in the future

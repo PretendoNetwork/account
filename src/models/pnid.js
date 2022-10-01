@@ -7,7 +7,7 @@ const TGA = require('tga');
 const got = require('got');
 const util = require('../util');
 const { DeviceSchema } = require('./device');
-const Mii = require('../mii');
+const Mii = require('mii-js');
 
 const PNIDSchema = new Schema({
 	access_level: {
@@ -189,10 +189,12 @@ PNIDSchema.methods.updateMii = async function({name, primary, data}) {
 
 PNIDSchema.methods.generateMiiImages = async function() {
 	const miiData = this.get('mii.data');
-	const studioMii = new Mii(Buffer.from(miiData, 'base64'));
-	const converted = studioMii.toStudioMii();
-	const encodedStudioMiiData = converted.toString('hex');
-	const miiStudioUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&width=128&instanceCount=1`;
+	const mii = new Mii(Buffer.from(miiData, 'base64'));
+	const miiStudioUrl = mii.studioUrl({
+		type: 'face',
+		width: '128',
+		instanceCount: '1',
+	});
 	const miiStudioNormalFaceImageData = await got(miiStudioUrl).buffer();
 	const pngData = await imagePixels(miiStudioNormalFaceImageData);
 	const tga = TGA.createTgaBuffer(pngData.width, pngData.height, pngData.data);
@@ -204,12 +206,21 @@ PNIDSchema.methods.generateMiiImages = async function() {
 
 	const expressions = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
 	for (const expression of expressions) {
-		const miiStudioExpressionUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&expression=${expression}&width=128&instanceCount=1`;
+		const miiStudioExpressionUrl = mii.studioUrl({
+			type: 'face',
+			expression: expression,
+			width: '128',
+			instanceCount: '1',
+		});
 		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
 		await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
 	}
 
-	const miiStudioBodyUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=all_body&width=270&instanceCount=1`;
+	const miiStudioBodyUrl = mii.studioUrl({
+		type: 'all_body',
+		width: '270',
+		instanceCount: '1',
+	});
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
 	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 };
