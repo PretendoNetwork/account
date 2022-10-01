@@ -232,8 +232,16 @@ function nascError(errorCode) {
 async function sendConfirmationEmail(pnid) {
 	await mailer.sendMail({
 		to: pnid.get('email.address'),
-		subject: '[Pretendo Network] Please confirm your e-mail address',
-		html: `Hello,<br><br>Your Pretendo Network ID activation is almost complete.  Please click the link below to confirm your e-mail address and complete the activation process.<br><br>https://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')}<br><br>If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.<br><br>&lt;&lt;Confirmation code: ${pnid.get('identification.email_code')}&gt;&gt;`
+		subject: '[Pretendo Network] Please confirm your email address',
+		html: `Hello,<br><br>Your Pretendo Network ID activation is almost complete.<br><br>Please click the link below to confirm your e-mail address and complete the activation process.<br><br>https://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')}<br><br>If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.<br><br>&lt;&lt;Confirmation code: ${pnid.get('identification.email_code')}&gt;&gt;`
+	});
+}
+
+async function sendEmailConfirmedEmail(pnid) {
+	await mailer.sendMail({
+		to: pnid.get('email.address'),
+		subject: '[Pretendo Network] Email address confirmed',
+		html: 'Your email address has been confirmed!'
 	});
 }
 
@@ -247,5 +255,6 @@ module.exports = {
 	fullUrl,
 	uploadCDNAsset,
 	nascError,
-	sendConfirmationEmail
+	sendConfirmationEmail,
+	sendEmailConfirmedEmail
 };

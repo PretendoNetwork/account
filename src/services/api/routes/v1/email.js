@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const moment = require('moment');
 const { PNID } = require('../../../../models/pnid');
+const util = require('../../../../util');
 
 router.get('/verify', async (request, response) => {
 	const { token } = request.query;
@@ -32,6 +33,8 @@ router.get('/verify', async (request, response) => {
 	pnid.set('email.validated_date', validatedDate);
 
 	await pnid.save();
+
+	await util.sendEmailConfirmedEmail(pnid);
 
 	response.status(200).send('Email validated. You may close this window');
 });

@@ -84,6 +84,8 @@ router.put('/email_confirmation/:pid/:code', async (request, response) => {
 
 	await pnid.save();
 
+	await util.sendEmailConfirmedEmail(pnid);
+
 	response.status(200).send('');
 });
 
