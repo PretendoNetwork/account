@@ -9,6 +9,11 @@
             "useNewUrlParser": true
         }
     },
+    "redis": {
+        "client": {
+            "url": "redis://localhost:6379"
+        }
+    },
     "email": {
         "host": "smtp.gmail.com",
         "port": 587,
