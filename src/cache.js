@@ -1,12 +1,13 @@
 const fs = require('fs-extra');
 const redis = require('redis');
+const config = require('../config.json');
 let client;
 
 const SERVICE_CERTS_BASE = `${__dirname}/../certs/service`;
 const NEX_CERTS_BASE = `${__dirname}/../certs/nex`;
 
 async function connect() {
-	client = redis.createClient();
+	client = redis.createClient(config.redis.client);
 	client.on('error', (err) => console.log('Redis Client Error', err));
 
 	await client.connect();
