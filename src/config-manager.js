@@ -1,4 +1,6 @@
 const fs = require('fs-extra');
+const has = require('lodash.has');
+const set = require('lodash.set');
 const logger = require('../logger');
 
 require('dotenv').config();
@@ -36,6 +38,24 @@ require('dotenv').config();
  * @type {Config}
  */
 let config = {};
+
+const requiredFields = [
+	['http.port', 'PN_ACT_CONFIG_HTTP_PORT', Number],
+	['mongoose.uri', 'PN_ACT_CONFIG_MONGO_URI'],
+	['mongoose.database', 'PN_ACT_CONFIG_MONGO_DB_NAME'],
+	['redis.client.url', 'PN_ACT_CONFIG_REDIS_URL'],
+	['email.host', 'PN_ACT_CONFIG_EMAIL_HOST'],
+	['email.port', 'PN_ACT_CONFIG_EMAIL_PORT', Number],
+	['email.secure', 'PN_ACT_CONFIG_EMAIL_SECURE', Boolean],
+	['email.auth.user', 'PN_ACT_CONFIG_EMAIL_USERNAME'],
+	['email.auth.pass', 'PN_ACT_CONFIG_EMAIL_PASSWORD'],
+	['email.from', 'PN_ACT_CONFIG_EMAIL_FROM'],
+	['aws.spaces.key', 'PN_ACT_CONFIG_S3_ACCESS_KEY'],
+	['aws.spaces.secret', 'PN_ACT_CONFIG_S3_ACCESS_SECRET'],
+	['hcaptcha.secret', 'PN_ACT_CONFIG_HCAPTCHA_SECRET'],
+	['cdn_base', 'PN_ACT_CONFIG_CDN_BASE'],
+	['website_base', 'PN_ACT_CONFIG_WEBSITE_BASE'],
+];
 
 function configure() {
 	if (process.env.PN_ACT_PREFER_ENV_CONFIG === 'true') {
@@ -91,6 +111,26 @@ function configure() {
 		}
 
 		config = require(`${__dirname}/../config.json`);
+	}
+
+	logger.info('Config loaded, checking integrity');
+
+	for (const requiredField of requiredFields) {
+		const [keyPath, env, convertType] = requiredField;
+
+		if (!has(config, keyPath)) {
+			if (!process.env[env] || process.env[env].trim() === '') {
+				logger.error(`Failed to locate required field ${keyPath}. Set ${keyPath} in config.json or the ${env} environment variable`);
+
+				process.exit(0);
+			} else {
+				logger.info(`${keyPath} not found in config, using environment variable ${env}`);
+
+				const newValue = process.env[env];
+
+				set(config, keyPath, convertType ? convertType(newValue) : newValue);
+			}
+		}
 	}
 
 	module.exports.config = config;
