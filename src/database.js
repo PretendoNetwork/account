@@ -5,7 +5,7 @@ const util = require('./util');
 const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
 const logger = require('../logger');
-const config = require('../config.json');
+const { config } = require('./config-manager');
 const { uri, database, options } = config.mongoose;
 
 // TODO: Extend this later with more settings

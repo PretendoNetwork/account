@@ -1,5 +1,9 @@
 process.title = 'Pretendo - Account';
 
+const configManager = require('./config-manager');
+
+configManager.configure();
+
 const express = require('express');
 const morgan = require('morgan');
 const xmlparser = require('./middleware/xml-parser');
@@ -7,7 +11,8 @@ const cache = require('./cache');
 const database = require('./database');
 const util = require('./util');
 const logger = require('../logger');
-const config = require('../config.json');
+
+const { config } = configManager;
 
 const { http: { port } } = config;
 const app = express();
@@ -19,8 +24,6 @@ const datastore = require('./services/datastore');
 const api = require('./services/api');
 
 // START APPLICATION
-app.set('etag', false);
-app.disable('x-powered-by');
 
 // Create router
 logger.info('Setting up Middleware');

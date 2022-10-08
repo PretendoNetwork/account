@@ -3,7 +3,7 @@ const NodeRSA = require('node-rsa');
 const aws = require('aws-sdk');
 const mailer = require('./mailer');
 const cache = require('./cache');
-const config = require('../config.json');
+const { config } = require('./config-manager');
 
 const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
 const s3 = new aws.S3({

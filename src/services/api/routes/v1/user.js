@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const joi = require('joi');
 const { PNID } = require('../../../../models/pnid');
-const config = require('../../../../../config.json');
+const { config } = require('../../../../config-manager');
 
 // TODO: Extend this later with more settings
 const userSchema = joi.object({

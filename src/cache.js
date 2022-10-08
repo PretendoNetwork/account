@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 const redis = require('redis');
-const config = require('../config.json');
+const { config } = require('./config-manager');
 let client;
 
 const SERVICE_CERTS_BASE = `${__dirname}/../certs/service`;
