@@ -71,7 +71,7 @@ async function getNEXAESKey(name, encoding) {
 		await setNEXAESKey(name, aesKey);
 	}
 
-	return secretKey;
+	return aesKey;
 }
 
 async function setNEXPublicKey(name, value) {
