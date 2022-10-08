@@ -60,6 +60,7 @@ typings/
 # custom
 sign.js
 t.js
+p.js
 config.json
 certs
 /cdn
