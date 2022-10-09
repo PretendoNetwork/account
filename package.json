@@ -38,7 +38,7 @@
     "image-pixels": "^1.1.1",
     "joi": "^17.6.1",
     "kaitai-struct": "^0.9.0",
-    "lodash.has": "^4.5.2",
+    "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
     "mii-js": "github:PretendoNetwork/mii-js",
     "moment": "^2.24.0",

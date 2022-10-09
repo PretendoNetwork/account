@@ -1,5 +1,5 @@
 const fs = require('fs-extra');
-const has = require('lodash.has');
+const get = require('lodash.get');
 const set = require('lodash.set');
 const logger = require('../logger');
 
@@ -131,15 +131,18 @@ function configure() {
 	for (const requiredField of requiredFields) {
 		const [keyPath, env, convertType] = requiredField;
 
-		if (!has(config, keyPath)) {
-			if (!process.env[env] || process.env[env].trim() === '') {
+		const configValue = get(config, keyPath);
+		const envValue = get(process.env, keyPath);
+
+		if (!configValue || configValue.trim() === '') {
+			if (!envValue || envValue.trim() === '') {
 				logger.error(`Failed to locate required field ${keyPath}. Set ${keyPath} in config.json or the ${env} environment variable`);
 
 				process.exit(0);
 			} else {
 				logger.info(`${keyPath} not found in config, using environment variable ${env}`);
 
-				const newValue = process.env[env];
+				const newValue = envValue;
 
 				set(config, keyPath, convertType ? convertType(newValue) : newValue);
 			}
@@ -147,8 +150,12 @@ function configure() {
 	}
 
 	// * Check for optional settings
-	if (!has(config, 'redis.client.url')) {
-		if (!process.env.PN_ACT_CONFIG_REDIS_URL || process.env.PN_ACT_CONFIG_REDIS_URL.trim() === '') {
+
+	const redisConfigValue = get(config, 'redis.client.url');
+	const redisEnvValue = get(process.env, 'redis.client.url');
+
+	if (!redisConfigValue || redisConfigValue.trim() === '') {
+		if (!redisEnvValue || redisEnvValue.trim() === '') {
 			logger.warning('Failed to find Redis config. Disabling feature and using in-memory cache');
 
 			disabledFeatures.redis = true;
