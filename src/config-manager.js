@@ -153,7 +153,7 @@ function configure() {
 
 	if (!redisConfigValue || redisConfigValue.trim() === '') {
 		if (!redisEnvValue || redisEnvValue.trim() === '') {
-			logger.warn('Failed to find Redis config. Disabling feature and using in-memory cache');
+			logger.warn('Failed to find Redis config. Disabling feature and using in-memory cache. To enable feature set redis.client.url in config.json or the PN_ACT_CONFIG_REDIS_URL environment variable');
 
 			disabledFeatures.redis = true;
 		} else {
@@ -168,7 +168,7 @@ function configure() {
 
 	if (!emailHostConfigValue || emailHostConfigValue.trim() === '') {
 		if (!emailHostEnvValue || emailHostEnvValue.trim() === '') {
-			logger.warn('Failed to find email SMTP host config. Disabling feature');
+			logger.warn('Failed to find email SMTP host config. Disabling feature. To enable feature set email.host in config.json or the PN_ACT_CONFIG_EMAIL_HOST environment variable');
 
 			disabledFeatures.email = true;
 		} else {
@@ -183,7 +183,7 @@ function configure() {
 
 	if (!emailPortConfigValue) {
 		if (!emailPortEnvValue || emailPortEnvValue.trim() === '') {
-			logger.warn('Failed to find email SMTP port config. Disabling feature');
+			logger.warn('Failed to find email SMTP port config. Disabling feature. To enable feature set email.port in config.json or the PN_ACT_CONFIG_EMAIL_PORT environment variable');
 
 			disabledFeatures.email = true;
 		} else {
@@ -198,7 +198,7 @@ function configure() {
 
 	if (emailSecureConfigValue === undefined) {
 		if (!emailSecureEnvValue || emailSecureEnvValue.trim() === '') {
-			logger.warn('Failed to find email SMTP secure config. Disabling feature');
+			logger.warn('Failed to find email SMTP secure config. Disabling feature. To enable feature set email.secure in config.json or the PN_ACT_CONFIG_EMAIL_SECURE environment variable');
 
 			disabledFeatures.email = true;
 		} else {
@@ -213,7 +213,7 @@ function configure() {
 
 	if (!emailUsernameConfigValue || emailUsernameConfigValue.trim() === '') {
 		if (!emailUsernameEnvValue || emailUsernameEnvValue.trim() === '') {
-			logger.warn('Failed to find email username config. Disabling feature');
+			logger.warn('Failed to find email username config. Disabling feature. To enable feature set email.auth.user in config.json or the auth.user environment variable');
 
 			disabledFeatures.email = true;
 		} else {
@@ -228,7 +228,7 @@ function configure() {
 
 	if (!emailPasswordConfigValue || emailPasswordConfigValue.trim() === '') {
 		if (!emailPasswordEnvValue || emailPasswordEnvValue.trim() === '') {
-			logger.warn('Failed to find email password config. Disabling feature');
+			logger.warn('Failed to find email password config. Disabling feature. To enable feature set email.auth.pass in config.json or the PN_ACT_CONFIG_EMAIL_PASSWORD environment variable');
 
 			disabledFeatures.email = true;
 		} else {
@@ -243,7 +243,7 @@ function configure() {
 
 	if (!emailFromConfigValue || emailFromConfigValue.trim() === '') {
 		if (!emailFromEnvValue || emailFromEnvValue.trim() === '') {
-			logger.warn('Failed to find email from config. Disabling feature');
+			logger.warn('Failed to find email from config. Disabling feature. To enable feature set email.from in config.json or the PN_ACT_CONFIG_EMAIL_FROM environment variable');
 
 			disabledFeatures.email = true;
 		} else {
@@ -274,7 +274,7 @@ function configure() {
 
 	if (!captchaSecretConfigValue || captchaSecretConfigValue.trim() === '') {
 		if (!captchaSecretEnvValue || captchaSecretEnvValue.trim() === '') {
-			logger.warn('Failed to find captcha secret config. Disabling feature');
+			logger.warn('Failed to find captcha secret config. Disabling feature. To enable feature set hcaptcha.secret in config.json or the PN_ACT_CONFIG_HCAPTCHA_SECRET environment variable');
 
 			disabledFeatures.email = true;
 		} else {
@@ -289,7 +289,7 @@ function configure() {
 
 	if (!s3AccessKeyConfigValue || s3AccessKeyConfigValue.trim() === '') {
 		if (!s3AccessKeyEnvValue || s3AccessKeyEnvValue.trim() === '') {
-			logger.warn('Failed to find s3 access key config. Disabling feature');
+			logger.warn('Failed to find s3 access key config. Disabling feature. To enable feature set aws.spaces.key in config.json or the PN_ACT_CONFIG_S3_ACCESS_KEY environment variable');
 
 			disabledFeatures.s3 = true;
 		} else {
@@ -304,7 +304,7 @@ function configure() {
 
 	if (!s3SecretKeyConfigValue || s3SecretKeyConfigValue.trim() === '') {
 		if (!s3SecretKeyEnvValue || s3SecretKeyEnvValue.trim() === '') {
-			logger.warn('Failed to find s3 secret key config. Disabling feature');
+			logger.warn('Failed to find s3 secret key config. Disabling feature. To enable feature set aws.spaces.secret in config.json or the PN_ACT_CONFIG_S3_ACCESS_SECRET environment variable');
 
 			disabledFeatures.s3 = true;
 		} else {
