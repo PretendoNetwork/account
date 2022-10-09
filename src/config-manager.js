@@ -148,7 +148,7 @@ function configure() {
 	// * Check for optional settings
 
 	const redisConfigValue = get(config, 'redis.client.url');
-	const redisEnvValue = get(process.env, 'redis.client.url');
+	const redisEnvValue = get(process.env, 'PN_ACT_CONFIG_REDIS_URL');
 
 	if (!redisConfigValue || redisConfigValue.trim() === '') {
 		if (!redisEnvValue || redisEnvValue.trim() === '') {
