@@ -1,30 +1,44 @@
 const fs = require('fs-extra');
 const redis = require('redis');
-const { config } = require('./config-manager');
+const { config, disabledFeatures } = require('./config-manager');
 let client;
+
+const memoryCache = {};
 
 const SERVICE_CERTS_BASE = `${__dirname}/../certs/service`;
 const NEX_CERTS_BASE = `${__dirname}/../certs/nex`;
 
 async function connect() {
-	client = redis.createClient(config.redis.client);
-	client.on('error', (err) => console.log('Redis Client Error', err));
+	if (!disabledFeatures.redis) {
+		client = redis.createClient(config.redis.client);
+		client.on('error', (err) => console.log('Redis Client Error', err));
 
-	await client.connect();
+		await client.connect();
+	}
 }
 
 async function setCachedFile(type, name, fileName, value) {
-	await client.set(`${type}:${name}:${fileName}`, value);
+	if (disabledFeatures.redis) {
+		memoryCache[`${type}:${name}:${fileName}`] = value;
+	} else {
+		await client.set(`${type}:${name}:${fileName}`, value);
+	}
 }
 
 async function getCachedFile(type, name, fileName, encoding) {
-	const cachedFile = await client.get(`${type}:${name}:${fileName}`);
+	let cachedFile;
+
+	if (disabledFeatures.redis) {
+		cachedFile = memoryCache[`${type}:${name}:${fileName}`];
+	} else {
+		cachedFile = await client.get(`${type}:${name}:${fileName}`);
+	}
 
 	if (cachedFile !== null) {
-		return Buffer.from(cachedFile, encoding);
-	} else {
-		return cachedFile;
+		cachedFile = Buffer.from(cachedFile, encoding);
 	}
+
+	return cachedFile;
 }
 
 // NEX server cache functions

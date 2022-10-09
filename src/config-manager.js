@@ -39,11 +39,23 @@ require('dotenv').config();
  */
 let config = {};
 
+
+/**
+ * @typedef {Object} DisabledFeatures
+ * @property {boolean} redis true if redis is disabled
+ */
+
+/**
+ * @type {DisabledFeatures}
+ */
+const disabledFeatures = {
+	redis: false
+};
+
 const requiredFields = [
 	['http.port', 'PN_ACT_CONFIG_HTTP_PORT', Number],
 	['mongoose.uri', 'PN_ACT_CONFIG_MONGO_URI'],
 	['mongoose.database', 'PN_ACT_CONFIG_MONGO_DB_NAME'],
-	['redis.client.url', 'PN_ACT_CONFIG_REDIS_URL'],
 	['email.host', 'PN_ACT_CONFIG_EMAIL_HOST'],
 	['email.port', 'PN_ACT_CONFIG_EMAIL_PORT', Number],
 	['email.secure', 'PN_ACT_CONFIG_EMAIL_SECURE', Boolean],
@@ -115,6 +127,7 @@ function configure() {
 
 	logger.info('Config loaded, checking integrity');
 
+	// * Check for required settings
 	for (const requiredField of requiredFields) {
 		const [keyPath, env, convertType] = requiredField;
 
@@ -130,6 +143,15 @@ function configure() {
 
 				set(config, keyPath, convertType ? convertType(newValue) : newValue);
 			}
+		}
+	}
+
+	// * Check for optional settings
+	if (!has(config, 'redis.client.url')) {
+		if (!process.env.PN_ACT_CONFIG_REDIS_URL || process.env.PN_ACT_CONFIG_REDIS_URL.trim() === '') {
+			logger.warning('Failed to find Redis config. Disabling feature and using in-memory cache');
+
+			disabledFeatures.redis = true;
 		}
 	}
 
