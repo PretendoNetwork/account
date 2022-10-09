@@ -63,8 +63,7 @@ const requiredFields = [
 	['http.port', 'PN_ACT_CONFIG_HTTP_PORT', Number],
 	['mongoose.uri', 'PN_ACT_CONFIG_MONGO_URI'],
 	['mongoose.database', 'PN_ACT_CONFIG_MONGO_DB_NAME'],
-	['cdn_base', 'PN_ACT_CONFIG_CDN_BASE'],
-	['website_base', 'PN_ACT_CONFIG_WEBSITE_BASE'],
+	['cdn_base', 'PN_ACT_CONFIG_CDN_BASE']
 ];
 
 function configure() {
@@ -251,6 +250,22 @@ function configure() {
 			logger.info('email.from not found in config, using environment variable PN_ACT_CONFIG_EMAIL_FROM');
 
 			set(config, 'email.from', emailFromEnvValue);
+		}
+	}
+
+	if (!disabledFeatures.email) {
+		const websiteBaseConfigValue = get(config, 'website_base');
+		const websiteBaseEnvValue = get(process.env, 'PN_ACT_CONFIG_WEBSITE_BASE');
+
+		if (!websiteBaseConfigValue || websiteBaseConfigValue.trim() === '') {
+			if (!websiteBaseEnvValue || websiteBaseEnvValue.trim() === '') {
+				logger.error('Email sending is not disabled and no website base was set. Set website_base in config.json or the PN_ACT_CONFIG_WEBSITE_BASE environment variable');
+				process.exit(0);
+			} else {
+				logger.info('website_base not found in config, using environment variable PN_ACT_CONFIG_WEBSITE_BASE');
+
+				set(config, 'website_base', websiteBaseEnvValue);
+			}
 		}
 	}
 
