@@ -44,6 +44,7 @@ let config = {};
  * @typedef {Object} DisabledFeatures
  * @property {boolean} redis true if redis is disabled
  * @property {boolean} email true if email sending is disabled
+ * @property {boolean} captcha true if captcha verification is disabled
  */
 
 /**
@@ -51,7 +52,8 @@ let config = {};
  */
 const disabledFeatures = {
 	redis: false,
-	email: false
+	email: false,
+	captcha: false
 };
 
 const requiredFields = [
@@ -60,7 +62,6 @@ const requiredFields = [
 	['mongoose.database', 'PN_ACT_CONFIG_MONGO_DB_NAME'],
 	['aws.spaces.key', 'PN_ACT_CONFIG_S3_ACCESS_KEY'],
 	['aws.spaces.secret', 'PN_ACT_CONFIG_S3_ACCESS_SECRET'],
-	['hcaptcha.secret', 'PN_ACT_CONFIG_HCAPTCHA_SECRET'],
 	['cdn_base', 'PN_ACT_CONFIG_CDN_BASE'],
 	['website_base', 'PN_ACT_CONFIG_WEBSITE_BASE'],
 ];
@@ -249,6 +250,21 @@ function configure() {
 			logger.info('email.from not found in config, using environment variable PN_ACT_CONFIG_EMAIL_FROM');
 
 			set(config, 'email.from', emailFromEnvValue);
+		}
+	}
+
+	const captchaSecretConfigValue = get(config, 'hcaptcha.secret');
+	const captchaSecretEnvValue = get(process.env, 'PN_ACT_CONFIG_HCAPTCHA_SECRET');
+
+	if (!captchaSecretConfigValue || captchaSecretConfigValue.trim() === '') {
+		if (!captchaSecretEnvValue || captchaSecretEnvValue.trim() === '') {
+			logger.warn('Failed to find captcha secret config. Disabling feature');
+
+			disabledFeatures.email = true;
+		} else {
+			logger.info('hcaptcha.secret not found in config, using environment variable PN_ACT_CONFIG_HCAPTCHA_SECRET');
+
+			set(config, 'hcaptcha.secret', emailFromEnvValue);
 		}
 	}
 

@@ -12,7 +12,7 @@ const database = require('../../../../database');
 const cache = require('../../../../cache');
 const util = require('../../../../util');
 const logger = require('../../../../../logger');
-const { config } = require('../../../../config-manager');
+const { config, disabledFeatures } = require('../../../../config-manager');
 
 const PNID_VALID_CHARACTERS_REGEX = /^[\w\-\.]*$/gm;
 const PNID_PUNCTUATION_START_REGEX = /^[\_\-\.]/gm;
@@ -42,22 +42,24 @@ router.post('/', async (request, response) => {
 	const passwordConfirm = body.password_confirm?.trim();
 	const hCaptchaResponse = body.hCaptchaResponse?.trim();
 
-	if (!hCaptchaResponse || hCaptchaResponse === '') {
-		return response.status(400).json({
-			app: 'api',
-			status: 400,
-			error: 'Must fill in captcha'
-		});
-	}
+	if (!disabledFeatures.captcha) {
+		if (!hCaptchaResponse || hCaptchaResponse === '') {
+			return response.status(400).json({
+				app: 'api',
+				status: 400,
+				error: 'Must fill in captcha'
+			});
+		}
 
-	const captchaVerify = await hcaptcha.verify(config.hcaptcha.secret, hCaptchaResponse);
+		const captchaVerify = await hcaptcha.verify(config.hcaptcha.secret, hCaptchaResponse);
 
-	if (!captchaVerify.success) {
-		return response.status(400).json({
-			app: 'api',
-			status: 400,
-			error: 'Captcha verification failed'
-		});
+		if (!captchaVerify.success) {
+			return response.status(400).json({
+				app: 'api',
+				status: 400,
+				error: 'Captcha verification failed'
+			});
+		}
 	}
 
 	if (!email || email === '') {
