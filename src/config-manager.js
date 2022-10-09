@@ -130,7 +130,7 @@ function configure() {
 		const configValue = get(config, keyPath);
 		const envValue = get(process.env, keyPath);
 
-		if (!configValue || configValue.trim() === '') {
+		if (!configValue || (typeof configValue === 'string' && configValue.trim() === '')) {
 			if (!envValue || envValue.trim() === '') {
 				logger.error(`Failed to locate required field ${keyPath}. Set ${keyPath} in config.json or the ${env} environment variable`);
 
