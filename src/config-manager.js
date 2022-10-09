@@ -229,5 +229,6 @@ function configure() {
 
 module.exports = {
 	configure,
-	config
+	config,
+	disabledFeatures
 };
