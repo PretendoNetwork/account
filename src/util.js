@@ -11,9 +11,9 @@ let s3;
 
 if (!disabledFeatures.s3) {
 	s3 = new aws.S3({
-		endpoint: new aws.Endpoint('nyc3.digitaloceanspaces.com'),
-		accessKeyId: config.aws.spaces.key,
-		secretAccessKey: config.aws.spaces.secret
+		endpoint: new aws.Endpoint(config.s3.endpoint),
+		accessKeyId: config.s3.key,
+		secretAccessKey: config.s3.secret
 	});
 }
 

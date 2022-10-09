@@ -24,11 +24,10 @@
         },
         "from": "Company Name <user@company.net>"
     },
-    "aws": {
-        "spaces": {
-            "key": "ACCESS_KEY",
-            "secret": "ACCESS_SECRET"
-        }
+    "s3": {
+        "endpoint": "nyc3.digitaloceanspaces.com",
+        "key": "ACCESS_KEY",
+        "secret": "ACCESS_SECRET"
     },
     "hcaptcha": {
         "secret": "0x0000000000000000000000000000000000000000"

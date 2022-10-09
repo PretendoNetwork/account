@@ -24,10 +24,10 @@ require('dotenv').config();
  * @property {object} [email.auth] Email authentication settings
  * @property {string} [email.auth.user] Email username
  * @property {string} [email.auth.pass] Email password
- * @property {object} [aws] s3 client settings
- * @property {object} [aws.spaces] Digital Ocean Spaces settings
- * @property {string} [aws.spaces.key] s3 access key
- * @property {string} [aws.spaces.secret] s3 access secret
+ * @property {object} [s3] s3 client settings
+ * @property {object} [s3.endpoint] s3 endpoint URL
+ * @property {string} [s3.key] s3 access key
+ * @property {string} [s3.secret] s3 access secret
  * @property {object} [hcaptcha] hCaptcha settings
  * @property {string} [hcaptcha.secret] hCaptcha secret
  * @property {string} [cdn_subdomain] Subdomain used for serving CDN contents when s3 is disabled
@@ -99,11 +99,10 @@ function configure() {
 				},
 				from: process.env.PN_ACT_CONFIG_EMAIL_FROM
 			},
-			aws: {
-				spaces: {
-					key: process.env.PN_ACT_CONFIG_S3_ACCESS_KEY,
-					secret: process.env.PN_ACT_CONFIG_S3_ACCESS_SECRET
-				}
+			s3: {
+				endpoint: process.env.PN_ACT_CONFIG_S3_ENDPOINT,
+				key: process.env.PN_ACT_CONFIG_S3_ACCESS_KEY,
+				secret: process.env.PN_ACT_CONFIG_S3_ACCESS_SECRET
 			},
 			hcaptcha: {
 				secret: process.env.PN_ACT_CONFIG_HCAPTCHA_SECRET
@@ -284,33 +283,48 @@ function configure() {
 		}
 	}
 
-	const s3AccessKeyConfigValue = get(config, 'aws.spaces.key');
+	const s3EndpointConfigValue = get(config, 's3.endpoint');
+	const s3EndpointEnvValue = get(process.env, 'PN_ACT_CONFIG_S3_ENDPOINT');
+
+	if (!s3EndpointConfigValue || s3EndpointConfigValue.trim() === '') {
+		if (!s3EndpointEnvValue || s3EndpointEnvValue.trim() === '') {
+			logger.warn('Failed to find s3 endpoint config. Disabling feature. To enable feature set s3.endpoint in config.json or the PN_ACT_CONFIG_S3_ENDPOINT environment variable');
+
+			disabledFeatures.s3 = true;
+		} else {
+			logger.info('s3.endpoint not found in config, using environment variable PN_ACT_CONFIG_S3_ENDPOINT');
+
+			set(config, 's3.endpoint', s3EndpointEnvValue);
+		}
+	}
+
+	const s3AccessKeyConfigValue = get(config, 's3.key');
 	const s3AccessKeyEnvValue = get(process.env, 'PN_ACT_CONFIG_S3_ACCESS_KEY');
 
 	if (!s3AccessKeyConfigValue || s3AccessKeyConfigValue.trim() === '') {
 		if (!s3AccessKeyEnvValue || s3AccessKeyEnvValue.trim() === '') {
-			logger.warn('Failed to find s3 access key config. Disabling feature. To enable feature set aws.spaces.key in config.json or the PN_ACT_CONFIG_S3_ACCESS_KEY environment variable');
+			logger.warn('Failed to find s3 access key config. Disabling feature. To enable feature set s3.key in config.json or the PN_ACT_CONFIG_S3_ACCESS_KEY environment variable');
 
 			disabledFeatures.s3 = true;
 		} else {
-			logger.info('aws.spaces.key not found in config, using environment variable PN_ACT_CONFIG_S3_ACCESS_KEY');
+			logger.info('s3.key not found in config, using environment variable PN_ACT_CONFIG_S3_ACCESS_KEY');
 
-			set(config, 'aws.spaces.key', s3AccessKeyEnvValue);
+			set(config, 's3.key', s3AccessKeyEnvValue);
 		}
 	}
 
-	const s3SecretKeyConfigValue = get(config, 'aws.spaces.secret');
+	const s3SecretKeyConfigValue = get(config, 's3.secret');
 	const s3SecretKeyEnvValue = get(process.env, 'PN_ACT_CONFIG_S3_ACCESS_SECRET');
 
 	if (!s3SecretKeyConfigValue || s3SecretKeyConfigValue.trim() === '') {
 		if (!s3SecretKeyEnvValue || s3SecretKeyEnvValue.trim() === '') {
-			logger.warn('Failed to find s3 secret key config. Disabling feature. To enable feature set aws.spaces.secret in config.json or the PN_ACT_CONFIG_S3_ACCESS_SECRET environment variable');
+			logger.warn('Failed to find s3 secret key config. Disabling feature. To enable feature set s3.secret in config.json or the PN_ACT_CONFIG_S3_ACCESS_SECRET environment variable');
 
 			disabledFeatures.s3 = true;
 		} else {
-			logger.info('aws.spaces.secret not found in config, using environment variable PN_ACT_CONFIG_S3_ACCESS_SECRET');
+			logger.info('s3.secret not found in config, using environment variable PN_ACT_CONFIG_S3_ACCESS_SECRET');
 
-			set(config, 'aws.spaces.secret', s3AccessKeyEnvValue);
+			set(config, 's3.secret', s3AccessKeyEnvValue);
 		}
 	}
 
