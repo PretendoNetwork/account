@@ -17,21 +17,21 @@ async function connect() {
 	}
 }
 
-async function setCachedFile(type, name, fileName, value) {
+async function setCachedFile(fileName, value) {
 	if (disabledFeatures.redis) {
-		memoryCache[`${type}:${name}:${fileName}`] = value;
+		memoryCache[fileName] = value;
 	} else {
-		await client.set(`${type}:${name}:${fileName}`, value);
+		await client.set(fileName, value);
 	}
 }
 
-async function getCachedFile(type, name, fileName, encoding) {
+async function getCachedFile(fileName, encoding) {
 	let cachedFile;
 
 	if (disabledFeatures.redis) {
-		cachedFile = memoryCache[`${type}:${name}:${fileName}`];
+		cachedFile = memoryCache[fileName];
 	} else {
-		cachedFile = await client.get(`${type}:${name}:${fileName}`);
+		cachedFile = await client.get(fileName);
 	}
 
 	if (cachedFile !== null) {
@@ -90,19 +90,19 @@ async function getNEXAESKey(name, encoding) {
 }
 
 async function setNEXPublicKey(name, value) {
-	await setCachedFile('nex', name, 'public_key', value);
+	await setCachedFile(`nex:${name}:public_key`, value);
 }
 
 async function setNEXPrivateKey(name, value) {
-	await setCachedFile('nex', name, 'private_key', value);
+	await setCachedFile(`nex:${name}:private_key`, value);
 }
 
 async function setNEXSecretKey(name, value) {
-	await setCachedFile('nex', name, 'secret_key', value);
+	await setCachedFile(`nex:${name}:secret_key`, value);
 }
 
 async function setNEXAESKey(name, value) {
-	await setCachedFile('nex', name, 'aes_key', value);
+	await setCachedFile(`nex:${name}:aes_key`, value);
 }
 
 // 3rd party service cache functions
@@ -154,19 +154,19 @@ async function getServiceAESKey(name, encoding) {
 }
 
 async function setServicePublicKey(name, value) {
-	await setCachedFile('service', name, 'public_key', value);
+	await setCachedFile(`service:${name}:public_key`, value);
 }
 
 async function setServicePrivateKey(name, value) {
-	await setCachedFile('service', name, 'private_key', value);
+	await setCachedFile(`service:${name}:private_key`, value);
 }
 
 async function setServiceSecretKey(name, value) {
-	await setCachedFile('service', name, 'secret_key', value);
+	await setCachedFile(`service:${name}:secret_key`, value);
 }
 
 async function setServiceAESKey(name, value) {
-	await setCachedFile('service', name, 'aes_key', value);
+	await setCachedFile(`service:${name}:aes_key`, value);
 }
 
 module.exports = {
