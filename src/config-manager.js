@@ -152,7 +152,7 @@ function configure() {
 
 	if (!redisConfigValue || redisConfigValue.trim() === '') {
 		if (!redisEnvValue || redisEnvValue.trim() === '') {
-			logger.warning('Failed to find Redis config. Disabling feature and using in-memory cache');
+			logger.warn('Failed to find Redis config. Disabling feature and using in-memory cache');
 
 			disabledFeatures.redis = true;
 		}
@@ -163,7 +163,7 @@ function configure() {
 
 	if (!emailHostConfigValue || emailHostConfigValue.trim() === '') {
 		if (!emailHostEnvValue || emailHostEnvValue.trim() === '') {
-			logger.warning('Failed to find email SMTP host config. Disabling feature');
+			logger.warn('Failed to find email SMTP host config. Disabling feature');
 
 			disabledFeatures.email = true;
 		}
@@ -174,7 +174,7 @@ function configure() {
 
 	if (!emailPortConfigValue) {
 		if (!emailPortEnvValue || emailPortEnvValue.trim() === '') {
-			logger.warning('Failed to find email SMTP port config. Disabling feature');
+			logger.warn('Failed to find email SMTP port config. Disabling feature');
 
 			disabledFeatures.email = true;
 		}
@@ -185,7 +185,7 @@ function configure() {
 
 	if (emailSecureConfigValue === undefined) {
 		if (!emailSecureEnvValue || emailSecureEnvValue.trim() === '') {
-			logger.warning('Failed to find email SMTP secure config. Disabling feature');
+			logger.warn('Failed to find email SMTP secure config. Disabling feature');
 
 			disabledFeatures.email = true;
 		}
@@ -196,7 +196,7 @@ function configure() {
 
 	if (!emailUsernameConfigValue || emailUsernameConfigValue.trim() === '') {
 		if (!emailUsernameEnvValue || emailUsernameEnvValue.trim() === '') {
-			logger.warning('Failed to find email username config. Disabling feature');
+			logger.warn('Failed to find email username config. Disabling feature');
 
 			disabledFeatures.email = true;
 		}
@@ -207,7 +207,7 @@ function configure() {
 
 	if (!emailPasswordConfigValue || emailPasswordConfigValue.trim() === '') {
 		if (!emailPasswordEnvValue || emailPasswordEnvValue.trim() === '') {
-			logger.warning('Failed to find email password config. Disabling feature');
+			logger.warn('Failed to find email password config. Disabling feature');
 
 			disabledFeatures.email = true;
 		}
@@ -218,7 +218,7 @@ function configure() {
 
 	if (!emailFromConfigValue || emailFromConfigValue.trim() === '') {
 		if (!emailFromEnvValue || emailFromEnvValue.trim() === '') {
-			logger.warning('Failed to find email from config. Disabling feature');
+			logger.warn('Failed to find email from config. Disabling feature');
 
 			disabledFeatures.email = true;
 		}
