@@ -7,6 +7,7 @@ const memoryCache = {};
 
 const SERVICE_CERTS_BASE = `${__dirname}/../certs/service`;
 const NEX_CERTS_BASE = `${__dirname}/../certs/nex`;
+const LOCAL_CDN_BASE = `${__dirname}/../cdn`;
 
 async function connect() {
 	if (!disabledFeatures.redis) {
@@ -169,6 +170,25 @@ async function setServiceAESKey(name, value) {
 	await setCachedFile(`service:${name}:aes_key`, value);
 }
 
+// Local CDN cache functions
+
+async function getLocalCDNFile(name, encoding) {
+	let file = await getCachedFile(`local_cdn:${name}`, encoding);
+
+	if (file === null) {
+		if (await fs.pathExists(`${LOCAL_CDN_BASE}/${name}`)) {
+			file = await fs.readFile(`${LOCAL_CDN_BASE}/${name}`, { encoding });
+			await setLocalCDNFile(name, file);
+		}
+	}
+
+	return file;
+}
+
+async function setLocalCDNFile(name, value) {
+	await setCachedFile(`local_cdn:${name}`, value);
+}
+
 module.exports = {
 	connect,
 	getNEXPublicKey,
@@ -187,4 +207,6 @@ module.exports = {
 	setServicePrivateKey,
 	setServiceSecretKey,
 	setServiceAESKey,
+	getLocalCDNFile,
+	setLocalCDNFile
 };

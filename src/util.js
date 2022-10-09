@@ -1,16 +1,21 @@
 const crypto = require('crypto');
+const path = require('path');
 const NodeRSA = require('node-rsa');
 const aws = require('aws-sdk');
+const fs = require('fs-extra');
 const mailer = require('./mailer');
 const cache = require('./cache');
-const { config } = require('./config-manager');
+const { config, disabledFeatures } = require('./config-manager');
 
-const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
-const s3 = new aws.S3({
-	endpoint: spacesEndpoint,
-	accessKeyId: config.aws.spaces.key,
-	secretAccessKey: config.aws.spaces.secret
-});
+let s3;
+
+if (!disabledFeatures.s3) {
+	s3 = new aws.S3({
+		endpoint: new aws.Endpoint('nyc3.digitaloceanspaces.com'),
+		accessKeyId: config.aws.spaces.key,
+		secretAccessKey: config.aws.spaces.secret
+	});
+}
 
 function nintendoPasswordHash(password, pid) {
 	const pidBuffer = Buffer.alloc(4);
@@ -203,20 +208,32 @@ function unpackToken(token) {
 function fullUrl(request) {
 	const protocol = request.protocol;
 	const host = request.host;
-	const path = request.originalUrl;
+	const opath = request.originalUrl;
 
-	return `${protocol}://${host}${path}`;
+	return `${protocol}://${host}${opath}`;
 }
 
 async function uploadCDNAsset(bucket, key, data, acl) {
-	const awsPutParams = {
-		Body: data,
-		Key: key,
-		Bucket: bucket,
-		ACL: acl
-	};
+	if (disabledFeatures.s3) {
+		await writeLocalCDNFile(key, data);
+	} else {
+		const awsPutParams = {
+			Body: data,
+			Key: key,
+			Bucket: bucket,
+			ACL: acl
+		};
 
-	await s3.putObject(awsPutParams).promise();
+		await s3.putObject(awsPutParams).promise();
+	}
+}
+
+async function writeLocalCDNFile(key, data) {
+	const filePath = `${__dirname}/../cdn/${key}`;
+	const folder = path.dirname(filePath);
+
+	await fs.ensureDir(folder);
+	await fs.writeFile(filePath, data);
 }
 
 function nascError(errorCode) {

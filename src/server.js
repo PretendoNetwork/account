@@ -22,6 +22,7 @@ const nnid = require('./services/nnid');
 const nasc = require('./services/nasc');
 const datastore = require('./services/datastore');
 const api = require('./services/api');
+const localcdn = require('./services/local-cdn');
 
 // START APPLICATION
 
@@ -40,6 +41,7 @@ app.use(nnid);
 app.use(nasc);
 app.use(datastore);
 app.use(api);
+app.use(localcdn);
 
 // 404 handler
 logger.info('Creating 404 status handler');

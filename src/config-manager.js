@@ -13,23 +13,24 @@ require('dotenv').config();
  * @property {string} mongoose.uri URI Mongoose will connect to
  * @property {string} mongoose.database MongoDB database name
  * @property {object} mongoose.options MongoDB connection options
- * @property {object} redis redis settings
- * @property {string} redis.client redis client settings
- * @property {string} redis.client.url redis server URL
- * @property {object} email node-mailer client settings
- * @property {string} email.host SMTP server address
- * @property {number} email.port SMTP server port
- * @property {boolean} email.secure Secure SMTP
- * @property {string} email.from Email 'from' name/address
- * @property {object} email.auth Email authentication settings
- * @property {string} email.auth.user Email username
- * @property {string} email.auth.pass Email password
- * @property {object} aws s3 client settings
- * @property {object} aws.spaces Digital Ocean Spaces settings
- * @property {string} aws.spaces.key s3 access key
- * @property {string} aws.spaces.secret s3 access secret
- * @property {object} hcaptcha hCaptcha settings
- * @property {string} hcaptcha.secret hCaptcha secret
+ * @property {object} [redis] redis settings
+ * @property {string} [redis.client] redis client settings
+ * @property {string} [redis.client.url] redis server URL
+ * @property {object} [email] node-mailer client settings
+ * @property {string} [email.host] SMTP server address
+ * @property {number} [email.port] SMTP server port
+ * @property {boolean} [email.secure] Secure SMTP
+ * @property {string} [email.from] Email 'from' name/address
+ * @property {object} [email.auth] Email authentication settings
+ * @property {string} [email.auth.user] Email username
+ * @property {string} [email.auth.pass] Email password
+ * @property {object} [aws] s3 client settings
+ * @property {object} [aws.spaces] Digital Ocean Spaces settings
+ * @property {string} [aws.spaces.key] s3 access key
+ * @property {string} [aws.spaces.secret] s3 access secret
+ * @property {object} [hcaptcha] hCaptcha settings
+ * @property {string} [hcaptcha.secret] hCaptcha secret
+ * @property {string} [cdn_subdomain] Subdomain used for serving CDN contents when s3 is disabled
  * @property {string} cdn_base Base URL for CDN location
  * @property {string} website_base Base URL for service website (used with emails)
  */
@@ -45,6 +46,7 @@ let config = {};
  * @property {boolean} redis true if redis is disabled
  * @property {boolean} email true if email sending is disabled
  * @property {boolean} captcha true if captcha verification is disabled
+ * @property {boolean} s3 true if s3 services is disabled
  */
 
 /**
@@ -53,15 +55,14 @@ let config = {};
 const disabledFeatures = {
 	redis: false,
 	email: false,
-	captcha: false
+	captcha: false,
+	s3: false
 };
 
 const requiredFields = [
 	['http.port', 'PN_ACT_CONFIG_HTTP_PORT', Number],
 	['mongoose.uri', 'PN_ACT_CONFIG_MONGO_URI'],
 	['mongoose.database', 'PN_ACT_CONFIG_MONGO_DB_NAME'],
-	['aws.spaces.key', 'PN_ACT_CONFIG_S3_ACCESS_KEY'],
-	['aws.spaces.secret', 'PN_ACT_CONFIG_S3_ACCESS_SECRET'],
 	['cdn_base', 'PN_ACT_CONFIG_CDN_BASE'],
 	['website_base', 'PN_ACT_CONFIG_WEBSITE_BASE'],
 ];
@@ -266,6 +267,54 @@ function configure() {
 
 			set(config, 'hcaptcha.secret', emailFromEnvValue);
 		}
+	}
+
+	const s3AccessKeyConfigValue = get(config, 'aws.spaces.key');
+	const s3AccessKeyEnvValue = get(process.env, 'PN_ACT_CONFIG_S3_ACCESS_KEY');
+
+	if (!s3AccessKeyConfigValue || s3AccessKeyConfigValue.trim() === '') {
+		if (!s3AccessKeyEnvValue || s3AccessKeyEnvValue.trim() === '') {
+			logger.warn('Failed to find s3 access key config. Disabling feature');
+
+			disabledFeatures.s3 = true;
+		} else {
+			logger.info('aws.spaces.key not found in config, using environment variable PN_ACT_CONFIG_S3_ACCESS_KEY');
+
+			set(config, 'aws.spaces.key', s3AccessKeyEnvValue);
+		}
+	}
+
+	const s3SecretKeyConfigValue = get(config, 'aws.spaces.secret');
+	const s3SecretKeyEnvValue = get(process.env, 'PN_ACT_CONFIG_S3_ACCESS_SECRET');
+
+	if (!s3SecretKeyConfigValue || s3SecretKeyConfigValue.trim() === '') {
+		if (!s3SecretKeyEnvValue || s3SecretKeyEnvValue.trim() === '') {
+			logger.warn('Failed to find s3 secret key config. Disabling feature');
+
+			disabledFeatures.s3 = true;
+		} else {
+			logger.info('aws.spaces.secret not found in config, using environment variable PN_ACT_CONFIG_S3_ACCESS_SECRET');
+
+			set(config, 'aws.spaces.secret', s3AccessKeyEnvValue);
+		}
+	}
+
+	if (disabledFeatures.s3) {
+		const cdnSubdomainConfigValue = get(config, 'cdn_subdomain');
+		const cdnSubdomainEnvValue = get(process.env, 'PN_ACT_CONFIG_CDN_SUBDOMAIN');
+
+		if (!cdnSubdomainConfigValue || cdnSubdomainConfigValue.trim() === '') {
+			if (!cdnSubdomainEnvValue || cdnSubdomainEnvValue.trim() === '') {
+				logger.error('s3 file storage is disabled and no CDN subdomain was set. Set cdn_subdomain in config.json or the PN_ACT_CONFIG_CDN_SUBDOMAIN environment variable');
+				process.exit(0);
+			} else {
+				logger.info('cdn_subdomain not found in config, using environment variable PN_ACT_CONFIG_CDN_SUBDOMAIN');
+
+				set(config, 'cdn_subdomain', cdnSubdomainEnvValue);
+			}
+		}
+
+		logger.warn(`s3 file storage disabled. Using disk-based file storage. Please ensure cdn_base config or PN_ACT_CONFIG_CDN_BASE env variable is set to point to this server with the subdomain being ${config.cdn_subdomain}`);
 	}
 
 	module.exports.config = config;
