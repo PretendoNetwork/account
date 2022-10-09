@@ -280,7 +280,7 @@ function configure() {
 		} else {
 			logger.info('hcaptcha.secret not found in config, using environment variable PN_ACT_CONFIG_HCAPTCHA_SECRET');
 
-			set(config, 'hcaptcha.secret', emailFromEnvValue);
+			set(config, 'hcaptcha.secret', captchaSecretEnvValue);
 		}
 	}
 
