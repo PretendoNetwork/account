@@ -1,12 +1,18 @@
 const nodemailer = require('nodemailer');
-const { config } = require('./config-manager');
+const { config, disabledFeatures } = require('./config-manager');
 
-const transporter = nodemailer.createTransport(config.email);
+let transporter;
+
+if (!disabledFeatures.email) {
+	transporter = nodemailer.createTransport(config.email);
+}
 
 async function sendMail(options) {
-	options.from = config.email.from;
+	if (!disabledFeatures.email) {
+		options.from = config.email.from;
 
-	await transporter.sendMail(options);
+		await transporter.sendMail(options);
+	}
 }
 
 module.exports = {

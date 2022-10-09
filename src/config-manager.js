@@ -43,25 +43,21 @@ let config = {};
 /**
  * @typedef {Object} DisabledFeatures
  * @property {boolean} redis true if redis is disabled
+ * @property {boolean} email true if email sending is disabled
  */
 
 /**
  * @type {DisabledFeatures}
  */
 const disabledFeatures = {
-	redis: false
+	redis: false,
+	email: false
 };
 
 const requiredFields = [
 	['http.port', 'PN_ACT_CONFIG_HTTP_PORT', Number],
 	['mongoose.uri', 'PN_ACT_CONFIG_MONGO_URI'],
 	['mongoose.database', 'PN_ACT_CONFIG_MONGO_DB_NAME'],
-	['email.host', 'PN_ACT_CONFIG_EMAIL_HOST'],
-	['email.port', 'PN_ACT_CONFIG_EMAIL_PORT', Number],
-	['email.secure', 'PN_ACT_CONFIG_EMAIL_SECURE', Boolean],
-	['email.auth.user', 'PN_ACT_CONFIG_EMAIL_USERNAME'],
-	['email.auth.pass', 'PN_ACT_CONFIG_EMAIL_PASSWORD'],
-	['email.from', 'PN_ACT_CONFIG_EMAIL_FROM'],
 	['aws.spaces.key', 'PN_ACT_CONFIG_S3_ACCESS_KEY'],
 	['aws.spaces.secret', 'PN_ACT_CONFIG_S3_ACCESS_SECRET'],
 	['hcaptcha.secret', 'PN_ACT_CONFIG_HCAPTCHA_SECRET'],
@@ -159,6 +155,72 @@ function configure() {
 			logger.warning('Failed to find Redis config. Disabling feature and using in-memory cache');
 
 			disabledFeatures.redis = true;
+		}
+	}
+
+	const emailHostConfigValue = get(config, 'email.host');
+	const emailHostEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_HOST');
+
+	if (!emailHostConfigValue || emailHostConfigValue.trim() === '') {
+		if (!emailHostEnvValue || emailHostEnvValue.trim() === '') {
+			logger.warning('Failed to find email SMTP host config. Disabling feature');
+
+			disabledFeatures.email = true;
+		}
+	}
+
+	const emailPortConfigValue = get(config, 'email.port');
+	const emailPortEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_PORT');
+
+	if (!emailPortConfigValue) {
+		if (!emailPortEnvValue || emailPortEnvValue.trim() === '') {
+			logger.warning('Failed to find email SMTP port config. Disabling feature');
+
+			disabledFeatures.email = true;
+		}
+	}
+
+	const emailSecureConfigValue = get(config, 'email.secure');
+	const emailSecureEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_SECURE');
+
+	if (emailSecureConfigValue === undefined) {
+		if (!emailSecureEnvValue || emailSecureEnvValue.trim() === '') {
+			logger.warning('Failed to find email SMTP secure config. Disabling feature');
+
+			disabledFeatures.email = true;
+		}
+	}
+
+	const emailUsernameConfigValue = get(config, 'email.auth.user');
+	const emailUsernameEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_USERNAME');
+
+	if (!emailUsernameConfigValue || emailUsernameConfigValue.trim() === '') {
+		if (!emailUsernameEnvValue || emailUsernameEnvValue.trim() === '') {
+			logger.warning('Failed to find email username config. Disabling feature');
+
+			disabledFeatures.email = true;
+		}
+	}
+
+	const emailPasswordConfigValue = get(config, 'email.auth.pass');
+	const emailPasswordEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_PASSWORD');
+
+	if (!emailPasswordConfigValue || emailPasswordConfigValue.trim() === '') {
+		if (!emailPasswordEnvValue || emailPasswordEnvValue.trim() === '') {
+			logger.warning('Failed to find email password config. Disabling feature');
+
+			disabledFeatures.email = true;
+		}
+	}
+
+	const emailFromConfigValue = get(config, 'email.from');
+	const emailFromEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_FROM');
+
+	if (!emailFromConfigValue || emailFromConfigValue.trim() === '') {
+		if (!emailFromEnvValue || emailFromEnvValue.trim() === '') {
+			logger.warning('Failed to find email from config. Disabling feature');
+
+			disabledFeatures.email = true;
 		}
 	}
 
