@@ -155,6 +155,10 @@ function configure() {
 			logger.warn('Failed to find Redis config. Disabling feature and using in-memory cache');
 
 			disabledFeatures.redis = true;
+		} else {
+			logger.info('redis.client.url not found in config, using environment variable PN_ACT_CONFIG_REDIS_URL');
+
+			set(config, 'redis.client.url', redisEnvValue);
 		}
 	}
 
@@ -166,6 +170,10 @@ function configure() {
 			logger.warn('Failed to find email SMTP host config. Disabling feature');
 
 			disabledFeatures.email = true;
+		} else {
+			logger.info('email.host not found in config, using environment variable PN_ACT_CONFIG_EMAIL_HOST');
+
+			set(config, 'email.host', emailHostEnvValue);
 		}
 	}
 
@@ -177,6 +185,10 @@ function configure() {
 			logger.warn('Failed to find email SMTP port config. Disabling feature');
 
 			disabledFeatures.email = true;
+		} else {
+			logger.info('email.port not found in config, using environment variable PN_ACT_CONFIG_EMAIL_PORT');
+
+			set(config, 'email.port', Number(emailPortEnvValue));
 		}
 	}
 
@@ -188,6 +200,10 @@ function configure() {
 			logger.warn('Failed to find email SMTP secure config. Disabling feature');
 
 			disabledFeatures.email = true;
+		} else {
+			logger.info('email.secure not found in config, using environment variable PN_ACT_CONFIG_EMAIL_SECURE');
+
+			set(config, 'email.secure', Boolean(emailSecureEnvValue));
 		}
 	}
 
@@ -199,6 +215,10 @@ function configure() {
 			logger.warn('Failed to find email username config. Disabling feature');
 
 			disabledFeatures.email = true;
+		} else {
+			logger.info('email.auth.user not found in config, using environment variable PN_ACT_CONFIG_EMAIL_USERNAME');
+
+			set(config, 'email.auth.user', emailUsernameEnvValue);
 		}
 	}
 
@@ -210,6 +230,10 @@ function configure() {
 			logger.warn('Failed to find email password config. Disabling feature');
 
 			disabledFeatures.email = true;
+		} else {
+			logger.info('email.pass not found in config, using environment variable PN_ACT_CONFIG_EMAIL_PASSWORD');
+
+			set(config, 'email.pass', emailPasswordEnvValue);
 		}
 	}
 
@@ -221,6 +245,10 @@ function configure() {
 			logger.warn('Failed to find email from config. Disabling feature');
 
 			disabledFeatures.email = true;
+		} else {
+			logger.info('email.from not found in config, using environment variable PN_ACT_CONFIG_EMAIL_FROM');
+
+			set(config, 'email.from', emailFromEnvValue);
 		}
 	}
 
