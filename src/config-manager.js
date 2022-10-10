@@ -343,6 +343,10 @@ function configure() {
 			}
 		}
 
+		if (disabledFeatures.redis) {
+			logger.warn('Both s3 and Redis are disabled. Large CDN files will use the in-memory cache, which may result in high memory use. Please enable s3 if you\'re running a production server.');
+		}
+
 		logger.warn(`s3 file storage disabled. Using disk-based file storage. Please ensure cdn_base config or PN_ACT_CONFIG_CDN_BASE env variable is set to point to this server with the subdomain being ${config.cdn_subdomain}`);
 	}
 
