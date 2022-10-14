@@ -32,6 +32,10 @@
     "hcaptcha": {
         "secret": "0x0000000000000000000000000000000000000000"
     },
-    "cdn_base": "https://example.com",
+    "cdn": {
+        "base_url": "https://local-cdn.example.com",
+        "subdomain": "local-cdn",
+        "disk_path": "/home/jon/pretend-cdn"
+    },
     "website_base": "https://example.com"
 }

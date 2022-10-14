@@ -24,7 +24,7 @@ localcdn.use(routes.GET);
 const router = express.Router();
 
 // Create subdomains
-logger.info(`[LOCAL-CDN] Creating '${config.cdn_subdomain}' subdomain`);
-router.use(subdomain(config.cdn_subdomain, localcdn));
+logger.info(`[LOCAL-CDN] Creating '${config.cdn.subdomain}' subdomain`);
+router.use(subdomain(config.cdn.subdomain, localcdn));
 
 module.exports = router;

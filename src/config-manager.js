@@ -30,8 +30,10 @@ require('dotenv').config();
  * @property {string} [s3.secret] s3 access secret
  * @property {object} [hcaptcha] hCaptcha settings
  * @property {string} [hcaptcha.secret] hCaptcha secret
- * @property {string} [cdn_subdomain] Subdomain used for serving CDN contents when s3 is disabled
- * @property {string} cdn_base Base URL for CDN location
+ * @property {object} cdn CDN config settings
+ * @property {object} [cdn.subdomain] Subdomain used for serving CDN contents when s3 is disabled
+ * @property {string} [cdn.disk_path] Fully qualified file system path for storing and reading local CDN contents
+ * @property {string} cdn.base_url Base URL for CDN server
  * @property {string} website_base Base URL for service website (used with emails)
  */
 
@@ -63,7 +65,7 @@ const requiredFields = [
 	['http.port', 'PN_ACT_CONFIG_HTTP_PORT', Number],
 	['mongoose.uri', 'PN_ACT_CONFIG_MONGO_URI'],
 	['mongoose.database', 'PN_ACT_CONFIG_MONGO_DB_NAME'],
-	['cdn_base', 'PN_ACT_CONFIG_CDN_BASE']
+	['cdn.base_url', 'PN_ACT_CONFIG_CDN_BASE_URL']
 ];
 
 function configure() {
@@ -109,7 +111,11 @@ function configure() {
 			hcaptcha: {
 				secret: process.env.PN_ACT_CONFIG_HCAPTCHA_SECRET
 			},
-			cdn_base: process.env.PN_ACT_CONFIG_CDN_BASE,
+			cdn: {
+				subdomain: process.env.PN_ACT_CONFIG_CDN_BASE,
+				disk_path: process.env.PN_ACT_CONFIG_CDN_BASE,
+				base_url: process.env.PN_ACT_CONFIG_CDN_BASE
+			},
 			website_base: process.env.PN_ACT_CONFIG_WEBSITE_BASE
 		};
 	} else {
@@ -304,13 +310,13 @@ function configure() {
 	}
 
 	if (disabledFeatures.s3) {
-		const cdnSubdomainCheck = get(config, 'cdn_subdomain');
+		const cdnSubdomainCheck = get(config, 'cdn.subdomain');
 
 		if (!cdnSubdomainCheck || cdnSubdomainCheck.trim() === '') {
 			if (usingEnv) {
 				logger.error('s3 file storage is disabled and no CDN subdomain was set. Set the PN_ACT_CONFIG_CDN_SUBDOMAIN environment variable');
 			} else {
-				logger.error('s3 file storage is disabled and no CDN subdomain was set. Set cdn_subdomain in your config.json');
+				logger.error('s3 file storage is disabled and no CDN subdomain was set. Set cdn.subdomain in your config.json');
 			}
 
 			process.exit(0);
@@ -320,7 +326,7 @@ function configure() {
 			logger.warn('Both s3 and Redis are disabled. Large CDN files will use the in-memory cache, which may result in high memory use. Please enable s3 if you\'re running a production server.');
 		}
 
-		logger.warn(`s3 file storage disabled. Using disk-based file storage. Please ensure cdn_base config or PN_ACT_CONFIG_CDN_BASE env variable is set to point to this server with the subdomain being ${config.cdn_subdomain}`);
+		logger.warn(`s3 file storage disabled. Using disk-based file storage. Please ensure cdn.base_url config or PN_ACT_CONFIG_CDN_BASE env variable is set to point to this server with the subdomain being ${config.cdn.subdomain}`);
 	}
 
 	module.exports.config = config;

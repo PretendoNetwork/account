@@ -229,7 +229,7 @@ async function uploadCDNAsset(bucket, key, data, acl) {
 }
 
 async function writeLocalCDNFile(key, data) {
-	const filePath = `${__dirname}/../cdn/${key}`;
+	const filePath = config.cdn.disk_path;
 	const folder = path.dirname(filePath);
 
 	await fs.ensureDir(folder);
