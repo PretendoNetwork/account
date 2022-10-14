@@ -67,8 +67,10 @@ const requiredFields = [
 ];
 
 function configure() {
-	if (process.env.PN_ACT_PREFER_ENV_CONFIG === 'true') {
-		logger.info('Loading config from env');
+	const usingEnv = process.env.PN_ACT_PREFER_ENV_CONFIG === 'true';
+
+	if (usingEnv) {
+		logger.info('Loading config from environment variable');
 
 		config = {
 			http: {
@@ -147,200 +149,171 @@ function configure() {
 
 	// * Check for optional settings
 
-	const redisConfigValue = get(config, 'redis.client.url');
-	const redisEnvValue = get(process.env, 'PN_ACT_CONFIG_REDIS_URL');
+	const redisCheck = get(config, 'redis.client.url');
 
-	if (!redisConfigValue || redisConfigValue.trim() === '') {
-		if (!redisEnvValue || redisEnvValue.trim() === '') {
-			logger.warn('Failed to find Redis config. Disabling feature and using in-memory cache. To enable feature set redis.client.url in config.json or the PN_ACT_CONFIG_REDIS_URL environment variable');
+	if (!redisCheck || redisCheck.trim() === '') {
+		if (usingEnv) {
+			logger.warn('Failed to find Redis connection url. Disabling feature and using in-memory cache. To enable feature set the PN_ACT_CONFIG_REDIS_URL environment variable');
 
-			disabledFeatures.redis = true;
 		} else {
-			logger.info('redis.client.url not found in config, using environment variable PN_ACT_CONFIG_REDIS_URL');
+			logger.warn('Failed to find Redis connection url. Disabling feature and using in-memory cache. To enable feature set redis.client.url in your config.json');
 
-			set(config, 'redis.client.url', redisEnvValue);
 		}
+
+		disabledFeatures.redis = true;
 	}
 
-	const emailHostConfigValue = get(config, 'email.host');
-	const emailHostEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_HOST');
+	const emailHostCheck = get(config, 'email.host');
 
-	if (!emailHostConfigValue || emailHostConfigValue.trim() === '') {
-		if (!emailHostEnvValue || emailHostEnvValue.trim() === '') {
-			logger.warn('Failed to find email SMTP host config. Disabling feature. To enable feature set email.host in config.json or the PN_ACT_CONFIG_EMAIL_HOST environment variable');
-
-			disabledFeatures.email = true;
+	if (!emailHostCheck || emailHostCheck.trim() === '') {
+		if (usingEnv) {
+			logger.warn('Failed to find email SMTP host. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_HOST environment variable');
 		} else {
-			logger.info('email.host not found in config, using environment variable PN_ACT_CONFIG_EMAIL_HOST');
-
-			set(config, 'email.host', emailHostEnvValue);
+			logger.warn('Failed to find email SMTP host. Disabling feature. To enable feature set email.host in your config.json');
 		}
+
+
+		disabledFeatures.email = true;
 	}
 
-	const emailPortConfigValue = get(config, 'email.port');
-	const emailPortEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_PORT');
+	const emailPortCheck = get(config, 'email.port');
 
-	if (!emailPortConfigValue) {
-		if (!emailPortEnvValue || emailPortEnvValue.trim() === '') {
-			logger.warn('Failed to find email SMTP port config. Disabling feature. To enable feature set email.port in config.json or the PN_ACT_CONFIG_EMAIL_PORT environment variable');
-
-			disabledFeatures.email = true;
+	if (!emailPortCheck) {
+		if (usingEnv) {
+			logger.warn('Failed to find email SMTP port. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_PORT environment variable');
 		} else {
-			logger.info('email.port not found in config, using environment variable PN_ACT_CONFIG_EMAIL_PORT');
-
-			set(config, 'email.port', Number(emailPortEnvValue));
+			logger.warn('Failed to find email SMTP port. Disabling feature. To enable feature set email.port in your config.json');
 		}
+
+		disabledFeatures.email = true;
 	}
 
-	const emailSecureConfigValue = get(config, 'email.secure');
-	const emailSecureEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_SECURE');
+	const emailSecureCheck = get(config, 'email.secure');
 
-	if (emailSecureConfigValue === undefined) {
-		if (!emailSecureEnvValue || emailSecureEnvValue.trim() === '') {
-			logger.warn('Failed to find email SMTP secure config. Disabling feature. To enable feature set email.secure in config.json or the PN_ACT_CONFIG_EMAIL_SECURE environment variable');
-
-			disabledFeatures.email = true;
+	if (emailSecureCheck === undefined) {
+		if (usingEnv) {
+			logger.warn('Failed to find email SMTP secure flag. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_SECURE environment variable');
 		} else {
-			logger.info('email.secure not found in config, using environment variable PN_ACT_CONFIG_EMAIL_SECURE');
 
-			set(config, 'email.secure', Boolean(emailSecureEnvValue));
+			logger.warn('Failed to find email SMTP secure flag. Disabling feature. To enable feature set email.secure in your config.json');
 		}
+
+		disabledFeatures.email = true;
 	}
 
-	const emailUsernameConfigValue = get(config, 'email.auth.user');
-	const emailUsernameEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_USERNAME');
+	const emailUsernameCheck = get(config, 'email.auth.user');
 
-	if (!emailUsernameConfigValue || emailUsernameConfigValue.trim() === '') {
-		if (!emailUsernameEnvValue || emailUsernameEnvValue.trim() === '') {
-			logger.warn('Failed to find email username config. Disabling feature. To enable feature set email.auth.user in config.json or the auth.user environment variable');
-
-			disabledFeatures.email = true;
+	if (!emailUsernameCheck || emailUsernameCheck.trim() === '') {
+		if (usingEnv) {
+			logger.warn('Failed to find email account username. Disabling feature. To enable feature set the auth.user environment variable');
 		} else {
-			logger.info('email.auth.user not found in config, using environment variable PN_ACT_CONFIG_EMAIL_USERNAME');
 
-			set(config, 'email.auth.user', emailUsernameEnvValue);
+			logger.warn('Failed to find email account username. Disabling feature. To enable feature set email.auth.user in your config.json');
 		}
+
+		disabledFeatures.email = true;
 	}
 
-	const emailPasswordConfigValue = get(config, 'email.auth.pass');
-	const emailPasswordEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_PASSWORD');
+	const emailPasswordCheck = get(config, 'email.auth.pass');
 
-	if (!emailPasswordConfigValue || emailPasswordConfigValue.trim() === '') {
-		if (!emailPasswordEnvValue || emailPasswordEnvValue.trim() === '') {
-			logger.warn('Failed to find email password config. Disabling feature. To enable feature set email.auth.pass in config.json or the PN_ACT_CONFIG_EMAIL_PASSWORD environment variable');
-
-			disabledFeatures.email = true;
+	if (!emailPasswordCheck || emailPasswordCheck.trim() === '') {
+		if (usingEnv) {
+			logger.warn('Failed to find email account password. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_PASSWORD environment variable');
 		} else {
-			logger.info('email.pass not found in config, using environment variable PN_ACT_CONFIG_EMAIL_PASSWORD');
 
-			set(config, 'email.pass', emailPasswordEnvValue);
+			logger.warn('Failed to find email account password. Disabling feature. To enable feature set email.auth.pass in your config.json');
 		}
+
+		disabledFeatures.email = true;
 	}
 
-	const emailFromConfigValue = get(config, 'email.from');
-	const emailFromEnvValue = get(process.env, 'PN_ACT_CONFIG_EMAIL_FROM');
+	const emailFromCheck = get(config, 'email.from');
 
-	if (!emailFromConfigValue || emailFromConfigValue.trim() === '') {
-		if (!emailFromEnvValue || emailFromEnvValue.trim() === '') {
-			logger.warn('Failed to find email from config. Disabling feature. To enable feature set email.from in config.json or the PN_ACT_CONFIG_EMAIL_FROM environment variable');
-
-			disabledFeatures.email = true;
+	if (!emailFromCheck || emailFromCheck.trim() === '') {
+		if (usingEnv) {
+			logger.warn('Failed to find email from config. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_FROM environment variable');
 		} else {
-			logger.info('email.from not found in config, using environment variable PN_ACT_CONFIG_EMAIL_FROM');
 
-			set(config, 'email.from', emailFromEnvValue);
+			logger.warn('Failed to find email from config. Disabling feature. To enable feature set email.from in your config.json');
 		}
+
+		disabledFeatures.email = true;
 	}
 
 	if (!disabledFeatures.email) {
-		const websiteBaseConfigValue = get(config, 'website_base');
-		const websiteBaseEnvValue = get(process.env, 'PN_ACT_CONFIG_WEBSITE_BASE');
+		const websiteBaseCheck = get(config, 'website_base');
 
-		if (!websiteBaseConfigValue || websiteBaseConfigValue.trim() === '') {
-			if (!websiteBaseEnvValue || websiteBaseEnvValue.trim() === '') {
-				logger.error('Email sending is not disabled and no website base was set. Set website_base in config.json or the PN_ACT_CONFIG_WEBSITE_BASE environment variable');
-				process.exit(0);
+		if (!websiteBaseCheck || websiteBaseCheck.trim() === '') {
+			if (usingEnv) {
+				logger.error('Email sending is enabled and no website base was configured. Set the PN_ACT_CONFIG_WEBSITE_BASE environment variable');
 			} else {
-				logger.info('website_base not found in config, using environment variable PN_ACT_CONFIG_WEBSITE_BASE');
-
-				set(config, 'website_base', websiteBaseEnvValue);
+				logger.error('Email sending is enabled and no website base was configured. Set website_base in your config.json');
 			}
+
+			process.exit(0);
 		}
 	}
 
-	const captchaSecretConfigValue = get(config, 'hcaptcha.secret');
-	const captchaSecretEnvValue = get(process.env, 'PN_ACT_CONFIG_HCAPTCHA_SECRET');
+	const captchaSecretCheck = get(config, 'hcaptcha.secret');
 
-	if (!captchaSecretConfigValue || captchaSecretConfigValue.trim() === '') {
-		if (!captchaSecretEnvValue || captchaSecretEnvValue.trim() === '') {
-			logger.warn('Failed to find captcha secret config. Disabling feature. To enable feature set hcaptcha.secret in config.json or the PN_ACT_CONFIG_HCAPTCHA_SECRET environment variable');
-
-			disabledFeatures.email = true;
+	if (!captchaSecretCheck || captchaSecretCheck.trim() === '') {
+		if (usingEnv) {
+			logger.warn('Failed to find captcha secret config. Disabling feature. To enable feature set the PN_ACT_CONFIG_HCAPTCHA_SECRET environment variable');
 		} else {
-			logger.info('hcaptcha.secret not found in config, using environment variable PN_ACT_CONFIG_HCAPTCHA_SECRET');
-
-			set(config, 'hcaptcha.secret', captchaSecretEnvValue);
+			logger.warn('Failed to find captcha secret config. Disabling feature. To enable feature set hcaptcha.secret in your config.json');
 		}
+
+		disabledFeatures.captcha = true;
 	}
 
-	const s3EndpointConfigValue = get(config, 's3.endpoint');
-	const s3EndpointEnvValue = get(process.env, 'PN_ACT_CONFIG_S3_ENDPOINT');
+	const s3EndpointCheck = get(config, 's3.endpoint');
 
-	if (!s3EndpointConfigValue || s3EndpointConfigValue.trim() === '') {
-		if (!s3EndpointEnvValue || s3EndpointEnvValue.trim() === '') {
-			logger.warn('Failed to find s3 endpoint config. Disabling feature. To enable feature set s3.endpoint in config.json or the PN_ACT_CONFIG_S3_ENDPOINT environment variable');
-
-			disabledFeatures.s3 = true;
+	if (!s3EndpointCheck || s3EndpointCheck.trim() === '') {
+		if (usingEnv) {
+			logger.warn('Failed to find s3 endpoint config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ENDPOINT environment variable');
 		} else {
-			logger.info('s3.endpoint not found in config, using environment variable PN_ACT_CONFIG_S3_ENDPOINT');
-
-			set(config, 's3.endpoint', s3EndpointEnvValue);
+			logger.warn('Failed to find s3 endpoint config. Disabling feature. To enable feature set s3.endpoint in your config.json');
 		}
+
+		disabledFeatures.s3 = true;
+	} else {
 	}
 
-	const s3AccessKeyConfigValue = get(config, 's3.key');
-	const s3AccessKeyEnvValue = get(process.env, 'PN_ACT_CONFIG_S3_ACCESS_KEY');
+	const s3AccessKeyCheck = get(config, 's3.key');
 
-	if (!s3AccessKeyConfigValue || s3AccessKeyConfigValue.trim() === '') {
-		if (!s3AccessKeyEnvValue || s3AccessKeyEnvValue.trim() === '') {
-			logger.warn('Failed to find s3 access key config. Disabling feature. To enable feature set s3.key in config.json or the PN_ACT_CONFIG_S3_ACCESS_KEY environment variable');
-
-			disabledFeatures.s3 = true;
+	if (!s3AccessKeyCheck || s3AccessKeyCheck.trim() === '') {
+		if (usingEnv) {
+			logger.warn('Failed to find s3 access key config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ACCESS_KEY environment variable');
 		} else {
-			logger.info('s3.key not found in config, using environment variable PN_ACT_CONFIG_S3_ACCESS_KEY');
-
-			set(config, 's3.key', s3AccessKeyEnvValue);
+			logger.warn('Failed to find s3 access key config. Disabling feature. To enable feature set s3.key in your config.json');
 		}
+
+		disabledFeatures.s3 = true;
 	}
 
-	const s3SecretKeyConfigValue = get(config, 's3.secret');
-	const s3SecretKeyEnvValue = get(process.env, 'PN_ACT_CONFIG_S3_ACCESS_SECRET');
+	const s3SecretKeyCheck = get(config, 's3.secret');
 
-	if (!s3SecretKeyConfigValue || s3SecretKeyConfigValue.trim() === '') {
-		if (!s3SecretKeyEnvValue || s3SecretKeyEnvValue.trim() === '') {
-			logger.warn('Failed to find s3 secret key config. Disabling feature. To enable feature set s3.secret in config.json or the PN_ACT_CONFIG_S3_ACCESS_SECRET environment variable');
-
-			disabledFeatures.s3 = true;
+	if (!s3SecretKeyCheck || s3SecretKeyCheck.trim() === '') {
+		if (usingEnv) {
+			logger.warn('Failed to find s3 secret key config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ACCESS_SECRET environment variable');
 		} else {
-			logger.info('s3.secret not found in config, using environment variable PN_ACT_CONFIG_S3_ACCESS_SECRET');
-
-			set(config, 's3.secret', s3AccessKeyEnvValue);
+			logger.warn('Failed to find s3 secret key config. Disabling feature. To enable feature set s3.secret in your config.json');
 		}
+
+		disabledFeatures.s3 = true;
 	}
 
 	if (disabledFeatures.s3) {
-		const cdnSubdomainConfigValue = get(config, 'cdn_subdomain');
-		const cdnSubdomainEnvValue = get(process.env, 'PN_ACT_CONFIG_CDN_SUBDOMAIN');
+		const cdnSubdomainCheck = get(config, 'cdn_subdomain');
 
-		if (!cdnSubdomainConfigValue || cdnSubdomainConfigValue.trim() === '') {
-			if (!cdnSubdomainEnvValue || cdnSubdomainEnvValue.trim() === '') {
-				logger.error('s3 file storage is disabled and no CDN subdomain was set. Set cdn_subdomain in config.json or the PN_ACT_CONFIG_CDN_SUBDOMAIN environment variable');
-				process.exit(0);
+		if (!cdnSubdomainCheck || cdnSubdomainCheck.trim() === '') {
+			if (usingEnv) {
+				logger.error('s3 file storage is disabled and no CDN subdomain was set. Set the PN_ACT_CONFIG_CDN_SUBDOMAIN environment variable');
 			} else {
-				logger.info('cdn_subdomain not found in config, using environment variable PN_ACT_CONFIG_CDN_SUBDOMAIN');
-
-				set(config, 'cdn_subdomain', cdnSubdomainEnvValue);
+				logger.error('s3 file storage is disabled and no CDN subdomain was set. Set cdn_subdomain in your config.json');
 			}
+
+			process.exit(0);
 		}
 
 		if (disabledFeatures.redis) {
