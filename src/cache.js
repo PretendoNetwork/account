@@ -1,30 +1,45 @@
 const fs = require('fs-extra');
 const redis = require('redis');
-const config = require('../config.json');
+const { config, disabledFeatures } = require('./config-manager');
 let client;
+
+const memoryCache = {};
 
 const SERVICE_CERTS_BASE = `${__dirname}/../certs/service`;
 const NEX_CERTS_BASE = `${__dirname}/../certs/nex`;
+const LOCAL_CDN_BASE = `${__dirname}/../cdn`;
 
 async function connect() {
-	client = redis.createClient(config.redis.client);
-	client.on('error', (err) => console.log('Redis Client Error', err));
+	if (!disabledFeatures.redis) {
+		client = redis.createClient(config.redis.client);
+		client.on('error', (err) => console.log('Redis Client Error', err));
 
-	await client.connect();
+		await client.connect();
+	}
 }
 
-async function setCachedFile(type, name, fileName, value) {
-	await client.set(`${type}:${name}:${fileName}`, value);
+async function setCachedFile(fileName, value) {
+	if (disabledFeatures.redis) {
+		memoryCache[fileName] = value;
+	} else {
+		await client.set(fileName, value);
+	}
 }
 
-async function getCachedFile(type, name, fileName, encoding) {
-	const cachedFile = await client.get(`${type}:${name}:${fileName}`);
+async function getCachedFile(fileName, encoding) {
+	let cachedFile;
+
+	if (disabledFeatures.redis) {
+		cachedFile = memoryCache[fileName];
+	} else {
+		cachedFile = await client.get(fileName);
+	}
 
 	if (cachedFile !== null) {
-		return Buffer.from(cachedFile, encoding);
-	} else {
-		return cachedFile;
+		cachedFile = Buffer.from(cachedFile, encoding);
 	}
+
+	return cachedFile;
 }
 
 // NEX server cache functions
@@ -76,19 +91,19 @@ async function getNEXAESKey(name, encoding) {
 }
 
 async function setNEXPublicKey(name, value) {
-	await setCachedFile('nex', name, 'public_key', value);
+	await setCachedFile(`nex:${name}:public_key`, value);
 }
 
 async function setNEXPrivateKey(name, value) {
-	await setCachedFile('nex', name, 'private_key', value);
+	await setCachedFile(`nex:${name}:private_key`, value);
 }
 
 async function setNEXSecretKey(name, value) {
-	await setCachedFile('nex', name, 'secret_key', value);
+	await setCachedFile(`nex:${name}:secret_key`, value);
 }
 
 async function setNEXAESKey(name, value) {
-	await setCachedFile('nex', name, 'aes_key', value);
+	await setCachedFile(`nex:${name}:aes_key`, value);
 }
 
 // 3rd party service cache functions
@@ -140,19 +155,38 @@ async function getServiceAESKey(name, encoding) {
 }
 
 async function setServicePublicKey(name, value) {
-	await setCachedFile('service', name, 'public_key', value);
+	await setCachedFile(`service:${name}:public_key`, value);
 }
 
 async function setServicePrivateKey(name, value) {
-	await setCachedFile('service', name, 'private_key', value);
+	await setCachedFile(`service:${name}:private_key`, value);
 }
 
 async function setServiceSecretKey(name, value) {
-	await setCachedFile('service', name, 'secret_key', value);
+	await setCachedFile(`service:${name}:secret_key`, value);
 }
 
 async function setServiceAESKey(name, value) {
-	await setCachedFile('service', name, 'aes_key', value);
+	await setCachedFile(`service:${name}:aes_key`, value);
+}
+
+// Local CDN cache functions
+
+async function getLocalCDNFile(name, encoding) {
+	let file = await getCachedFile(`local_cdn:${name}`, encoding);
+
+	if (file === null) {
+		if (await fs.pathExists(`${LOCAL_CDN_BASE}/${name}`)) {
+			file = await fs.readFile(`${LOCAL_CDN_BASE}/${name}`, { encoding });
+			await setLocalCDNFile(name, file);
+		}
+	}
+
+	return file;
+}
+
+async function setLocalCDNFile(name, value) {
+	await setCachedFile(`local_cdn:${name}`, value);
 }
 
 module.exports = {
@@ -173,4 +207,6 @@ module.exports = {
 	setServicePrivateKey,
 	setServiceSecretKey,
 	setServiceAESKey,
+	getLocalCDNFile,
+	setLocalCDNFile
 };

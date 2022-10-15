@@ -5,7 +5,7 @@ const util = require('./util');
 const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
 const logger = require('../logger');
-const config = require('../config.json');
+const { config } = require('./config-manager');
 const { uri, database, options } = config.mongoose;
 
 // TODO: Extend this later with more settings
@@ -172,9 +172,9 @@ async function getUserProfileJSONByPID(pid) {
 				mii_image: {
 					// Images MUST be loaded over HTTPS or console ignores them
 					// Bunny CDN is the only CDN which seems to support TLS 1.0/1.1 (required)
-					cached_url: `${config.cdn_base}/mii/${user.pid}/standard.tga`,
+					cached_url: `${config.cdn.base_url}/mii/${user.pid}/standard.tga`,
 					id: user.get('mii.image_id'),
-					url: `${config.cdn_base}/mii/${user.pid}/standard.tga`,
+					url: `${config.cdn.base_url}/mii/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},

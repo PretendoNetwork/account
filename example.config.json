@@ -24,15 +24,18 @@
         },
         "from": "Company Name <user@company.net>"
     },
-    "aws": {
-        "spaces": {
-            "key": "ACCESS_KEY",
-            "secret": "ACCESS_SECRET"
-        }
+    "s3": {
+        "endpoint": "nyc3.digitaloceanspaces.com",
+        "key": "ACCESS_KEY",
+        "secret": "ACCESS_SECRET"
     },
     "hcaptcha": {
         "secret": "0x0000000000000000000000000000000000000000"
     },
-    "cdn_base": "https://example.com",
+    "cdn": {
+        "base_url": "https://local-cdn.example.com",
+        "subdomain": "local-cdn",
+        "disk_path": "/home/jon/pretend-cdn"
+    },
     "website_base": "https://example.com"
 }

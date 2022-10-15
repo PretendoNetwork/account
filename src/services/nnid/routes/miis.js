@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const xmlbuilder = require('xmlbuilder');
 const { PNID } = require('../../../models/pnid');
-const config = require('../../../../config.json');
+const { config } = require('../../../config-manager');
 
 /**
  * [GET]
@@ -20,51 +20,51 @@ router.get('/', async (request, response) => {
 
 		const miiImages = [
 			{
-				cached_url: `${config.cdn_base}/mii/${user.pid}/normal_face.png`,
+				cached_url: `${config.cdn.base_url}/mii/${user.pid}/normal_face.png`,
 				id: mii.id,
-				url: `${config.cdn_base}/mii/${user.pid}/normal_face.png`,
+				url: `${config.cdn.base_url}/mii/${user.pid}/normal_face.png`,
 				type: 'standard'
 			},
 			{
-				cached_url: `${config.cdn_base}/mii/${user.pid}/frustrated.png`,
+				cached_url: `${config.cdn.base_url}/mii/${user.pid}/frustrated.png`,
 				id: mii.id,
-				url: `${config.cdn_base}/mii/${user.pid}/frustrated.png`,
+				url: `${config.cdn.base_url}/mii/${user.pid}/frustrated.png`,
 				type: 'frustrated_face'
 			},
 			{
-				cached_url: `${config.cdn_base}/mii/${user.pid}/smile_open_mouth.png`,
+				cached_url: `${config.cdn.base_url}/mii/${user.pid}/smile_open_mouth.png`,
 				id: mii.id,
-				url: `${config.cdn_base}/mii/${user.pid}/smile_open_mouth.png`,
+				url: `${config.cdn.base_url}/mii/${user.pid}/smile_open_mouth.png`,
 				type: 'happy_face'
 			},
 			{
-				cached_url: `${config.cdn_base}/mii/${user.pid}/wink_left.png`,
+				cached_url: `${config.cdn.base_url}/mii/${user.pid}/wink_left.png`,
 				id: mii.id,
-				url: `${config.cdn_base}/mii/${user.pid}/wink_left.png`,
+				url: `${config.cdn.base_url}/mii/${user.pid}/wink_left.png`,
 				type: 'like_face'
 			},
 			{
-				cached_url: `${config.cdn_base}/mii/${user.pid}/normal_face.png`,
+				cached_url: `${config.cdn.base_url}/mii/${user.pid}/normal_face.png`,
 				id: mii.id,
-				url: `${config.cdn_base}/mii/${user.pid}/normal_face.png`,
+				url: `${config.cdn.base_url}/mii/${user.pid}/normal_face.png`,
 				type: 'normal_face'
 			},
 			{
-				cached_url: `${config.cdn_base}/mii/${user.pid}/sorrow.png`,
+				cached_url: `${config.cdn.base_url}/mii/${user.pid}/sorrow.png`,
 				id: mii.id,
-				url: `${config.cdn_base}/mii/${user.pid}/sorrow.png`,
+				url: `${config.cdn.base_url}/mii/${user.pid}/sorrow.png`,
 				type: 'puzzled_face'
 			},
 			{
-				cached_url: `${config.cdn_base}/mii/${user.pid}/surprised_open_mouth.png`,
+				cached_url: `${config.cdn.base_url}/mii/${user.pid}/surprised_open_mouth.png`,
 				id: mii.id,
-				url: `${config.cdn_base}/mii/${user.pid}/surprised_open_mouth.png`,
+				url: `${config.cdn.base_url}/mii/${user.pid}/surprised_open_mouth.png`,
 				type: 'surprised_face'
 			},
 			{
-				cached_url: `${config.cdn_base}/mii/${user.pid}/body.png`,
+				cached_url: `${config.cdn.base_url}/mii/${user.pid}/body.png`,
 				id: mii.id,
-				url: `${config.cdn_base}/mii/${user.pid}/body.png`,
+				url: `${config.cdn.base_url}/mii/${user.pid}/body.png`,
 				type: 'whole_body'
 			}
 		];

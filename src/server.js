@@ -1,5 +1,9 @@
 process.title = 'Pretendo - Account';
 
+const configManager = require('./config-manager');
+
+configManager.configure();
+
 const express = require('express');
 const morgan = require('morgan');
 const xmlparser = require('./middleware/xml-parser');
@@ -7,7 +11,8 @@ const cache = require('./cache');
 const database = require('./database');
 const util = require('./util');
 const logger = require('../logger');
-const config = require('../config.json');
+
+const { config } = configManager;
 
 const { http: { port } } = config;
 const app = express();
@@ -17,10 +22,9 @@ const nnid = require('./services/nnid');
 const nasc = require('./services/nasc');
 const datastore = require('./services/datastore');
 const api = require('./services/api');
+const localcdn = require('./services/local-cdn');
 
 // START APPLICATION
-app.set('etag', false);
-app.disable('x-powered-by');
 
 // Create router
 logger.info('Setting up Middleware');
@@ -37,6 +41,7 @@ app.use(nnid);
 app.use(nasc);
 app.use(datastore);
 app.use(api);
+app.use(localcdn);
 
 // 404 handler
 logger.info('Creating 404 status handler');
