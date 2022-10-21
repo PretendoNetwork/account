@@ -3,8 +3,7 @@
         "port": 7070
     },
     "mongoose": {
-        "uri": "mongodb://localhost:27017",
-        "database": "database_name",
+        "connection_string": "mongodb://localhost:27017/database_name",
         "options": {
             "useNewUrlParser": true
         }

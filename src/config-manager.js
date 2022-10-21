@@ -10,8 +10,7 @@ require('dotenv').config();
  * @property {object} http HTTP server settings
  * @property {number} http.port HTTP port the server will listen on
  * @property {object} mongoose Mongose connection settings
- * @property {string} mongoose.uri URI Mongoose will connect to
- * @property {string} mongoose.database MongoDB database name
+ * @property {string} mongoose.connection_string MongoDB connection string
  * @property {object} mongoose.options MongoDB connection options
  * @property {object} [redis] redis settings
  * @property {string} [redis.client] redis client settings
@@ -42,7 +41,6 @@ require('dotenv').config();
  */
 let config = {};
 
-
 /**
  * @typedef {Object} DisabledFeatures
  * @property {boolean} redis true if redis is disabled
@@ -63,8 +61,7 @@ const disabledFeatures = {
 
 const requiredFields = [
 	['http.port', 'PN_ACT_CONFIG_HTTP_PORT', Number],
-	['mongoose.uri', 'PN_ACT_CONFIG_MONGO_URI'],
-	['mongoose.database', 'PN_ACT_CONFIG_MONGO_DB_NAME'],
+	['mongoose.connection_string', 'PN_ACT_CONFIG_MONGO_CONNECTION_STRING'],
 	['cdn.base_url', 'PN_ACT_CONFIG_CDN_BASE_URL']
 ];
 
@@ -79,8 +76,7 @@ function configure() {
 				port: Number(process.env.PN_ACT_CONFIG_HTTP_PORT)
 			},
 			mongoose: {
-				uri: process.env.PN_ACT_CONFIG_MONGO_URI,
-				database: process.env.PN_ACT_CONFIG_MONGO_DB_NAME,
+				connection_string: process.env.PN_ACT_CONFIG_MONGO_CONNECTION_STRING,
 				options: Object.keys(process.env)
 					.filter(key => key.startsWith('PN_ACT_CONFIG_MONGOOSE_OPTION_'))
 					.reduce((obj, key) => {

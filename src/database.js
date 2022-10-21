@@ -6,7 +6,7 @@ const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
 const logger = require('../logger');
 const { config } = require('./config-manager');
-const { uri, database, options } = config.mongoose;
+const { connection_string, options } = config.mongoose;
 
 // TODO: Extend this later with more settings
 const discordConnectionSchema = joi.object({
@@ -16,7 +16,7 @@ const discordConnectionSchema = joi.object({
 let connection;
 
 async function connect() {
-	await mongoose.connect(`${uri}/${database}?replicaSet=rs0`, options);
+	await mongoose.connect(connection_string, options);
 
 	connection = mongoose.connection;
 	connection.on('error', console.error.bind(console, 'connection error:'));
