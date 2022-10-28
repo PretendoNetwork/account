@@ -54,7 +54,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	if (!email || email === '') {
+	if (!email) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -70,7 +70,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	if (!username || username === '') {
+	if (!username) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -136,7 +136,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	if (!miiName || miiName === '') {
+	if (!miiName) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -144,7 +144,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	if (!password || password === '') {
+	if (!password) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -152,7 +152,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	if (password.length < 6) {
+	if (password.length < 8) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -160,7 +160,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	if (password.length > 16) {
+	if (password.length > 20) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
