@@ -23,6 +23,7 @@ const nasc = require('./services/nasc');
 const datastore = require('./services/datastore');
 const api = require('./services/api');
 const localcdn = require('./services/local-cdn');
+const assets = require('./services/assets');
 
 // START APPLICATION
 
@@ -42,6 +43,7 @@ app.use(nasc);
 app.use(datastore);
 app.use(api);
 app.use(localcdn);
+app.use(assets);
 
 // 404 handler
 logger.info('Creating 404 status handler');
