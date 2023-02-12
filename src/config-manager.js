@@ -108,9 +108,9 @@ function configure() {
 				secret: process.env.PN_ACT_CONFIG_HCAPTCHA_SECRET
 			},
 			cdn: {
-				subdomain: process.env.PN_ACT_CONFIG_CDN_BASE,
-				disk_path: process.env.PN_ACT_CONFIG_CDN_BASE,
-				base_url: process.env.PN_ACT_CONFIG_CDN_BASE
+				subdomain: process.env.PN_ACT_CONFIG_CDN_SUBDOMAIN,
+				disk_path: process.env.PN_ACT_CONFIG_CDN_DISK_PATH,
+				base_url: process.env.PN_ACT_CONFIG_CDN_BASE_URL
 			},
 			website_base: process.env.PN_ACT_CONFIG_WEBSITE_BASE
 		};
