@@ -30,7 +30,7 @@ async function getCachedFile(fileName, encoding) {
 	let cachedFile;
 
 	if (disabledFeatures.redis) {
-		cachedFile = memoryCache[fileName];
+		cachedFile = memoryCache[fileName] || null;
 	} else {
 		cachedFile = await client.get(fileName);
 	}
