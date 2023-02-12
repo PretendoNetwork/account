@@ -28,7 +28,6 @@ router.post('/', async (request, response) => {
 	response.status(200).send(responseData.toString());
 });
 
-
 /**
  * 
  * @param {express.Request} request
