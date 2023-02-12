@@ -250,15 +250,23 @@ async function sendConfirmationEmail(pnid) {
 	await mailer.sendMail({
 		to: pnid.get('email.address'),
 		subject: '[Pretendo Network] Please confirm your email address',
-		html: `Hello,<br><br>Your Pretendo Network ID activation is almost complete.<br><br>Please click the link below to confirm your e-mail address and complete the activation process.<br><br>https://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')}<br><br>If you are unable to connect to the above URL, please enter the following confirmation code on the device to which your Prentendo Network ID is linked.<br><br>&lt;&lt;Confirmation code: ${pnid.get('identification.email_code')}&gt;&gt;`
+		username: pnid.get('username'),
+		confirmation: {
+			href: `https://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')}`,
+			code: pnid.get('identification.email_code')
+		},
+		text: `Hello ${pnid.get('username')}! \r\n\r\nYour Pretendo Network ID activation is almost complete. Please click the link to confirm your e-mail address and complete the activation process: \r\nhttps://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')} \r\n\r\nYou may also enter the following 6-digit code on your console: ${pnid.get('identification.email_code')}`
 	});
+
 }
 
 async function sendEmailConfirmedEmail(pnid) {
 	await mailer.sendMail({
 		to: pnid.get('email.address'),
 		subject: '[Pretendo Network] Email address confirmed',
-		html: 'Your email address has been confirmed!'
+		username: pnid.get('username'),
+		paragraph: 'your email address has been confirmed. We hope you have fun on Pretendo Network!',
+		text: `Dear ${pnid.get('username')}, \r\n\r\nYour email address has been confirmed. We hope you have fun on Pretendo Network!`
 	});
 }
 
@@ -285,7 +293,13 @@ async function sendForgotPasswordEmail(pnid) {
 	await mailer.sendMail({
 		to: pnid.get('email.address'),
 		subject: '[Pretendo Network] Forgot Password',
-		html: `Visit this link to reset your password ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
+		username: pnid.get('username'),
+		paragraph: 'a password reset has been requested from this account. If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.',
+		link: {
+			text: 'Reset password',
+			href: `${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
+		},
+		text: `Dear ${pnid.get('username')}, a password reset has been requested from this account. \r\n\r\nIf you did not request the password reset, please ignore this email. \r\nIf you did request this password reset, please click the link to reset your password: ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
 	});
 }
 
