@@ -58,7 +58,7 @@ async function getUserByEmailAddress(email) {
 	verifyConnected();
 
 	const user = await PNID.findOne({
-		'email.address': email.toLowerCase()
+		'email.address': new RegExp(email, 'i') // * Ignore case
 	});
 
 	return user;
