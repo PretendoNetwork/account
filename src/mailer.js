@@ -13,7 +13,7 @@ if (!disabledFeatures.email) {
 
 /**
 	@param {Object} options
-	@param {String} options.to The address to send the email to
+	@param {String} options.to The address of the recipient
 	@param {String} options.subject The subject of the email
 
 	@param {String} options.username The username of the user (shown in the greeting)
@@ -51,6 +51,7 @@ async function sendMail(options) {
 		}
 
 		await transporter.sendMail({
+			from: config.email.from, 
 			to,
 			subject,
 			text,
