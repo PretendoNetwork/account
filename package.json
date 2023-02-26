@@ -25,6 +25,7 @@
     "colors": "^1.4.0",
     "cors": "^2.8.5",
     "dicer": "^0.2.5",
+    "dotenv": "^16.0.3",
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
     "express-form-data": "^2.0.17",
@@ -35,7 +36,11 @@
     "got": "^11.8.2",
     "hcaptcha": "^0.1.0",
     "image-pixels": "^1.1.1",
+    "joi": "^17.6.1",
     "kaitai-struct": "^0.9.0",
+    "lodash.get": "^4.4.2",
+    "lodash.set": "^4.3.2",
+    "mii-js": "github:PretendoNetwork/mii-js",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.27",
     "mongoose": "^5.8.3",
@@ -43,12 +48,15 @@
     "morgan": "^1.9.1",
     "multer": "^1.4.3",
     "nodemailer": "^6.4.2",
+    "redis": "^4.3.1",
     "tga": "^1.0.4",
+    "validator": "^13.7.0",
     "xmlbuilder": "^13.0.2",
     "xmlbuilder2": "0.0.4"
   },
   "devDependencies": {
     "node-rsa": "^1.0.7",
-    "prompt": "^1.0.0"
+    "prompt": "^1.0.0",
+    "yesno": "^0.4.0"
   }
 }

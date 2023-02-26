@@ -1,15 +1,21 @@
 const crypto = require('crypto');
+const path = require('path');
 const NodeRSA = require('node-rsa');
-const fs = require('fs-extra');
 const aws = require('aws-sdk');
-const config = require('../config.json');
+const fs = require('fs-extra');
+const mailer = require('./mailer');
+const cache = require('./cache');
+const { config, disabledFeatures } = require('./config-manager');
 
-const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
-const s3 = new aws.S3({
-	endpoint: spacesEndpoint,
-	accessKeyId: config.aws.spaces.key,
-	secretAccessKey: config.aws.spaces.secret
-});
+let s3;
+
+if (!disabledFeatures.s3) {
+	s3 = new aws.S3({
+		endpoint: new aws.Endpoint(config.s3.endpoint),
+		accessKeyId: config.s3.key,
+		secretAccessKey: config.s3.secret
+	});
+}
 
 function nintendoPasswordHash(password, pid) {
 	const pidBuffer = Buffer.alloc(4);
@@ -35,13 +41,13 @@ function nintendoBase64Encode(decoded) {
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
-function generateToken(cryptoOptions, tokenOptions) {
+async function generateToken(cryptoOptions, tokenOptions) {
 
 	// Access and refresh tokens use a different format since they must be much smaller
 	// They take no extra crypto options
 	if (!cryptoOptions) {
-		const cryptoPath = `${__dirname}/../certs/access`;
-		const aesKey = Buffer.from(fs.readFileSync(`${cryptoPath}/aes.key`, { encoding: 'utf8' }), 'hex');
+		const aesKey = await cache.getServiceAESKey('account', 'hex');
+
 		const dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
 		dataBuffer.writeUInt8(tokenOptions.system_type, 0x0);
@@ -122,13 +128,11 @@ function generateToken(cryptoOptions, tokenOptions) {
 	return token.toString('base64'); // Encode to base64 for transport
 }
 
-function decryptToken(token) {
-
+async function decryptToken(token) {
 	// Access and refresh tokens use a different format since they must be much smaller
 	// Assume a small length means access or refresh token
 	if (token.length <= 32) {
-		const cryptoPath = `${__dirname}/../certs/access`;
-		const aesKey = Buffer.from(fs.readFileSync(`${cryptoPath}/aes.key`, { encoding: 'utf8' }), 'hex');
+		const aesKey = await cache.getServiceAESKey('account', 'hex');
 
 		const iv = Buffer.alloc(16);
 
@@ -140,14 +144,10 @@ function decryptToken(token) {
 		return decryptedBody;
 	}
 
-	const cryptoPath = `${__dirname}/../certs/access`;
+	const privateKeyBytes = await cache.getServicePrivateKey('account');
+	const secretKey = await cache.getServiceSecretKey('account');
 
-	const cryptoOptions = {
-		private_key: fs.readFileSync(`${cryptoPath}/private.pem`),
-		hmac_secret: fs.readFileSync(`${cryptoPath}/secret.key`)
-	};
-
-	const privateKey = new NodeRSA(cryptoOptions.private_key, 'pkcs1-private-pem', {
+	const privateKey = new NodeRSA(privateKeyBytes, 'pkcs1-private-pem', {
 		environment: 'browser',
 		encryptionScheme: {
 			'hash': 'sha256',
@@ -174,7 +174,7 @@ function decryptToken(token) {
 	let decryptedBody = decipher.update(encryptedBody);
 	decryptedBody = Buffer.concat([decryptedBody, decipher.final()]);
 
-	const hmac = crypto.createHmac('sha1', cryptoOptions.hmac_secret).update(decryptedBody);
+	const hmac = crypto.createHmac('sha1', secretKey).update(decryptedBody);
 	const calculatedSignature = hmac.digest();
 
 	if (!signature.equals(calculatedSignature)) {
@@ -208,20 +208,32 @@ function unpackToken(token) {
 function fullUrl(request) {
 	const protocol = request.protocol;
 	const host = request.host;
-	const path = request.originalUrl;
+	const opath = request.originalUrl;
 
-	return `${protocol}://${host}${path}`;
+	return `${protocol}://${host}${opath}`;
 }
 
 async function uploadCDNAsset(bucket, key, data, acl) {
-	const awsPutParams = {
-		Body: data,
-		Key: key,
-		Bucket: bucket,
-		ACL: acl
-	};
+	if (disabledFeatures.s3) {
+		await writeLocalCDNFile(key, data);
+	} else {
+		const awsPutParams = {
+			Body: data,
+			Key: key,
+			Bucket: bucket,
+			ACL: acl
+		};
 
-	await s3.putObject(awsPutParams).promise();
+		await s3.putObject(awsPutParams).promise();
+	}
+}
+
+async function writeLocalCDNFile(key, data) {
+	const filePath = config.cdn.disk_path;
+	const folder = path.dirname(filePath);
+
+	await fs.ensureDir(folder);
+	await fs.writeFile(filePath, data);
 }
 
 function nascError(errorCode) {
@@ -234,6 +246,63 @@ function nascError(errorCode) {
 	return params;
 }
 
+async function sendConfirmationEmail(pnid) {
+	await mailer.sendMail({
+		to: pnid.get('email.address'),
+		subject: '[Pretendo Network] Please confirm your email address',
+		username: pnid.get('username'),
+		confirmation: {
+			href: `https://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')}`,
+			code: pnid.get('identification.email_code')
+		},
+		text: `Hello ${pnid.get('username')}! \r\n\r\nYour Pretendo Network ID activation is almost complete. Please click the link to confirm your e-mail address and complete the activation process: \r\nhttps://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')} \r\n\r\nYou may also enter the following 6-digit code on your console: ${pnid.get('identification.email_code')}`
+	});
+
+}
+
+async function sendEmailConfirmedEmail(pnid) {
+	await mailer.sendMail({
+		to: pnid.get('email.address'),
+		subject: '[Pretendo Network] Email address confirmed',
+		username: pnid.get('username'),
+		paragraph: 'your email address has been confirmed. We hope you have fun on Pretendo Network!',
+		text: `Dear ${pnid.get('username')}, \r\n\r\nYour email address has been confirmed. We hope you have fun on Pretendo Network!`
+	});
+}
+
+async function sendForgotPasswordEmail(pnid) {
+	const publicKey = await cache.getServicePublicKey('account');
+	const secretKey = await cache.getServiceSecretKey('account');
+
+	const cryptoOptions = {
+		public_key: publicKey,
+		hmac_secret: secretKey
+	};
+
+	const tokenOptions = {
+		system_type: 0xF, // API
+		token_type: 0x5, // Password reset
+		pid: pnid.get('pid'),
+		access_level: pnid.get('access_level'),
+		title_id: BigInt(0),
+		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // Only valid for 24 hours
+	};
+
+	const passwordResetToken = await generateToken(cryptoOptions, tokenOptions);
+
+	await mailer.sendMail({
+		to: pnid.get('email.address'),
+		subject: '[Pretendo Network] Forgot Password',
+		username: pnid.get('username'),
+		paragraph: 'a password reset has been requested from this account. If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.',
+		link: {
+			text: 'Reset password',
+			href: `${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
+		},
+		text: `Dear ${pnid.get('username')}, a password reset has been requested from this account. \r\n\r\nIf you did not request the password reset, please ignore this email. \r\nIf you did request this password reset, please click the link to reset your password: ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
+	});
+}
+
 module.exports = {
 	nintendoPasswordHash,
 	nintendoBase64Decode,
@@ -243,5 +312,8 @@ module.exports = {
 	unpackToken,
 	fullUrl,
 	uploadCDNAsset,
-	nascError
+	nascError,
+	sendConfirmationEmail,
+	sendEmailConfirmedEmail,
+	sendForgotPasswordEmail
 };

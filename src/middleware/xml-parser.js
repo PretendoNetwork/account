@@ -1,13 +1,21 @@
+const xmlbuilder = require('xmlbuilder');
 const { document: xmlParser } = require('xmlbuilder2');
 
 function XMLMiddleware(request, response, next) {
 	if (request.method == 'POST' || request.method == 'PUT') {
 		const headers = request.headers;
 		let body = '';
-		
+
 		if (
 			!headers['content-type'] ||
 			!headers['content-type'].toLowerCase().includes('xml')
+		) {
+			return next();
+		}
+
+		if (
+			!headers['content-length'] ||
+			parseInt(headers['content-length']) === 0
 		) {
 			return next();
 		}
@@ -22,7 +30,17 @@ function XMLMiddleware(request, response, next) {
 				request.body = xmlParser(body);
 				request.body = request.body.toObject();
 			} catch (error) {
-				return next();
+				response.status(401);
+
+				// TODO: This is not a real error code, check to see if better one exists
+				return response.send(xmlbuilder.create({
+					errors: {
+						error: {
+							code: '0004',
+							message: 'XML parse error'
+						}
+					}
+				}).end());
 			}
 
 			next();

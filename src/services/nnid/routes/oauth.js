@@ -35,7 +35,7 @@ router.post('/access_token/generate', async (request, response) => {
 			}
 		}).end());
 	}
-	
+
 	if (!password || password.trim() === '') {
 		response.status(400);
 		return response.send(xmlbuilder.create({
@@ -49,7 +49,7 @@ router.post('/access_token/generate', async (request, response) => {
 
 	const pnid = await database.getUserByUsername(user_id);
 
-	if (!pnid || !bcrypt.compareSync(password, pnid.password)) {
+	if (!pnid || !await bcrypt.compare(password, pnid.password)) {
 		response.status(400);
 		return response.send(xmlbuilder.create({
 			error: {
@@ -70,15 +70,15 @@ router.post('/access_token/generate', async (request, response) => {
 		}).end());
 	}
 
-	const cryptoPath = `${__dirname}/../../../../certs/access`;
+	const cryptoPath = `${__dirname}/../../../../certs/service/account`;
 
-	if (!fs.pathExistsSync(cryptoPath)) {
+	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
 		return response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0000',
-					message: 'Could not find access key crypto path'
+					message: 'Could not find account access key crypto path'
 				}
 			}
 		}).end());
@@ -98,8 +98,8 @@ router.post('/access_token/generate', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let accessToken = util.generateToken(null, accessTokenOptions);
-	let refreshToken = util.generateToken(null, refreshTokenOptions);
+	let accessToken = await util.generateToken(null, accessTokenOptions);
+	let refreshToken = await util.generateToken(null, refreshTokenOptions);
 
 	if (request.isCemu) {
 		accessToken = Buffer.from(accessToken, 'base64').toString('hex');

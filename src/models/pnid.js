@@ -7,7 +7,7 @@ const TGA = require('tga');
 const got = require('got');
 const util = require('../util');
 const { DeviceSchema } = require('./device');
-const Mii = require('../mii');
+const Mii = require('mii-js');
 
 const PNIDSchema = new Schema({
 	access_level: {
@@ -131,13 +131,9 @@ PNIDSchema.methods.generatePID = async function() {
 };
 
 PNIDSchema.methods.generateEmailValidationCode = async function() {
-	let code = Math.random().toFixed(6).split('.')[1]; // Dirty one-liner to generate numbers of 6 length and padded 0
-
-	const inuse = await PNID.findOne({
-		'identification.email_code': code
-	});
-		
-	code = (inuse ? await PNID.generateEmailValidationCode() : code);
+	// WiiU passes the PID along with the email code
+	// Does not actually need to be unique to all users
+	const code = Math.random().toFixed(6).split('.')[1]; // Dirty one-liner to generate numbers of 6 length and padded 0
 
 	this.set('identification.email_code', code);
 };
@@ -193,10 +189,12 @@ PNIDSchema.methods.updateMii = async function({name, primary, data}) {
 
 PNIDSchema.methods.generateMiiImages = async function() {
 	const miiData = this.get('mii.data');
-	const studioMii = new Mii(Buffer.from(miiData, 'base64'));
-	const converted = studioMii.toStudioMii();
-	const encodedStudioMiiData = converted.toString('hex');
-	const miiStudioUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&width=128&instanceCount=1`;
+	const mii = new Mii(Buffer.from(miiData, 'base64'));
+	const miiStudioUrl = mii.studioUrl({
+		type: 'face',
+		width: '128',
+		instanceCount: '1',
+	});
 	const miiStudioNormalFaceImageData = await got(miiStudioUrl).buffer();
 	const pngData = await imagePixels(miiStudioNormalFaceImageData);
 	const tga = TGA.createTgaBuffer(pngData.width, pngData.height, pngData.data);
@@ -208,12 +206,21 @@ PNIDSchema.methods.generateMiiImages = async function() {
 
 	const expressions = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
 	for (const expression of expressions) {
-		const miiStudioExpressionUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=face&expression=${expression}&width=128&instanceCount=1`;
+		const miiStudioExpressionUrl = mii.studioUrl({
+			type: 'face',
+			expression: expression,
+			width: '128',
+			instanceCount: '1',
+		});
 		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
 		await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
 	}
 
-	const miiStudioBodyUrl = `https://studio.mii.nintendo.com/miis/image.png?data=${encodedStudioMiiData}&type=all_body&width=270&instanceCount=1`;
+	const miiStudioBodyUrl = mii.studioUrl({
+		type: 'all_body',
+		width: '270',
+		instanceCount: '1',
+	});
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
 	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 };
@@ -223,24 +230,6 @@ PNIDSchema.methods.getServerMode = function () {
 
 	return serverMode;
 };
-
-PNIDSchema.pre('save', async function(next) {
-	if (!this.isModified('password')) {
-		return next();
-	}
-
-	this.set('usernameLower', this.get('username').toLowerCase());
-	//await this.generatePID();
-	await this.generateEmailValidationCode();
-	await this.generateEmailValidationToken();
-	await this.generateMiiImages();
-	
-	const primaryHash = util.nintendoPasswordHash(this.get('password'), this.get('pid'));
-	const hash = bcrypt.hashSync(primaryHash, 10);
-
-	this.set('password', hash);
-	next();
-});
 
 const PNID = model('PNID', PNIDSchema);
 
