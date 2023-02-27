@@ -1,7 +1,8 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const express = require('express');
 const util = require('../../../util');
 const database = require('../../../database');
+const cache = require('../../../cache');
 
 const router = express.Router();
 
@@ -26,7 +27,6 @@ router.post('/', async (request, response) => {
 
 	response.status(200).send(responseData.toString());
 });
-
 
 /**
  * 
@@ -55,12 +55,12 @@ async function processLoginRequest(request) {
 
 	const cryptoPath = `${__dirname}/../../../../certs/nex/${service_name}`;
 
-	const publicKey = fs.readFileSync(`${cryptoPath}/public.pem`);
-	const hmacSecret = fs.readFileSync(`${cryptoPath}/secret.key`);
+	const publicKey = await cache.getNEXPublicKey(service_name);
+	const secretKey = await cache.getNEXSecretKey(service_name);
 
 	const cryptoOptions = {
 		public_key: publicKey,
-		hmac_secret: hmacSecret
+		hmac_secret: secretKey
 	};
 
 	const tokenOptions = {
@@ -72,7 +72,7 @@ async function processLoginRequest(request) {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let nexToken = util.generateToken(cryptoOptions, tokenOptions);
+	let nexToken = await util.generateToken(cryptoOptions, tokenOptions);
 	nexToken = util.nintendoBase64Encode(Buffer.from(nexToken, 'base64'));
 
 	const params = new URLSearchParams({

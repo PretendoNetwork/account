@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { Device } = require('../models/device');
 const { NEXAccount } = require('../models/nex-account');
 const util = require('../util');
+const database = require('../database');
 const NintendoCertificate = require('../nintendo-certificate');
 
 async function NASCMiddleware(request, response, next) {
@@ -109,36 +110,53 @@ async function NASCMiddleware(request, response, next) {
 		if (password && !pid && !pidHmac) {
 			// Register new user
 
-			// Create new NEX account
-			const newNEXAccount = new NEXAccount({
-				pid: 0,
-				password: '',
-				owning_pid: 0,
-			});
-			await newNEXAccount.save();
+			const session = await database.connection.startSession();
+			await session.startTransaction();
 
-			pid = newNEXAccount.get('pid');
+			try {
+				// Create new NEX account
+				const nexAccount = await new NEXAccount({
+					device_type: '3ds',
+					password
+				});
 
-			// Set password
-			await NEXAccount.updateOne({ pid }, { password });
+				await nexAccount.generatePID();
 
-			if (!device) {
-				const deviceDocument = {
-					is_emulator: false,
-					model,
-					serial: serialNumber,
-					environment,
-					mac_hash: macAddressHash,
-					fcdcert_hash: fcdcertHash,
-					linked_pids: [pid]
-				};
-				
-				device = new Device(deviceDocument);
-			} else {
-				device.linked_pids.push(pid);
+				await nexAccount.save({ session });
+
+				pid = nexAccount.get('pid');
+
+				// Set password
+
+				if (!device) {
+					device = new Device({
+						is_emulator: false,
+						model,
+						serial: serialNumber,
+						environment,
+						mac_hash: macAddressHash,
+						fcdcert_hash: fcdcertHash,
+						linked_pids: [pid]
+					});
+				} else {
+					device.linked_pids.push(pid);
+				}
+
+				await device.save({ session });
+
+				await session.commitTransaction();
+			} catch (error) {
+				logger.error('[NASC] REGISTER ACCOUNT: ' + error);
+
+				await session.abortTransaction();
+
+				// 3DS expects 200 even on error
+				return response.status(200).send(util.nascError('102'));
+			} finally {
+				// * This runs regardless of failure
+				// * Returning on catch will not prevent this from running
+				await session.endSession();
 			}
-
-			await device.save();
 		}
 	}
 

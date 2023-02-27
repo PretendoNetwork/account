@@ -1,18 +1,27 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const joi = require('joi');
 const util = require('./util');
 const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
-const { mongoose: mongooseConfig } = require('../config.json');
-const { uri, database, options } = mongooseConfig;
+const logger = require('../logger');
+const { config } = require('./config-manager');
+const { connection_string, options } = config.mongoose;
+
+// TODO: Extend this later with more settings
+const discordConnectionSchema = joi.object({
+	id: joi.string()
+});
 
 let connection;
 
 async function connect() {
-	await mongoose.connect(`${uri}/${database}`, options);
-	
+	await mongoose.connect(connection_string, options);
+
 	connection = mongoose.connection;
 	connection.on('error', console.error.bind(console, 'connection error:'));
+
+	module.exports.connection = connection;
 }
 
 function verifyConnected() {
@@ -45,17 +54,29 @@ async function getUserByPID(pid) {
 	return user;
 }
 
+async function getUserByEmailAddress(email) {
+	verifyConnected();
+
+	const user = await PNID.findOne({
+		'email.address': new RegExp(email, 'i') // * Ignore case
+	});
+
+	return user;
+}
+
 async function doesUserExist(username) {
 	verifyConnected();
 
-	return !!await this.getUserByUsername(username);
+	return !!await getUserByUsername(username);
 }
 
 async function getUserBasic(token) {
 	verifyConnected();
 
+	// Wii U sends Basic auth as `username password`, where the password may not have spaces
+	// This is not to spec, but that is the consoles fault not ours
 	const [username, password] = Buffer.from(token, 'base64').toString().split(' ');
-	const user = await this.getUserByUsername(username);
+	const user = await getUserByUsername(username);
 
 	if (!user) {
 		return null;
@@ -73,26 +94,32 @@ async function getUserBasic(token) {
 async function getUserBearer(token) {
 	verifyConnected();
 
-	const decryptedToken = util.decryptToken(Buffer.from(token, 'base64'));
-	const unpackedToken = util.unpackToken(decryptedToken);
+	try {
+		const decryptedToken = await util.decryptToken(Buffer.from(token, 'base64'));
+		const unpackedToken = util.unpackToken(decryptedToken);
 
-	const user = await getUserByPID(unpackedToken.pid);
+		const user = await getUserByPID(unpackedToken.pid);
 
-	if (user) {
-		const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
+		if (user) {
+			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
 
-		if (Math.floor(Date.now() / 1000) > expireTime) {
-			return null;
+			if (Math.floor(Date.now() / 1000) > expireTime) {
+				return null;
+			}
 		}
-	}
 
-	return user;
+		return user;
+	} catch (error) {
+		// TODO: Handle error
+		logger.error(error);
+		return null;
+	}
 }
 
 async function getUserProfileJSONByPID(pid) {
 	verifyConnected();
 
-	const user = await this.getUserByPID(pid);
+	const user = await getUserByPID(pid);
 	const device = user.get('devices')[0]; // Just grab the first device
 	let device_attributes;
 
@@ -102,7 +129,7 @@ async function getUserProfileJSONByPID(pid) {
 				name,
 				value
 			};
-	
+
 			if (created_date) {
 				deviceAttributeDocument.created_date = created_date;
 			}
@@ -113,7 +140,7 @@ async function getUserProfileJSONByPID(pid) {
 		});
 	}
 
-	return {
+	const userObject = {
 		//accounts: {}, We need to figure this out, no idea what these values mean or what they do
 		active_flag: user.get('flags.active') ? 'Y' : 'N',
 		birth_date: user.get('birthdate'),
@@ -133,9 +160,8 @@ async function getUserProfileJSONByPID(pid) {
 			primary: user.get('email.primary') ? 'Y' : 'N',
 			reachable: user.get('email.reachable') ? 'Y' : 'N',
 			type: 'DEFAULT',
-			updated_by: 'INTERNAL WS', // Can also be INTERNAL WS, don't know the difference
-			validated: user.get('email.validated') ? 'Y' : 'N',
-			//validated_date: user.get('email.validated_date') // not used atm
+			updated_by: 'USER', // Can also be INTERNAL WS, don't know the difference
+			validated: user.get('email.validated') ? 'Y' : 'N'
 		},
 		mii: {
 			status: 'COMPLETED',
@@ -146,9 +172,9 @@ async function getUserProfileJSONByPID(pid) {
 				mii_image: {
 					// Images MUST be loaded over HTTPS or console ignores them
 					// Bunny CDN is the only CDN which seems to support TLS 1.0/1.1 (required)
-					cached_url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
+					cached_url: `${config.cdn.base_url}/mii/${user.pid}/standard.tga`,
 					id: user.get('mii.image_id'),
-					url: `https://pretendo-cdn.b-cdn.net/mii/${user.pid}/standard.tga`,
+					url: `${config.cdn.base_url}/mii/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},
@@ -160,6 +186,12 @@ async function getUserProfileJSONByPID(pid) {
 		user_id: user.get('username'),
 		utc_offset: user.get('timezone.offset')
 	};
+
+	if (user.get('email.validated')) {
+		userObject.email.validated_date = user.get('email.validated_date');
+	}
+
+	return userObject;
 }
 
 function getServer(gameServerId, accessMode) {
@@ -183,7 +215,9 @@ async function addUserConnection(pnid, data, type) {
 }
 
 async function addUserConnectionDiscord(pnid, data) {
-	if (!data.id) {
+	const valid = discordConnectionSchema.validate(data);
+
+	if (valid.error) {
 		return {
 			app: 'api',
 			status: 400,
@@ -193,7 +227,7 @@ async function addUserConnectionDiscord(pnid, data) {
 
 	await PNID.updateOne({ pid: pnid.get('pid') }, {
 		$set: {
-			'connections.discord': data
+			'connections.discord.id': data.id
 		}
 	});
 
@@ -225,8 +259,10 @@ async function removeUserConnectionDiscord(pnid) {
 
 module.exports = {
 	connect,
+	connection,
 	getUserByUsername,
 	getUserByPID,
+	getUserByEmailAddress,
 	doesUserExist,
 	getUserBasic,
 	getUserBearer,

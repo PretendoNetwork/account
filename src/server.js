@@ -1,12 +1,18 @@
 process.title = 'Pretendo - Account';
 
+const configManager = require('./config-manager');
+
+configManager.configure();
+
 const express = require('express');
 const morgan = require('morgan');
 const xmlparser = require('./middleware/xml-parser');
+const cache = require('./cache');
 const database = require('./database');
 const util = require('./util');
 const logger = require('../logger');
-const config = require('../config.json');
+
+const { config } = configManager;
 
 const { http: { port } } = config;
 const app = express();
@@ -16,10 +22,10 @@ const nnid = require('./services/nnid');
 const nasc = require('./services/nasc');
 const datastore = require('./services/datastore');
 const api = require('./services/api');
+const localcdn = require('./services/local-cdn');
+const assets = require('./services/assets');
 
 // START APPLICATION
-app.set('etag', false);
-app.disable('x-powered-by');
 
 // Create router
 logger.info('Setting up Middleware');
@@ -36,6 +42,8 @@ app.use(nnid);
 app.use(nasc);
 app.use(datastore);
 app.use(api);
+app.use(localcdn);
+app.use(assets);
 
 // 404 handler
 logger.info('Creating 404 status handler');
@@ -70,11 +78,16 @@ app.use((error, request, response) => {
 	});
 });
 
-// Starts the server
-logger.info('Starting server');
+async function main() {
+	// Starts the server
+	logger.info('Starting server');
 
-database.connect().then(() => {
+	await database.connect();
+	await cache.connect();
+
 	app.listen(port, () => {
 		logger.success(`Server started on port ${port}`);
 	});
-});
+}
+
+main().catch(console.error);
