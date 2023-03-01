@@ -72,6 +72,7 @@ function configure() {
 		logger.info('Loading config from environment variable');
 
 		config = {
+			logger_path: process.env.PN_ACT_LOGGER_PATH,
 			http: {
 				port: Number(process.env.PN_ACT_CONFIG_HTTP_PORT)
 			},
