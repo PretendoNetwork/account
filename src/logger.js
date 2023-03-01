@@ -1,9 +1,7 @@
 const fs = require('fs-extra');
 require('colors');
 
-const { config } = require('./config-manager');
-
-const root = config.logger_path ? config.logger_path : `${__dirname}/..`;
+const root = process.env.PN_ACT_LOGGER_PATH ? process.env.PN_ACT_LOGGER_PATH : `${__dirname}/..`;
 fs.ensureDirSync(`${root}/logs`);
 
 const streams = {
