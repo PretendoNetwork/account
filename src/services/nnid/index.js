@@ -5,7 +5,7 @@ const subdomain = require('express-subdomain');
 const clientHeaderCheck = require('../../middleware/client-header');
 const cemuMiddleware = require('../../middleware/cemu');
 const pnidMiddleware = require('../../middleware/pnid');
-const logger = require('../../../logger');
+const logger = require('../../logger');
 const routes = require('./routes');
 
 // Router to handle the subdomain restriction

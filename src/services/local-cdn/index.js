@@ -1,6 +1,6 @@
 const express = require('express');
 const subdomain = require('express-subdomain');
-const logger = require('../../../logger');
+const logger = require('../../logger');
 const { config, disabledFeatures } = require('../../config-manager');
 
 if (!disabledFeatures.s3) {

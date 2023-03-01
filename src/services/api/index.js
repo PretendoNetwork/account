@@ -4,7 +4,7 @@ const express = require('express');
 const subdomain = require('express-subdomain');
 const cors = require('cors');
 const APIMiddleware = require('../../middleware/api');
-const logger = require('../../../logger');
+const logger = require('../../logger');
 const routes = require('./routes');
 
 // Router to handle the subdomain restriction

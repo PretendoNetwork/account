@@ -11,7 +11,7 @@ const { NEXAccount } = require('../../../../models/nex-account');
 const database = require('../../../../database');
 const cache = require('../../../../cache');
 const util = require('../../../../util');
-const logger = require('../../../../../logger');
+const logger = require('../../../../logger');
 const { config, disabledFeatures } = require('../../../../config-manager');
 
 const PNID_VALID_CHARACTERS_REGEX = /^[\w\-\.]*$/gm;

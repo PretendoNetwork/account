@@ -4,7 +4,7 @@ const joi = require('joi');
 const util = require('./util');
 const { PNID } = require('./models/pnid');
 const { Server } = require('./models/server');
-const logger = require('../logger');
+const logger = require('./logger');
 const { config } = require('./config-manager');
 const { connection_string, options } = config.mongoose;
 

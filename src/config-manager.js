@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const get = require('lodash.get');
 const set = require('lodash.set');
-const logger = require('../logger');
+const logger = require('./logger');
 
 require('dotenv').config();
 

@@ -2,7 +2,7 @@
 
 const express = require('express');
 const subdomain = require('express-subdomain');
-const logger = require('../../../logger');
+const logger = require('../../logger');
 
 // Router to handle the subdomain restriction
 const conntest = express.Router();

@@ -10,7 +10,7 @@ const xmlparser = require('./middleware/xml-parser');
 const cache = require('./cache');
 const database = require('./database');
 const util = require('./util');
-const logger = require('../logger');
+const logger = require('./logger');
 
 const { config } = configManager;
 
