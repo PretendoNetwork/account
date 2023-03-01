@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"esModuleInterop": true,
+		"moduleResolution": "node",
 		"outDir": "./dist",
 		"allowJs": true,
 		"target": "es6",
