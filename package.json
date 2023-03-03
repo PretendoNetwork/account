@@ -39,13 +39,11 @@
     "got": "^11.8.2",
     "hcaptcha": "^0.1.0",
     "image-pixels": "^1.1.1",
-    "joi": "^17.6.1",
-    "kaitai-struct": "^0.9.0",
+    "joi": "^17.8.3",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
     "mii-js": "github:PretendoNetwork/mii-js",
-    "moment": "^2.24.0",
-    "moment-timezone": "^0.5.27",
+    "moment": "^2.29.4",
     "mongoose": "^5.8.3",
     "mongoose-unique-validator": "^2.0.3",
     "morgan": "^1.9.1",
@@ -57,6 +55,11 @@
     "xmlbuilder2": "0.0.4"
   },
   "devDependencies": {
+    "@types/colors": "^1.2.1",
+    "@types/express": "^4.17.17",
+    "@types/fs-extra": "^11.0.1",
+    "@types/morgan": "^1.9.4",
+    "@types/node": "^18.14.4",
     "node-rsa": "^1.0.7",
     "prompt": "^1.0.0",
     "yesno": "^0.4.0"
