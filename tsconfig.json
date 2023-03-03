@@ -5,15 +5,9 @@
 		"moduleResolution": "node",
 		"outDir": "./dist",
 		"allowJs": true,
-		"target": "es6",
-		"noEmitOnError": true,
-		"lib": [
-			"es2021"
-		]
+		"target": "es2022",
+		"noEmitOnError": true
 	},
-	"lib": [
-		"es6"
-	],
 	"include": [
 		"./src/**/*"
 	]
