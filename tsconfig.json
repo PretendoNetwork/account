@@ -8,7 +8,5 @@
 		"target": "es2022",
 		"noEmitOnError": true
 	},
-	"include": [
-		"./src/**/*"
-	]
+	"include": ["src", "types"]
 }
