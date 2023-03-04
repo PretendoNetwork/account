@@ -227,7 +227,7 @@ router.post('/@me/devices', async (request, response) => {
 
 	const { pnid } = request;
 
-	const person = await database.getUserProfileJSONByPID(pnid.get('pid'));
+	const person = await database.getUserProfileJSONByPID(pnid.pid);
 
 	response.send(xmlbuilder.create({
 		person

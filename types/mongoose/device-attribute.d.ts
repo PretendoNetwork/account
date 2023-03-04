@@ -1,13 +1,13 @@
-import { Document, Model } from 'mongoose';
+import { Model } from 'mongoose';
 
 declare global {
-	interface IDeviceAttributeDocument extends Document {
+	interface IDeviceAttribute {
 		created_date: string;
 		name: string;
 		value: string;
 	}
 
-	interface IDeviceAttribute extends IDeviceAttributeDocument {}
+	interface IDeviceAttributeMethods {}
 
-	interface IDeviceAttributeModel extends Model<IDeviceAttribute> {}
+	interface DeviceAttributeModel extends Model<IDeviceAttribute, {}, IDeviceAttributeMethods> {}
 }

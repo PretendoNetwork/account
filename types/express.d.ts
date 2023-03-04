@@ -1,9 +1,10 @@
+import { HydratedDocument } from 'mongoose';
 import NintendoCertificate from '../src/nintendo-certificate'
 
 declare global {
 	namespace Express {
 		interface Request {
-			pnid?: IPNID;
+			pnid?: HydratedDocument<IPNID, IPNIDMethods>;
 			isCemu?: boolean;
 			files?: Record<string, any>;
 			certificate?: NintendoCertificate;

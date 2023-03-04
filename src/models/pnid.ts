@@ -8,7 +8,7 @@ import Mii from 'mii-js';
 import { DeviceSchema } from './device';
 import util from '../util';
 
-export const PNIDSchema = new Schema<IPNID>({
+export const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	access_level: {
 		type: Number,
 		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
@@ -114,7 +114,7 @@ PNIDSchema.plugin(uniqueValidator, {message: '{PATH} already in use.'});
 	https://account.nintendo.net/v1/api/admin/mapped_ids?input_type=pid&output_type=user_id&input=1799999999 returns `prodtest1`
 	and the next few accounts counting down seem to be admin, service and internal test accounts
 */
-PNIDSchema.methods.generatePID = async function() {
+PNIDSchema.method('generatePID', async function generatePID(): Promise<void> {
 	const min = 1000000000; // The console (WiiU) seems to not accept PIDs smaller than this
 	const max = 1799999999;
 
@@ -125,21 +125,21 @@ PNIDSchema.methods.generatePID = async function() {
 	});
 
 	if (inuse) {
-		await PNID.generatePID();
+		await this.generatePID();
 	} else {
 		this.set('pid', pid);
 	}
-};
+});
 
-PNIDSchema.methods.generateEmailValidationCode = async function() {
+PNIDSchema.method('generateEmailValidationCode', async function generateEmailValidationCode(): Promise<void> {
 	// WiiU passes the PID along with the email code
 	// Does not actually need to be unique to all users
 	const code = Math.random().toFixed(6).split('.')[1]; // Dirty one-liner to generate numbers of 6 length and padded 0
 
 	this.set('identification.email_code', code);
-};
+});
 
-PNIDSchema.methods.generateEmailValidationToken = async function() {
+PNIDSchema.method('generateEmailValidationToken', async function generateEmailValidationToken(): Promise<void> {
 	let token = crypto.randomBytes(32).toString('hex');
 
 	const inuse = await PNID.findOne({
@@ -147,13 +147,13 @@ PNIDSchema.methods.generateEmailValidationToken = async function() {
 	});
 
 	if (inuse) {
-		await PNID.generateEmailValidationToken();
+		await this.generateEmailValidationToken();
 	} else {
 		this.set('identification.email_token', token);
 	}
-};
+});
 
-PNIDSchema.methods.updateMii = async function({name, primary, data}) {
+PNIDSchema.method('updateMii', async function updateMii({name, primary, data}): Promise<void> {
 	this.set('mii.name', name);
 	this.set('mii.primary', primary === 'Y');
 	this.set('mii.data', data);
@@ -164,9 +164,9 @@ PNIDSchema.methods.updateMii = async function({name, primary, data}) {
 	await this.generateMiiImages();
 
 	await this.save();
-};
+});
 
-PNIDSchema.methods.generateMiiImages = async function() {
+PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promise<void> {
 	const miiData = this.get('mii.data');
 	const mii = new Mii(Buffer.from(miiData, 'base64'));
 	const miiStudioUrl = mii.studioUrl({
@@ -202,15 +202,15 @@ PNIDSchema.methods.generateMiiImages = async function() {
 	});
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
 	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
-};
+});
 
-PNIDSchema.methods.getServerMode = function () {
+PNIDSchema.method('getServerMode', function getServerMode(): string {
 	const serverMode = this.get('server_mode') || 'prod';
 
 	return serverMode;
-};
+});
 
-export const PNID: IPNIDModel = model<IPNID, IPNIDModel>('PNID', PNIDSchema);
+export const PNID: PNIDModel = model<IPNID, PNIDModel>('PNID', PNIDSchema);
 
 export default {
 	PNIDSchema,

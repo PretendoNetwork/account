@@ -31,32 +31,32 @@ router.get('/', async (request, response) => {
 	}
 
 	return response.json({
-		access_level: pnid.get('access_level'),
-		server_access_level: pnid.get('server_access_level'),
-		pid: pnid.get('pid'),
-		creation_date: pnid.get('creation_date'),
-		updated: pnid.get('updated'),
-		username: pnid.get('username'),
-		birthdate: pnid.get('birthdate'),
-		gender: pnid.get('gender'),
-		country: pnid.get('country'),
+		access_level: pnid.access_level,
+		server_access_level: pnid.server_access_level,
+		pid: pnid.pid,
+		creation_date: pnid.creation_date,
+		updated: pnid.updated,
+		username: pnid.username,
+		birthdate: pnid.birthdate,
+		gender: pnid.gender,
+		country: pnid.country,
 		email: {
-			address: pnid.get('email.address'),
+			address: pnid.email.address,
 		},
 		timezone: {
-			name: pnid.get('timezone.name')
+			name: pnid.timezone.name
 		},
 		mii: {
-			data: pnid.get('mii.data'),
-			name: pnid.get('mii.name'),
-			image_url: `${config.cdn.base_url}/mii/${pnid.get('pid')}/normal_face.png`
+			data: pnid.mii.data,
+			name: pnid.mii.name,
+			image_url: `${config.cdn.base_url}/mii/${pnid.pid}/normal_face.png`
 		},
 		flags: {
-			marketing: pnid.get('flags.marketing')
+			marketing: pnid.flags.marketing
 		},
 		connections: {
 			discord: {
-				id: pnid.get('connections.discord.id')
+				id: pnid.connections.discord.id
 			}
 		}
 	});
@@ -95,32 +95,32 @@ router.post('/', async (request, response) => {
 	await PNID.updateOne({ pid }, { $set: updateData }).exec();
 
 	return response.json({
-		access_level: pnid.get('access_level'),
-		server_access_level: pnid.get('server_access_level'),
-		pid: pnid.get('pid'),
-		creation_date: pnid.get('creation_date'),
-		updated: pnid.get('updated'),
-		username: pnid.get('username'),
-		birthdate: pnid.get('birthdate'),
-		gender: pnid.get('gender'),
-		country: pnid.get('country'),
+		access_level: pnid.access_level,
+		server_access_level: pnid.server_access_level,
+		pid: pnid.pid,
+		creation_date: pnid.creation_date,
+		updated: pnid.updated,
+		username: pnid.username,
+		birthdate: pnid.birthdate,
+		gender: pnid.gender,
+		country: pnid.country,
 		email: {
-			address: pnid.get('email.address'),
+			address: pnid.email.address,
 		},
 		timezone: {
-			name: pnid.get('timezone.name')
+			name: pnid.timezone.name
 		},
 		mii: {
-			data: pnid.get('mii.data'),
-			name: pnid.get('mii.name'),
-			image_url: `${config.cdn.base_url}/mii/${pnid.get('pid')}/normal_face.png`
+			data: pnid.mii.data,
+			name: pnid.mii.name,
+			image_url: `${config.cdn.base_url}/mii/${pnid.pid}/normal_face.png`
 		},
 		flags: {
-			marketing: pnid.get('flags.marketing')
+			marketing: pnid.flags.marketing
 		},
 		connections: {
 			discord: {
-				id: pnid.get('connections.discord.id')
+				id: pnid.connections.discord.id
 			}
 		}
 	});

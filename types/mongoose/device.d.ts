@@ -1,4 +1,4 @@
-import { Document, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { DeviceAttributeSchema } from '../../src/models/device';
 
 type MODEL = 'wup' | 'ctr' | 'spr' | 'ftr' | 'ktr' | 'red' | 'jan';
@@ -6,7 +6,7 @@ type ACCESS_LEVEL = 0 | 1 | 2 | 3;
 type SERVER_ACCESS_LEVEL = 'prod' | 'test' | 'dev';
 
 declare global {
-	interface IDeviceDocument extends Document {
+	interface IDevice {
 		is_emulator: boolean;
 		model: MODEL;
 		device_id: number;
@@ -26,7 +26,7 @@ declare global {
 		server_access_level: SERVER_ACCESS_LEVEL;
 	}
 
-	interface IDevice extends IDeviceDocument {}
+	interface IDeviceMethods {}
 
-	interface IDeviceModel extends Model<IDevice> {}
+	interface DeviceModel extends Model<IDevice, {}, IDeviceMethods> {}
 }

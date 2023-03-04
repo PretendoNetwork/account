@@ -1,7 +1,7 @@
 import { Document, Model } from 'mongoose';
 
 declare global {
-	interface IServerDocument extends Document {
+	interface IServer {
 		ip: string; // Example: 1.1.1.1
 		port: Number; // Example: 60000
 		service_name: string; // Example: friends
@@ -13,7 +13,7 @@ declare global {
 		device: number; // Example: 1 (WiiU)
 	}
 
-	interface IServer extends IServerDocument {}
+	interface IServerMethods {}
 
-	interface IServerModel extends Model<IServer> {}
+	interface ServerModel extends Model<IServer, {}, IServerMethods> {}
 }

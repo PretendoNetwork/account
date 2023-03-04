@@ -38,7 +38,7 @@ export async function getUserByUsername(username) {
 
 	const user = await PNID.findOne({
 		usernameLower: username.toLowerCase()
-	});
+	}) as mongoose.HydratedDocument<IPNID, IPNIDMethods>;
 
 	return user;
 }
@@ -48,7 +48,7 @@ export async function getUserByPID(pid) {
 
 	const user = await PNID.findOne({
 		pid
-	});
+	}) as mongoose.HydratedDocument<IPNID, IPNIDMethods>;
 
 	return user;
 }
@@ -58,7 +58,7 @@ export async function getUserByEmailAddress(email) {
 
 	const user = await PNID.findOne({
 		'email.address': new RegExp(email, 'i') // * Ignore case
-	});
+	}) as mongoose.HydratedDocument<IPNID, IPNIDMethods>;
 
 	return user;
 }

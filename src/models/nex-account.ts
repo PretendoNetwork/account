@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 
-export const NEXAccountSchema = new Schema<INEXAccount>({
+export const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMethods>({
 	device_type: {
 		type: String,
 		enum: [
@@ -36,7 +36,7 @@ NEXAccountSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 	https://account.nintendo.net/v1/api/admin/mapped_ids?input_type=pid&output_type=user_id&input=1799999999 returns `prodtest1`
 	and the next few accounts counting down seem to be admin, service and internal test accounts
 */
-NEXAccountSchema.methods.generatePID = async function () {
+NEXAccountSchema.method('generatePID', async function generatePID(): Promise<void> {
 	const min = 1000000000; // The console (WiiU) seems to not accept PIDs smaller than this
 	const max = 1799999999;
 
@@ -45,13 +45,13 @@ NEXAccountSchema.methods.generatePID = async function () {
 	const inuse = await NEXAccount.findOne({ pid });
 
 	if (inuse) {
-		await NEXAccount.generatePID();
+		await this.generatePID();
 	} else {
 		this.set('pid', pid);
 	}
-};
+});
 
-NEXAccountSchema.methods.generatePassword = function () {
+NEXAccountSchema.method('generatePassword', function generatePassword(): void {
 	function character() {
 		const offset = Math.floor(Math.random() * 62);
 		if (offset < 10) return offset;
@@ -66,9 +66,9 @@ NEXAccountSchema.methods.generatePassword = function () {
 	}
 
 	this.set('password', output.join(''));
-};
+});
 
-export const NEXAccount: INEXAccountModel = model<INEXAccount, INEXAccountModel>('NEXAccount', NEXAccountSchema);
+export const NEXAccount: NEXAccountModel = model<INEXAccount, NEXAccountModel>('NEXAccount', NEXAccountSchema);
 
 export default {
 	NEXAccountSchema,

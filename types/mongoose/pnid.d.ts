@@ -1,8 +1,8 @@
-import { Document, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { DeviceSchema } from '../../src/models/device';
 
 declare global {
-	interface IPNIDDocument extends Document {
+	interface IPNID {
 		access_level: number;
 		server_access_level: string;
 		pid: number;
@@ -65,17 +65,14 @@ declare global {
 		};
 	}
 
-	interface IPNID extends IPNIDDocument {
-		generatePID(): void;
-		generateEmailValidationCode(): void;
-		generateEmailValidationToken(): void;
-		updateMii(mii: { name: string, primary: boolean, data: Buffer}): void;
-		generateMiiImages(): void;
+	interface IPNIDMethods {
+		generatePID(): Promise<void>;
+		generateEmailValidationCode(): Promise<void>;
+		generateEmailValidationToken(): Promise<void>;
+		updateMii(mii: { name: string, primary: string, data: string}): Promise<void>;
+		generateMiiImages(): Promise<void>;
 		getServerMode(): string;
 	}
 
-	interface IPNIDModel extends Model<IPNID> {
-		generatePID(): void;
-		generateEmailValidationToken(): void;
-	}
+	interface PNIDModel extends Model<IPNID, {}, IPNIDMethods> {}
 }

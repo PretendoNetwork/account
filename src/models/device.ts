@@ -1,14 +1,14 @@
 import { Schema, model } from 'mongoose';
 
-export const DeviceAttributeSchema = new Schema<IDeviceAttribute>({
+export const DeviceAttributeSchema = new Schema<IDeviceAttribute, DeviceAttributeModel, IDeviceAttributeMethods>({
 	created_date: String,
 	name: String,
 	value: String
 });
 
-export const DeviceAttribute: IDeviceAttributeModel = model<IDeviceAttribute, IDeviceAttributeModel>('DeviceAttribute', DeviceAttributeSchema);
+export const DeviceAttribute: DeviceAttributeModel = model<IDeviceAttribute, DeviceAttributeModel>('DeviceAttribute', DeviceAttributeSchema);
 
-export const DeviceSchema = new Schema<IDevice>({
+export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 	is_emulator: {
 		type: Boolean,
 		default: false
@@ -48,7 +48,7 @@ export const DeviceSchema = new Schema<IDevice>({
 	}
 });
 
-export const Device: IDeviceModel = model<IDevice, IDeviceModel>('Device', DeviceSchema);
+export const Device: DeviceModel = model<IDevice, DeviceModel>('Device', DeviceSchema);
 
 export default {
 	DeviceSchema,
