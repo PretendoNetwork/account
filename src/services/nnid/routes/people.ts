@@ -370,8 +370,6 @@ router.put('/@me/deletion', async (request, response) => {
 		}).end());
 	}
 
-	await PNID.deleteOne({ pid: pnid.get('pid') });
-
 	response.send('');
 });
 
