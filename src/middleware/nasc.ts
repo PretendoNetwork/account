@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
-import { Device } from '../models/device';
-import { NEXAccount } from '../models/nex-account';
-import util from '../util';
-import database from '../database';
-import NintendoCertificate from '../nintendo-certificate';
-import logger from '../logger';
+import { Device } from '@models/device';
+import { NEXAccount } from '@models/nex-account';
+import util from '@util';
+import database from '@database';
+import NintendoCertificate from '@nintendo-certificate';
+import logger from '@logger';
 
 export async function NASCMiddleware(request, response, next) {
 	const requestParams = request.body;
@@ -50,7 +50,7 @@ export async function NASCMiddleware(request, response, next) {
 	}
 
 	const cert = new NintendoCertificate(fcdcert);
-	
+
 	if (!cert.valid) {
 		return response.status(200).send(util.nascError('121'));
 	}

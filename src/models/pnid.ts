@@ -5,8 +5,8 @@ import imagePixels from 'image-pixels';
 import TGA from 'tga';
 import got from 'got';
 import Mii from 'mii-js';
-import { DeviceSchema } from './device';
-import util from '../util';
+import { DeviceSchema } from '@models/device';
+import util from '@util';
 
 export const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	access_level: {

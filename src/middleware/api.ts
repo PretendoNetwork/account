@@ -1,5 +1,5 @@
 import xmlbuilder from 'xmlbuilder';
-import database from '../database';
+import database from '@database';
 
 export async function APIMiddleware(request, _response, next) {
 	const { headers } = request;

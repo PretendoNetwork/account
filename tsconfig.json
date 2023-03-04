@@ -4,10 +4,14 @@
 		"module": "commonjs",
 		"esModuleInterop": true,
 		"moduleResolution": "node",
-		"outDir": "./dist",
+		"baseUrl": "src",
+		"outDir": "dist",
 		"allowJs": true,
 		"target": "es2022",
-		"noEmitOnError": true
+		"noEmitOnError": true,
+		"paths": {
+			"@*": ["./*"]
+		}
 	},
 	"include": ["src", "types"]
 }

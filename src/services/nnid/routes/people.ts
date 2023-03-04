@@ -3,14 +3,14 @@ import { Router } from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
-import deviceCertificateMiddleware from '../../../middleware/device-certificate';
-import ratelimit from '../../../middleware/ratelimit';
-import database from '../../../database';
-import util from '../../../util';
-import { PNID } from '../../../models/pnid';
-import { NEXAccount } from '../../../models/nex-account';
-import logger from '../../../logger';
-import timezones from '../timezones.json';
+import deviceCertificateMiddleware from '@middleware/device-certificate';
+import ratelimit from '@middleware/ratelimit';
+import database from '@database';
+import util from '@util';
+import { PNID } from '@models/pnid';
+import { NEXAccount } from '@models/nex-account';
+import logger from '@logger';
+import timezones from '@services/nnid/timezones.json';
 
 const router = Router();
 

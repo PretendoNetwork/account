@@ -3,9 +3,9 @@ const path = require('path');
 const NodeRSA = require('node-rsa');
 const aws = require('aws-sdk');
 const fs = require('fs-extra');
-const mailer = require('./mailer');
-const cache = require('./cache');
-const { config, disabledFeatures } = require('./config-manager');
+const mailer = require('@mailer');
+const cache = require('@cache');
+const { config, disabledFeatures } = require('@config-manager');
 
 let s3;
 

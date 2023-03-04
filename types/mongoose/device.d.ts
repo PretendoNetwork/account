@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { DeviceAttributeSchema } from '../../src/models/device';
+import { DeviceAttributeSchema } from '@models/device';
 
 type MODEL = 'wup' | 'ctr' | 'spr' | 'ftr' | 'ktr' | 'red' | 'jan';
 type ACCESS_LEVEL = 0 | 1 | 2 | 3;

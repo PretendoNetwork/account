@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import xmlbuilder from 'xmlbuilder';
-import timezones from '../timezones.json';
+import timezones from '@services/nnid/timezones.json';
 
 const router = Router();
 

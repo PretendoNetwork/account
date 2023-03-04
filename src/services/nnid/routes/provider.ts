@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import xmlbuilder from 'xmlbuilder';
 import fs from 'fs-extra';
-import database from '../../../database';
-import util from '../../../util';
-import cache from '../../../cache';
-import { NEXAccount } from '../../../models/nex-account';
+import database from '@database';
+import util from '@util';
+import cache from '@cache';
+import { NEXAccount } from '@models/nex-account';
 
 const router = Router();
 
@@ -33,7 +33,7 @@ router.get('/service_token/@me', async (request, response) => {
 
 	const { service_name, service_type, device } = server;
 
-	const cryptoPath = `${__dirname}/../../../../certs/${service_type}/${service_name}`;
+	const cryptoPath = `${__dirname}/@../certs/${service_type}/${service_name}`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
@@ -114,7 +114,7 @@ router.get('/nex_token/@me', async (request, response) => {
 	const { service_name, service_type, ip, port, device } = server;
 	const titleId = request.headers['x-nintendo-title-id'] as string;
 
-	const cryptoPath = `${__dirname}/../../../../certs/${service_type}/${service_name}`;
+	const cryptoPath = `${__dirname}/@../certs/${service_type}/${service_name}`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys

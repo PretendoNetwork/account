@@ -1,5 +1,5 @@
 import { HydratedDocument } from 'mongoose';
-import NintendoCertificate from '../src/nintendo-certificate'
+import NintendoCertificate from '@nintendo-certificate';
 
 declare global {
 	namespace Express {

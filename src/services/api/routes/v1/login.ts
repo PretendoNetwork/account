@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import fs from 'fs-extra';
-import database from '../../../../database';
-import cache from '../../../../cache';
-import util from '../../../../util';
+import database from '@database';
+import cache from '@cache';
+import util from '@util';
 
 const router = Router();
 

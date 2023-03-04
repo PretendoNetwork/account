@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import redis from 'redis';
-import { config, disabledFeatures } from './config-manager';
+import { config, disabledFeatures } from '@config-manager';
 
 let client;
 

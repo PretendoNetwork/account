@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import get from 'lodash.get';
 import set from 'lodash.set';
 import dotenv from 'dotenv';
-import logger from './logger';
+import logger from '@logger';
 
 dotenv.config();
 

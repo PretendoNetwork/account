@@ -1,7 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import nodemailer from 'nodemailer';
-import { config, disabledFeatures } from './config-manager';
+import { config, disabledFeatures } from '@config-manager';
 
 const genericEmailTemplate = fs.readFileSync(path.join(__dirname, './assets/emails/genericTemplate.html'), 'utf8');
 const confirmationEmailTemplate = fs.readFileSync(path.join(__dirname, './assets/emails/confirmationTemplate.html'), 'utf8');

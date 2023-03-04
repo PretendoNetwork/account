@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { DeviceSchema } from '../../src/models/device';
+import { DeviceSchema } from '@models/device';
 
 declare global {
 	interface IPNID {

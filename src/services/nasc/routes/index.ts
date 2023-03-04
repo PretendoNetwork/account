@@ -1,4 +1,4 @@
-import ac from './ac';
+import ac from '@services/nasc/routes/ac';
 
 export default {
 	AC: ac

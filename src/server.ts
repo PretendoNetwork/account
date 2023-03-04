@@ -1,24 +1,24 @@
 process.title = 'Pretendo - Account';
 
-const configManager = require('./config-manager');
+const configManager = require('@config-manager');
 
 configManager.configure();
 
 import express from 'express';
 import morgan from 'morgan';
-import xmlparser from './middleware/xml-parser';
-import cache from './cache';
-import database from './database';
-import util from './util';
-import logger from './logger';
+import xmlparser from '@middleware/xml-parser';
+import cache from '@cache';
+import database from '@database';
+import util from '@util';
+import logger from '@logger';
 
-import conntest from './services/conntest';
-import nnid from './services/nnid';
-import nasc from './services/nasc';
-import datastore from './services/datastore';
-import api from './services/api';
-import localcdn from './services/local-cdn';
-import assets from './services/assets';
+import conntest from '@services/conntest';
+import nnid from '@services/nnid';
+import nasc from '@services/nasc';
+import datastore from '@services/datastore';
+import api from '@services/api';
+import localcdn from '@services/local-cdn';
+import assets from '@services/assets';
 
 const { config } = configManager;
 

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import joi from 'joi';
-import { PNID } from '../../../../models/pnid';
-import { config } from '../../../../config-manager';
+import { PNID } from '@models/pnid';
+import { config } from '@config-manager';
 
 const router = Router();
 

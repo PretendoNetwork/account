@@ -1,7 +1,7 @@
 import express from 'express';
 import subdomain from 'express-subdomain';
-import routes from './routes';
-import logger from '../../logger';
+import routes from '@services/datastore/routes';
+import logger from '@logger';
 
 // Router to handle the subdomain
 const datastore = express.Router();

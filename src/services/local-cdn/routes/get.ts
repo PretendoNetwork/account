@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import cache from '../../../cache';
+import cache from '@cache';
 
 const router = Router();
 
