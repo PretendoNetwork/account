@@ -27,11 +27,7 @@ router.post('/', async (request, response) => {
 	response.status(200).send(responseData.toString());
 });
 
-/**
- *
- * @param {express.Request} request
- */
-async function processLoginRequest(request) {
+async function processLoginRequest(request: express.Request) {
 	const requestParams = request.body;
 	const titleID = util.nintendoBase64Decode(requestParams.titleid).toString();
 	const { nexUser } = request;
@@ -83,11 +79,7 @@ async function processLoginRequest(request) {
 	return params;
 }
 
-/**
- * 
- * @param {express.Request} request
- */
-async function processServiceTokenRequest(request) {
+async function processServiceTokenRequest(request: express.Request) {
 	const params = new URLSearchParams({
 		retry: util.nintendoBase64Encode('0'),
 		returncd: util.nintendoBase64Encode('007'),
