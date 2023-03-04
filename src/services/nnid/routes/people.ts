@@ -81,7 +81,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request, respons
 	let pnid;
 	let nexAccount;
 
-	const session = await database.connection.startSession();
+	const session = await database.connection().startSession();
 	await session.startTransaction();
 
 	try {

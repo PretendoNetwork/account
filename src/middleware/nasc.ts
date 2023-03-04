@@ -111,7 +111,7 @@ export async function NASCMiddleware(request, response, next) {
 		if (password && !pid && !pidHmac) {
 			// Register new user
 
-			const session = await database.connection.startSession();
+			const session = await database.connection().startSession();
 			await session.startTransaction();
 
 			try {

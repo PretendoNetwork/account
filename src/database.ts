@@ -14,17 +14,21 @@ const discordConnectionSchema = joi.object({
 	id: joi.string()
 });
 
-let connection;
+let _connection;
 
 export async function connect() {
 	await mongoose.connect(connection_string, options);
 
-	connection = mongoose.connection;
-	connection.on('error', console.error.bind(console, 'connection error:'));
+	_connection = mongoose.connection;
+	_connection.on('error', console.error.bind(console, 'connection error:'));
+}
+
+export function connection() {
+	return _connection;
 }
 
 function verifyConnected() {
-	if (!connection) {
+	if (!connection()) {
 		throw new Error('Cannot make database requets without being connected');
 	}
 }
