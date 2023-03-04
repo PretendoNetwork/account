@@ -1,5 +1,4 @@
 import express from 'express';
-import fs from 'fs-extra';
 import util from '@util';
 import database from '@database';
 import cache from '@cache';
@@ -29,7 +28,7 @@ router.post('/', async (request, response) => {
 });
 
 /**
- * 
+ *
  * @param {express.Request} request
  */
 async function processLoginRequest(request) {
@@ -52,8 +51,6 @@ async function processLoginRequest(request) {
 	}
 
 	const { service_name, ip, port } = server;
-
-	const cryptoPath = `${__dirname}/../../../../certs/nex/${service_name}`;
 
 	const publicKey = await cache.getNEXPublicKey(service_name);
 	const secretKey = await cache.getNEXSecretKey(service_name);
