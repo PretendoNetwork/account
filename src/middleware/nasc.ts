@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { HydratedDocument } from 'mongoose';
 import { Device } from '@models/device';
 import { NEXAccount } from '@models/nex-account';
 import util from '@util';
@@ -161,7 +162,7 @@ export async function NASCMiddleware(request, response, next) {
 		}
 	}
 
-	const nexUser = await NEXAccount.findOne({ pid });
+	const nexUser = await NEXAccount.findOne({ pid }) as HydratedDocument<INEXAccount, INEXAccountMethods>;
 
 	if (!nexUser || nexUser.get('access_level') < 0) {
 		return response.status(200).send(util.nascError('102'));
