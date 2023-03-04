@@ -31,9 +31,9 @@ router.get('/service_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const { service_name, service_type, device } = server;
+	const { service_name, device } = server;
 
-	const cryptoPath = `${__dirname}/@../certs/${service_type}/${service_name}`;
+	const cryptoPath = `${__dirname}/../../../../certs/service/${service_name}`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
@@ -111,10 +111,10 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const { service_name, service_type, ip, port, device } = server;
+	const { service_name, ip, port, device } = server;
 	const titleId = request.headers['x-nintendo-title-id'] as string;
 
-	const cryptoPath = `${__dirname}/@../certs/${service_type}/${service_name}`;
+	const cryptoPath = `${__dirname}/../../../../certs/nex/${service_name}`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
