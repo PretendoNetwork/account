@@ -102,7 +102,7 @@ export const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 			id: String
 		}
 	}
-});
+}, { id: false });
 
 PNIDSchema.plugin(uniqueValidator, {message: '{PATH} already in use.'});
 
