@@ -1,11 +1,11 @@
-const crypto = require('crypto');
-const path = require('path');
-const NodeRSA = require('node-rsa');
-const aws = require('aws-sdk');
-const fs = require('fs-extra');
-const mailer = require('@/mailer');
-const cache = require('@/cache');
-const { config, disabledFeatures } = require('@/config-manager');
+import crypto from 'node:crypto';
+import path from 'node:path';
+import NodeRSA from 'node-rsa';
+import aws from 'aws-sdk';
+import fs from 'fs-extra';
+import mailer from '@/mailer';
+import cache from '@/cache';
+import { config, disabledFeatures } from '@/config-manager';
 
 let s3;
 
