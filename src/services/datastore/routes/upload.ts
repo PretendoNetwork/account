@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { Router } from 'express';
 import Dicer from 'dicer';
-import util from '@util';
+import util from '@/util';
 
 const router = Router();
 

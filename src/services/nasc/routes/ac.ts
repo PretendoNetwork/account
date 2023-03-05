@@ -1,7 +1,7 @@
 import express from 'express';
-import util from '@util';
-import database from '@database';
-import cache from '@cache';
+import util from '@/util';
+import database from '@/database';
+import cache from '@/cache';
 
 const router = express.Router();
 

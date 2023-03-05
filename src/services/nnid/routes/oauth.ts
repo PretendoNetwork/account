@@ -2,8 +2,8 @@ import { Router } from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import fs from 'fs-extra';
-import database from '@database';
-import util from '@util';
+import database from '@/database';
+import util from '@/util';
 
 const router = Router();
 

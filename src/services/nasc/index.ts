@@ -2,9 +2,9 @@
 
 import express from 'express';
 import subdomain from 'express-subdomain';
-import NASCMiddleware from '@middleware/nasc';
-import routes from '@services/nasc/routes';
-import logger from '@logger';
+import NASCMiddleware from '@/middleware/nasc';
+import routes from '@/services/nasc/routes';
+import logger from '@/logger';
 
 // Router to handle the subdomain restriction
 const nasc = express.Router();

@@ -1,4 +1,6 @@
 import { Schema, model } from 'mongoose';
+import { IDeviceAttribute, IDeviceAttributeMethods, DeviceAttributeModel } from '@/types/mongoose/device-attribute';
+import { IDevice, IDeviceMethods, DeviceModel } from '@/types/mongoose/device';
 
 export const DeviceAttributeSchema = new Schema<IDeviceAttribute, DeviceAttributeModel, IDeviceAttributeMethods>({
 	created_date: String,

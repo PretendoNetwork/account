@@ -1,4 +1,4 @@
-import NintendoCertificate from '@nintendo-certificate';
+import NintendoCertificate from '@/nintendo-certificate';
 
 export async function deviceCertificateMiddleware(request, _response, next) {
 	const { headers } = request;

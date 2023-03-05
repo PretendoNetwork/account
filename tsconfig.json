@@ -10,8 +10,8 @@
 		"target": "es2022",
 		"noEmitOnError": true,
 		"paths": {
-			"@*": ["./*"]
+			"@/*": ["./*"]
 		}
 	},
-	"include": ["src", "types"]
+	"include": ["src"]
 }

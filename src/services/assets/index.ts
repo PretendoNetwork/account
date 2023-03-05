@@ -3,7 +3,7 @@
 import path from 'node:path';
 import express from 'express';
 import subdomain from 'express-subdomain';
-import logger from '@logger';
+import logger from '@/logger';
 
 // Router to handle the subdomain restriction
 const assets = express.Router();

@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
+import { INEXAccount, INEXAccountMethods, NEXAccountModel } from '@/types/mongoose/nex-account';
 
 export const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMethods>({
 	device_type: {

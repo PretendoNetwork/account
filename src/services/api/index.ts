@@ -3,9 +3,9 @@
 import express from 'express';
 import subdomain from 'express-subdomain';
 import cors from 'cors';
-import APIMiddleware from '@middleware/api';
-import routes from '@services/api/routes';
-import logger from '@logger';
+import APIMiddleware from '@/middleware/api';
+import routes from '@/services/api/routes';
+import logger from '@/logger';
 
 // Router to handle the subdomain restriction
 const api = express.Router();

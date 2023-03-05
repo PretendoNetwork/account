@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import validator from 'validator';
-import database from '@database';
-import util from '@util';
+import database from '@/database';
+import util from '@/util';
 
 const router = Router();
 

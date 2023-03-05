@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import xmlbuilder from 'xmlbuilder';
-import { PNID } from '@models/pnid';
+import { PNID } from '@/models/pnid';
 
 const router = Router();
 

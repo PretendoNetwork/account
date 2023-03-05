@@ -7,13 +7,13 @@ import fs from 'fs-extra';
 import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
-import database from '@database';
-import cache from '@cache';
-import util from '@util';
-import logger from '@logger';
-import { PNID } from '@models/pnid';
-import { NEXAccount } from '@models/nex-account';
-import { config, disabledFeatures } from '@config-manager';
+import database from '@/database';
+import cache from '@/cache';
+import util from '@/util';
+import logger from '@/logger';
+import { PNID } from '@/models/pnid';
+import { NEXAccount } from '@/models/nex-account';
+import { config, disabledFeatures } from '@/config-manager';
 
 const router = Router();
 

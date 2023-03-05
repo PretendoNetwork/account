@@ -1,10 +1,10 @@
-import connections_v1 from '@services/api/routes/v1/connections';
-import email_v1 from '@services/api/routes/v1/email';
-import forgotPassword_v1 from '@services/api/routes/v1/forgotPassword';
-import login_v1 from '@services/api/routes/v1/login';
-import register_v1 from '@services/api/routes/v1/register';
-import resetPassword_v1 from '@services/api/routes/v1/resetPassword';
-import user_v1 from '@services/api/routes/v1/user';
+import connections_v1 from '@/services/api/routes/v1/connections';
+import email_v1 from '@/services/api/routes/v1/email';
+import forgotPassword_v1 from '@/services/api/routes/v1/forgotPassword';
+import login_v1 from '@/services/api/routes/v1/login';
+import register_v1 from '@/services/api/routes/v1/register';
+import resetPassword_v1 from '@/services/api/routes/v1/resetPassword';
+import user_v1 from '@/services/api/routes/v1/user';
 
 export default {
 	V1: {

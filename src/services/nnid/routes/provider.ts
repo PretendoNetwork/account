@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import xmlbuilder from 'xmlbuilder';
 import fs from 'fs-extra';
-import database from '@database';
-import util from '@util';
-import cache from '@cache';
-import { NEXAccount } from '@models/nex-account';
+import database from '@/database';
+import util from '@/util';
+import cache from '@/cache';
+import { NEXAccount } from '@/models/nex-account';
 
 const router = Router();
 

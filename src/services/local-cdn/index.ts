@@ -1,8 +1,8 @@
 import express from 'express';
 import subdomain from 'express-subdomain';
-import routes from '@services/local-cdn/routes';
-import { config, disabledFeatures } from '@config-manager';
-import logger from '@logger';
+import routes from '@/services/local-cdn/routes';
+import { config, disabledFeatures } from '@/config-manager';
+import logger from '@/logger';
 
 const router = express.Router();
 

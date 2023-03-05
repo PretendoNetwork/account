@@ -5,8 +5,9 @@ import imagePixels from 'image-pixels';
 import TGA from 'tga';
 import got from 'got';
 import Mii from 'mii-js';
-import { DeviceSchema } from '@models/device';
-import util from '@util';
+import { DeviceSchema } from '@/models/device';
+import util from '@/util';
+import { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 
 export const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	access_level: {

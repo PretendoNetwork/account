@@ -1,11 +1,12 @@
 import crypto from 'node:crypto';
 import { HydratedDocument } from 'mongoose';
-import { Device } from '@models/device';
-import { NEXAccount } from '@models/nex-account';
-import util from '@util';
-import database from '@database';
-import NintendoCertificate from '@nintendo-certificate';
-import logger from '@logger';
+import { Device } from '@/models/device';
+import { NEXAccount } from '@/models/nex-account';
+import util from '@/util';
+import database from '@/database';
+import NintendoCertificate from '@/nintendo-certificate';
+import logger from '@/logger';
+import { INEXAccount, INEXAccountMethods } from '@/types/mongoose/nex-account';
 
 export async function NASCMiddleware(request, response, next) {
 	const requestParams = request.body;

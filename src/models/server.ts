@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
+import { IServer, IServerMethods, ServerModel } from '@/types/mongoose/server';
 
 export const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 	ip: String, // Example: 1.1.1.1

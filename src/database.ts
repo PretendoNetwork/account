@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import joi from 'joi';
-import util from '@util';
-import { PNID } from '@models/pnid';
-import { Server } from '@models/server';
-import logger from '@logger';
-import { config } from '@config-manager';
+import util from '@/util';
+import { PNID } from '@/models/pnid';
+import { Server } from '@/models/server';
+import logger from '@/logger';
+import { config } from '@/config-manager';
+import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 
 const { connection_string, options } = config.mongoose;
 

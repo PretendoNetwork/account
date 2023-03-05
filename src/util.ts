@@ -3,9 +3,9 @@ const path = require('path');
 const NodeRSA = require('node-rsa');
 const aws = require('aws-sdk');
 const fs = require('fs-extra');
-const mailer = require('@mailer');
-const cache = require('@cache');
-const { config, disabledFeatures } = require('@config-manager');
+const mailer = require('@/mailer');
+const cache = require('@/cache');
+const { config, disabledFeatures } = require('@/config-manager');
 
 let s3;
 
@@ -17,7 +17,7 @@ if (!disabledFeatures.s3) {
 	});
 }
 
-function nintendoPasswordHash(password, pid) {
+function nintendoPasswordHash(password: string, pid: number): string {
 	const pidBuffer = Buffer.alloc(4);
 	pidBuffer.writeUInt32LE(pid);
 
@@ -31,18 +31,17 @@ function nintendoPasswordHash(password, pid) {
 	return hashed;
 }
 
-function nintendoBase64Decode(encoded) {
+function nintendoBase64Decode(encoded: string): Buffer {
 	encoded = encoded.replaceAll('.', '+').replaceAll('-', '/').replaceAll('*', '=');
 	return Buffer.from(encoded, 'base64');
 }
 
-function nintendoBase64Encode(decoded) {
+function nintendoBase64Encode(decoded: string | Buffer): string {
 	const encoded = Buffer.from(decoded).toString('base64');
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
-async function generateToken(cryptoOptions, tokenOptions) {
-
+async function generateToken(cryptoOptions, tokenOptions): Promise<string> {
 	// Access and refresh tokens use a different format since they must be much smaller
 	// They take no extra crypto options
 	if (!cryptoOptions) {

@@ -2,8 +2,8 @@ import dns from 'node:dns';
 import { Router } from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
-import database from '@database';
-import util from '@util';
+import database from '@/database';
+import util from '@/util';
 
 const router = Router();
 

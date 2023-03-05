@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
-import { PNID } from '@models/pnid';
-import util from '@util';
+import { PNID } from '@/models/pnid';
+import util from '@/util';
 
 const router = Router();
 

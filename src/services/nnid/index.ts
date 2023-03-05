@@ -2,11 +2,11 @@
 
 import express from 'express';
 import subdomain from 'express-subdomain';
-import clientHeaderCheck from '@middleware/client-header';
-import cemuMiddleware from '@middleware/cemu';
-import pnidMiddleware from '@middleware/pnid';
-import routes from '@services/nnid/routes';
-import logger from '@logger';
+import clientHeaderCheck from '@/middleware/client-header';
+import cemuMiddleware from '@/middleware/cemu';
+import pnidMiddleware from '@/middleware/pnid';
+import routes from '@/services/nnid/routes';
+import logger from '@/logger';
 
 // Router to handle the subdomain restriction
 const nnid = express.Router();
