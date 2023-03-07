@@ -8,8 +8,6 @@ const DeviceAttributeSchema = new Schema<IDeviceAttribute, DeviceAttributeModel,
 	value: String
 });
 
-const DeviceAttribute: DeviceAttributeModel = model<IDeviceAttribute, DeviceAttributeModel>('DeviceAttribute', DeviceAttributeSchema);
-
 export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 	is_emulator: {
 		type: Boolean,
