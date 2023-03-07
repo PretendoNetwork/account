@@ -21,14 +21,14 @@ async function sendMail(options: MailerOptions): Promise<void> {
 
 		html = html.replace(/{{username}}/g, username);
 		html = html.replace(/{{paragraph}}/g, paragraph);
-		html = html.replace(/{{preview}}/g, (preview || ""));
-		html = html.replace(/{{confirmation-href}}/g, (confirmation?.href || ""));
-		html = html.replace(/{{confirmation-code}}/g, (confirmation?.code || ""));
+		html = html.replace(/{{preview}}/g, (preview || ''));
+		html = html.replace(/{{confirmation-href}}/g, (confirmation?.href || ''));
+		html = html.replace(/{{confirmation-code}}/g, (confirmation?.code || ''));
 
 		if (link) {
 			const { href, text } = link;
 
-			const button: string = `<tr><td width="100%" height="16px" style="line-height: 16px;">&nbsp;</td></tr><tr><td class="confirm-link" bgcolor="#673db6" style="font-size: 14px; font-weight: 700; border-radius: 10px; padding: 12px" align="center"><a href="${href}" style="text-decoration: none; color: #ffffff; " width="100%">${text}</a></td></tr>`
+			const button: string = `<tr><td width="100%" height="16px" style="line-height: 16px;">&nbsp;</td></tr><tr><td class="confirm-link" bgcolor="#673db6" style="font-size: 14px; font-weight: 700; border-radius: 10px; padding: 12px" align="center"><a href="${href}" style="text-decoration: none; color: #ffffff; " width="100%">${text}</a></td></tr>`;
 			html = html.replace(/<!--{{buttonPlaceholder}}-->/g, button);
 		}
 

@@ -106,7 +106,7 @@ class NintendoCertificate {
 		}
 	}
 
-	_parseCertificateData() {
+	_parseCertificateData(): void {
 		if (this._certificate.length === 0x110) {
 			// Assume fcdcert (3DS LFCS)
 			this.signature = this._certificate.subarray(0x0, 0x100);
@@ -149,7 +149,7 @@ class NintendoCertificate {
 		}
 	}
 
-	_verifySignature() {
+	_verifySignature(): void {
 		switch (this.keyType) {
 			case 0x0:
 				this._verifySignatureRSA4096();
@@ -168,7 +168,7 @@ class NintendoCertificate {
 		}
 	}
 
-	_verifySignatureRSA4096() {
+	_verifySignatureRSA4096(): void {
 		const publicKey: NodeRSA = new NodeRSA();
 
 		publicKey.importKey({
@@ -179,7 +179,7 @@ class NintendoCertificate {
 		this.valid = publicKey.verify(this._certificateBody, this.signature);
 	}
 
-	_verifySignatureRSA2048() {
+	_verifySignatureRSA2048(): void {
 		const publicKey: NodeRSA = new NodeRSA();
 
 		publicKey.importKey({
@@ -194,7 +194,7 @@ class NintendoCertificate {
 	// with Nodes native crypto module and getting the keys
 	// from bytes to PEM!
 	// https://github.com/Myriachan
-	_verifySignatureECDSA() {
+	_verifySignatureECDSA(): void {
 		const pem: string = this.issuer == 'Root-CA00000003-MS00000012' ? WIIU_DEVICE_PUB_PEM : CTR_DEVICE_PUB_PEM;
 		const key: crypto.VerifyPublicKeyInput = {
 			key: pem,
@@ -204,7 +204,7 @@ class NintendoCertificate {
 		this.valid = crypto.verify('sha256', this._certificateBody, key, this.signature);
 	}
 
-	_verifySignatureLFCS() {
+	_verifySignatureLFCS(): void {
 		const publicKey: NodeRSA = new NodeRSA();
 
 		publicKey.importKey({

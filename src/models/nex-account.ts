@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
-import { INEXAccount, INEXAccountMethods, NEXAccountModel } from '@/types/mongoose/nex-account';
+import { HydratedNEXAccountDocument, INEXAccount, INEXAccountMethods, NEXAccountModel } from '@/types/mongoose/nex-account';
 
 const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMethods>({
 	device_type: {
@@ -38,12 +38,12 @@ NEXAccountSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 	and the next few accounts counting down seem to be admin, service and internal test accounts
 */
 NEXAccountSchema.method('generatePID', async function generatePID(): Promise<void> {
-	const min = 1000000000; // The console (WiiU) seems to not accept PIDs smaller than this
-	const max = 1799999999;
+	const min: number = 1000000000; // The console (WiiU) seems to not accept PIDs smaller than this
+	const max: number = 1799999999;
 
-	let pid = Math.floor(Math.random() * (max - min + 1) + min);
+	const pid: number = Math.floor(Math.random() * (max - min + 1) + min);
 
-	const inuse = await NEXAccount.findOne({ pid });
+	const inuse: HydratedNEXAccountDocument = await NEXAccount.findOne({ pid });
 
 	if (inuse) {
 		await this.generatePID();
@@ -53,17 +53,17 @@ NEXAccountSchema.method('generatePID', async function generatePID(): Promise<voi
 });
 
 NEXAccountSchema.method('generatePassword', function generatePassword(): void {
-	function character() {
-		const offset = Math.floor(Math.random() * 62);
+	function character(): string | number {
+		const offset: number = Math.floor(Math.random() * 62);
 		if (offset < 10) return offset;
 		if (offset < 36) return String.fromCharCode(offset + 55);
 		return String.fromCharCode(offset + 61);
 	}
 
-	const output = [];
+	const output: string[] = [];
 
 	while (output.length < 16) {
-		output.push(character());
+		output.push(String(character()));
 	}
 
 	this.set('password', output.join(''));
