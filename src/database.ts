@@ -45,10 +45,6 @@ function verifyConnected(): void {
 async function getUserByUsername(username: string): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
-	if (typeof username !== 'string') {
-		return null;
-	}
-
 	return await PNID.findOne({
 		usernameLower: username.toLowerCase()
 	}) as HydratedPNIDDocument;
