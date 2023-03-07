@@ -1,5 +1,7 @@
-export async function CemuMiddleware(request, _response, next) {
-	const subdomain = request.subdomains.reverse().join('.');
+import express from 'express';
+
+export function CemuMiddleware(request: express.Request, _response: express.Response, next: express.NextFunction): void {
+	const subdomain: string = request.subdomains.reverse().join('.');
 
 	request.isCemu = subdomain === 'c.account';
 

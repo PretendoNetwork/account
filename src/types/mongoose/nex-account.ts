@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import { Model, HydratedDocument } from 'mongoose';
 
 type DEVICE = 'wiiu' | '3ds';
 type ACCESS_LEVEL = 0 | 1 | 2 | 3;
@@ -17,4 +17,8 @@ export interface INEXAccountMethods {
 	generatePassword(): void;
 }
 
-export interface NEXAccountModel extends Model<INEXAccount, {}, INEXAccountMethods> {}
+export interface INEXAccountQueryHelpers {}
+
+export interface NEXAccountModel extends Model<INEXAccount, INEXAccountQueryHelpers, INEXAccountMethods> {}
+
+export type HydratedNEXAccountDocument = HydratedDocument<INEXAccount, INEXAccountMethods>

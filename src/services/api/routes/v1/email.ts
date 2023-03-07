@@ -1,18 +1,13 @@
-import { Router } from 'express';
+import express from 'express';
 import moment from 'moment';
 import { PNID } from '@/models/pnid';
 import util from '@/util';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router = Router();
+const router: express.Router = express.Router();
 
-router.get('/verify', async (request, response) => {
-	let token: string;
-
-	if (Array.isArray(request.query.token)) {
-		token = request.query.token[0] as string;
-	} else {
-		token = request.query.token as string;
-	}
+router.get('/verify', async (request: express.Request, response: express.Response) => {
+	let token: string = request.query.token as string;
 
 	if (!token || token.trim() == '') {
 		return response.status(400).json({
@@ -22,7 +17,7 @@ router.get('/verify', async (request, response) => {
 		});
 	}
 
-	const pnid = await PNID.findOne({
+	const pnid: HydratedPNIDDocument = await PNID.findOne({
 		'identification.email_token': token
 	});
 
@@ -34,7 +29,7 @@ router.get('/verify', async (request, response) => {
 		});
 	}
 
-	const validatedDate = moment().format('YYYY-MM-DDTHH:MM:SS');
+	const validatedDate: string = moment().format('YYYY-MM-DDTHH:MM:SS');
 
 	pnid.set('email.reachable', true);
 	pnid.set('email.validated', true);

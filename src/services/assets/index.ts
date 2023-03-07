@@ -6,14 +6,14 @@ import subdomain from 'express-subdomain';
 import logger from '@/logger';
 
 // Router to handle the subdomain restriction
-const assets = express.Router();
+const assets: express.Router = express.Router();
 
 // Setup public folder
 logger.info('[assets] Setting up public folder');
 assets.use(express.static(path.join(__dirname, '../../assets')));
 
 // Main router for endpoints
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Create subdomains
 logger.info('[conntest] Creating \'assets\' subdomain');

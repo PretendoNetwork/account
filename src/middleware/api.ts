@@ -1,15 +1,16 @@
-import xmlbuilder from 'xmlbuilder';
+import express from 'express';
 import database from '@/database';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-export async function APIMiddleware(request, _response, next) {
-	const { headers } = request;
+export async function APIMiddleware(request: express.Request, _response: express.Response, next: express.NextFunction): Promise<void> {
+	const authHeader: string = request.headers.authorization;
 
-	if (!headers.authorization || !(headers.authorization.startsWith('Bearer'))) {
+	if (!authHeader || !(authHeader.startsWith('Bearer'))) {
 		return next();
 	}
 
-	const token = headers.authorization.split(' ')[1];
-	const user = await database.getUserBearer(token);
+	const token: string = authHeader.split(' ')[1];
+	const user: HydratedPNIDDocument = await database.getUserBearer(token);
 
 	request.pnid = user;
 

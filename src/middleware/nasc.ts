@@ -1,15 +1,18 @@
 import crypto from 'node:crypto';
-import { HydratedDocument } from 'mongoose';
+import express from 'express';
+import mongoose from 'mongoose';
 import { Device } from '@/models/device';
 import { NEXAccount } from '@/models/nex-account';
 import util from '@/util';
 import database from '@/database';
 import NintendoCertificate from '@/nintendo-certificate';
 import logger from '@/logger';
-import { INEXAccount, INEXAccountMethods } from '@/types/mongoose/nex-account';
+import { NASCRequestParams } from '@/types/services/nasc/request-params';
+import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
+import { HydratedDeviceDocument } from '@/types/mongoose/device';
 
-export async function NASCMiddleware(request, response, next) {
-	const requestParams = request.body;
+export async function NASCMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
+	const requestParams: NASCRequestParams = request.body;
 
 	if (!requestParams.action ||
 		!requestParams.fcdcert ||
@@ -18,25 +21,26 @@ export async function NASCMiddleware(request, response, next) {
 		!requestParams.titleid ||
 		!requestParams.servertype
 	) {
-		return response.status(200).send(util.nascError('null')); // This is what Nintendo sends
+		response.status(200).send(util.nascError('null')); // This is what Nintendo sends
+		return;
 	}
 
-	const action = util.nintendoBase64Decode(requestParams.action).toString();
-	const fcdcert = util.nintendoBase64Decode(requestParams.fcdcert);
-	const serialNumber = util.nintendoBase64Decode(requestParams.csnum).toString();
-	const macAddress = util.nintendoBase64Decode(requestParams.macadr).toString();
-	const titleID = util.nintendoBase64Decode(requestParams.titleid).toString();
-	const environment = util.nintendoBase64Decode(requestParams.servertype).toString();
+	const action: string = util.nintendoBase64Decode(requestParams.action).toString();
+	const fcdcert: Buffer = util.nintendoBase64Decode(requestParams.fcdcert);
+	const serialNumber: string = util.nintendoBase64Decode(requestParams.csnum).toString();
+	const macAddress: string = util.nintendoBase64Decode(requestParams.macadr).toString();
+	const titleID: string = util.nintendoBase64Decode(requestParams.titleid).toString();
+	const environment: string = util.nintendoBase64Decode(requestParams.servertype).toString();
 
-	const macAddressHash = crypto.createHash('sha256').update(macAddress).digest('base64');
-	const fcdcertHash = crypto.createHash('sha256').update(fcdcert).digest('base64');
+	const macAddressHash: string = crypto.createHash('sha256').update(macAddress).digest('base64');
+	const fcdcertHash: string = crypto.createHash('sha256').update(fcdcert).digest('base64');
 
-	let pid;
-	let pidHmac;
-	let password;
+	let pid: number;
+	let pidHmac: string;
+	let password: string;
 
 	if (requestParams.userid) {
-		pid = util.nintendoBase64Decode(requestParams.userid).toString();
+		pid = Number(util.nintendoBase64Decode(requestParams.userid).toString());
 	}
 
 	if (requestParams.uidhmac) {
@@ -48,20 +52,23 @@ export async function NASCMiddleware(request, response, next) {
 	}
 
 	if (action !== 'LOGIN' && action !== 'SVCLOC') {
-		return response.status(200).send(util.nascError('null')); // This is what Nintendo sends
+		response.status(200).send(util.nascError('null')); // This is what Nintendo sends
+		return;
 	}
 
-	const cert = new NintendoCertificate(fcdcert);
+	const cert: NintendoCertificate = new NintendoCertificate(fcdcert);
 
 	if (!cert.valid) {
-		return response.status(200).send(util.nascError('121'));
+		response.status(200).send(util.nascError('121'));
+		return;
 	}
 
 	if (!validNintendoMACAddress(macAddress)) {
-		return response.status(200).send(util.nascError('null'));
+		response.status(200).send(util.nascError('null'));
+		return;
 	}
 
-	let model;
+	let model: string;
 	switch (serialNumber[0]) {
 		case 'C':
 			model = 'ctr';
@@ -84,10 +91,11 @@ export async function NASCMiddleware(request, response, next) {
 	}
 
 	if (!model) {
-		return response.status(200).send(util.nascError('null'));
+		response.status(200).send(util.nascError('null'));
+		return;
 	}
 
-	let device = await Device.findOne({
+	let device: HydratedDeviceDocument = await Device.findOne({
 		model,
 		serial: serialNumber,
 		environment,
@@ -97,14 +105,16 @@ export async function NASCMiddleware(request, response, next) {
 
 	if (device) {
 		if (device.get('access_level') < 0) {
-			return response.status(200).send(util.nascError('102'));
+			response.status(200).send(util.nascError('102'));
+			return;
 		}
 
 		if (pid) {
 			const linkedPIDs = device.get('linked_pids');
 
 			if (!linkedPIDs.includes(pid)) {
-				return response.status(200).send(util.nascError('102'));
+				response.status(200).send(util.nascError('102'));
+				return;
 			}
 		}
 	}
@@ -113,12 +123,12 @@ export async function NASCMiddleware(request, response, next) {
 		if (password && !pid && !pidHmac) {
 			// Register new user
 
-			const session = await database.connection().startSession();
+			const session: mongoose.ClientSession = await database.connection().startSession();
 			await session.startTransaction();
 
 			try {
 				// Create new NEX account
-				const nexAccount = await new NEXAccount({
+				const nexAccount: HydratedNEXAccountDocument = await new NEXAccount({
 					device_type: '3ds',
 					password
 				});
@@ -127,7 +137,7 @@ export async function NASCMiddleware(request, response, next) {
 
 				await nexAccount.save({ session });
 
-				pid = nexAccount.get('pid');
+				pid = Number(nexAccount.get('pid'));
 
 				// Set password
 
@@ -154,7 +164,8 @@ export async function NASCMiddleware(request, response, next) {
 				await session.abortTransaction();
 
 				// 3DS expects 200 even on error
-				return response.status(200).send(util.nascError('102'));
+				response.status(200).send(util.nascError('102'));
+				return;
 			} finally {
 				// * This runs regardless of failure
 				// * Returning on catch will not prevent this from running
@@ -163,10 +174,11 @@ export async function NASCMiddleware(request, response, next) {
 		}
 	}
 
-	const nexUser = await NEXAccount.findOne({ pid }) as HydratedDocument<INEXAccount, INEXAccountMethods>;
+	const nexUser: HydratedNEXAccountDocument = await NEXAccount.findOne({ pid });
 
 	if (!nexUser || nexUser.get('access_level') < 0) {
-		return response.status(200).send(util.nascError('102'));
+		response.status(200).send(util.nascError('102'));
+		return;
 	}
 
 	request.nexUser = nexUser;
@@ -176,7 +188,7 @@ export async function NASCMiddleware(request, response, next) {
 
 // https://www.adminsub.net/mac-address-finder/nintendo
 // Saves us from doing an OUI lookup each time
-const NINTENDO_VENDER_OUIS = [
+const NINTENDO_VENDER_OUIS: string[] = [
 	'ECC40D', 'E84ECE', 'E0F6B5', 'E0E751', 'E00C7F', 'DC68EB',
 	'D86BF7', 'D4F057', 'CCFB65', 'CC9E00', 'B8AE6E', 'B88AEC',
 	'B87826', 'A4C0E1', 'A45C27', 'A438CC', '9CE635', '98E8FA',
@@ -202,10 +214,10 @@ const NINTENDO_VENDER_OUIS = [
 ];
 
 // TODO: Make something better
-const MAC_REGEX = /^[0-9a-fA-F]{12}$/;
+const MAC_REGEX: RegExp = /^[0-9a-fA-F]{12}$/;
 
 // Maybe should later parse more data out
-function validNintendoMACAddress(macAddress) {
+function validNintendoMACAddress(macAddress: string): boolean {
 	if (!NINTENDO_VENDER_OUIS.includes(macAddress.substring(0, 6).toUpperCase())) {
 		return false;
 	}

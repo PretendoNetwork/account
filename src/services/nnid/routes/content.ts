@@ -1,15 +1,17 @@
-import { Router } from 'express';
+import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import timezones from '@/services/nnid/timezones.json';
+import { RegionLanguages } from '@/types/services/nnid/region-languages';
+import { RegionTimezones } from '@/types/services/nnid/region-timezones';
 
-const router = Router();
+const router: express.Router = express.Router();
 
 /**
  * [GET]
  * Replacement for: https://account.nintendo.net/v1/api/content/agreements/TYPE/REGION/VERSION
  * Description: Sends the client requested agreement
  */
-router.get('/agreements/:type/:region/:version', (request, response) => {
+router.get('/agreements/:type/:region/:version', (request: express.Request, response: express.Response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
@@ -126,7 +128,7 @@ router.get('/agreements/:type/:region/:version', (request, response) => {
  * Replacement for: https://account.nintendo.net/v1/api/content/time_zones/COUNTRY/LANGUAGE
  * Description: Sends the client the requested timezones
  */
-router.get('/time_zones/:countryCode/:language', (request, response) => {
+router.get('/time_zones/:countryCode/:language', (request: express.Request, response: express.Response) => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
@@ -149,10 +151,11 @@ router.get('/time_zones/:countryCode/:language', (request, response) => {
 	});
 	*/
 
-	const { countryCode, language } = request.params;
+	const countryCode: string = request.params.countryCode;
+	const language: string = request.params.language;
 
-	const regionLanguages = timezones[countryCode];
-	const regionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
+	const regionLanguages: RegionLanguages = timezones[countryCode];
+	const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
 
 	response.send(xmlbuilder.create({
 		timezones: {

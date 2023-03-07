@@ -1,8 +1,8 @@
-import { Model } from 'mongoose';
+import { Model, HydratedDocument } from 'mongoose';
 
 export interface IServer {
 	ip: string; // Example: 1.1.1.1
-	port: Number; // Example: 60000
+	port: number; // Example: 60000
 	service_name: string; // Example: friends
 	service_type: string; // Example: nex
 	game_server_id: string; // Example: 00003200
@@ -14,4 +14,8 @@ export interface IServer {
 
 export interface IServerMethods {}
 
-export interface ServerModel extends Model<IServer, {}, IServerMethods> {}
+export interface IServerQueryHelpers {}
+
+export interface ServerModel extends Model<IServer, IServerQueryHelpers, IServerMethods> {}
+
+export type HydratedServerDocument = HydratedDocument<IServer, IServerMethods>

@@ -2,18 +2,23 @@ import express from 'express';
 import util from '@/util';
 import database from '@/database';
 import cache from '@/cache';
+import { CryptoOptions } from '@/types/common/crypto-options';
+import { TokenOptions } from '@/types/common/token-options';
+import { NASCRequestParams } from '@/types/services/nasc/request-params';
+import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
+import { HydratedServerDocument } from '@/types/mongoose/server';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 /**
  * [POST]
  * Replacement for: https://nasc.nintendowifi.net/ac
  * Description: Gets a NEX server address and token
  */
-router.post('/', async (request, response) => {
-	const requestParams = request.body;
-	const action = util.nintendoBase64Decode(requestParams.action).toString();
-	let responseData;
+router.post('/', async (request: express.Request, response: express.Response) => {
+	const requestParams: NASCRequestParams = request.body;
+	const action: string = util.nintendoBase64Decode(requestParams.action).toString();
+	let responseData: URLSearchParams;
 
 	switch (action) {
 		case 'LOGIN':
@@ -27,36 +32,38 @@ router.post('/', async (request, response) => {
 	response.status(200).send(responseData.toString());
 });
 
-async function processLoginRequest(request: express.Request) {
-	const requestParams = request.body;
-	const titleID = util.nintendoBase64Decode(requestParams.titleid).toString();
-	const { nexUser } = request;
+async function processLoginRequest(request: express.Request): Promise<URLSearchParams> {
+	const requestParams: NASCRequestParams = request.body;
+	const titleID: string = util.nintendoBase64Decode(requestParams.titleid).toString();
+	const nexUser: HydratedNEXAccountDocument = request.nexUser;
 
 	// TODO: REMOVE AFTER PUBLIC LAUNCH
 	// LET EVERYONE IN THE `test` FRIENDS SERVER
 	// THAT WAY EVERYONE CAN GET AN ASSIGNED PID
-	let serverAccessLevel = 'test';
+	let serverAccessLevel: string = 'test';
 	if (titleID !== '0004013000003202') {
 		serverAccessLevel = nexUser.get('server_access_level');
 	}
 
-	const server = await database.getServerByTitleId(titleID, serverAccessLevel);
+	const server: HydratedServerDocument = await database.getServerByTitleId(titleID, serverAccessLevel);
 
 	if (!server || !server.service_name || !server.ip || !server.port) {
 		return util.nascError('110');
 	}
 
-	const { service_name, ip, port } = server;
+	const serverName: string = server.service_name;
+	const ip: string = server.ip;
+	const port: number = server.port;
 
-	const publicKey = await cache.getNEXPublicKey(service_name);
-	const secretKey = await cache.getNEXSecretKey(service_name);
+	const publicKey: Buffer = await cache.getNEXPublicKey(serverName);
+	const secretKey: Buffer = await cache.getNEXSecretKey(serverName);
 
-	const cryptoOptions = {
+	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
 		hmac_secret: secretKey
 	};
 
-	const tokenOptions = {
+	const tokenOptions: TokenOptions = {
 		system_type: 0x2, // 3DS
 		token_type: 0x3, // nex token,
 		pid: nexUser.get('pid'),
@@ -65,22 +72,20 @@ async function processLoginRequest(request: express.Request) {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let nexToken = await util.generateToken(cryptoOptions, tokenOptions);
+	let nexToken: string = await util.generateToken(cryptoOptions, tokenOptions);
 	nexToken = util.nintendoBase64Encode(Buffer.from(nexToken, 'base64'));
 
-	const params = new URLSearchParams({
+	return new URLSearchParams({
 		locator: util.nintendoBase64Encode(`${ip}:${port}`),
 		retry: util.nintendoBase64Encode('0'),
 		returncd: util.nintendoBase64Encode('001'),
 		token: nexToken,
 		datetime: util.nintendoBase64Encode(Date.now().toString()),
 	});
-
-	return params;
 }
 
-async function processServiceTokenRequest(request: express.Request) {
-	const params = new URLSearchParams({
+async function processServiceTokenRequest(_request: express.Request): Promise<URLSearchParams> {
+	return new URLSearchParams({
 		retry: util.nintendoBase64Encode('0'),
 		returncd: util.nintendoBase64Encode('007'),
 		servicetoken: util.nintendoBase64Encode(Buffer.alloc(64).toString()), // hard coded for now
@@ -88,8 +93,6 @@ async function processServiceTokenRequest(request: express.Request) {
 		svchost: util.nintendoBase64Encode('n/a'),
 		datetime: util.nintendoBase64Encode(Date.now().toString()),
 	});
-
-	return params;
 }
 
 export default router;

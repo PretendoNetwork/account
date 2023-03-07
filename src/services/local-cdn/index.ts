@@ -4,13 +4,13 @@ import routes from '@/services/local-cdn/routes';
 import { config, disabledFeatures } from '@/config-manager';
 import logger from '@/logger';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 if (disabledFeatures.s3) {
 	// * s3 disabled, setup local CDN
 
 	// * Router to handle the subdomain
-	const localcdn = express.Router();
+	const localcdn: express.Router = express.Router();
 
 	// * Setup routes
 	logger.info('[LOCAL-CDN] Applying imported routes');

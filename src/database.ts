@@ -6,87 +6,94 @@ import { PNID } from '@/models/pnid';
 import { Server } from '@/models/server';
 import logger from '@/logger';
 import { config } from '@/config-manager';
-import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { HydratedDeviceDocument } from '@/types/mongoose/device';
+import { HydratedServerDocument } from '@/types/mongoose/server';
+import { Token } from '@/types/common/token';
+import { PNIDProfile } from '@/types/services/nnid/pnid-profile';
+import { ConnectionData } from '@/types/services/api/connection-data';
+import { ConnectionResponse } from '@/types/services/api/connection-response';
+import { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
 
-const { connection_string, options } = config.mongoose;
+const connection_string: string = config.mongoose.connection_string;
+const options: mongoose.ConnectOptions = config.mongoose.options;
 
 // TODO: Extend this later with more settings
-const discordConnectionSchema = joi.object({
+const discordConnectionSchema: joi.ObjectSchema = joi.object({
 	id: joi.string()
 });
 
-let _connection;
+let _connection: mongoose.Connection;
 
-export async function connect() {
+export async function connect(): Promise<void> {
 	await mongoose.connect(connection_string, options);
 
 	_connection = mongoose.connection;
 	_connection.on('error', console.error.bind(console, 'connection error:'));
 }
 
-export function connection() {
+export function connection(): mongoose.Connection {
 	return _connection;
 }
 
-function verifyConnected() {
+function verifyConnected(): void {
 	if (!connection()) {
 		throw new Error('Cannot make database requets without being connected');
 	}
 }
 
-export async function getUserByUsername(username) {
+export async function getUserByUsername(username: string): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
 	if (typeof username !== 'string') {
 		return null;
 	}
 
-	const user = await PNID.findOne({
+	return await PNID.findOne({
 		usernameLower: username.toLowerCase()
-	}) as mongoose.HydratedDocument<IPNID, IPNIDMethods>;
-
-	return user;
+	}) as HydratedPNIDDocument;
 }
 
-export async function getUserByPID(pid) {
+export async function getUserByPID(pid: number): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
-	const user = await PNID.findOne({
+	return await PNID.findOne({
 		pid
-	}) as mongoose.HydratedDocument<IPNID, IPNIDMethods>;
-
-	return user;
+	}) as HydratedPNIDDocument;
 }
 
-export async function getUserByEmailAddress(email) {
+export async function getUserByEmailAddress(email: string): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
-	const user = await PNID.findOne({
+	return await PNID.findOne({
 		'email.address': new RegExp(email, 'i') // * Ignore case
-	}) as mongoose.HydratedDocument<IPNID, IPNIDMethods>;
-
-	return user;
+	}) as HydratedPNIDDocument;
 }
 
-export async function doesUserExist(username) {
+export async function doesUserExist(username: string): Promise<boolean> {
 	verifyConnected();
 
 	return !!await getUserByUsername(username);
 }
 
-export async function getUserBasic(token) {
+export async function getUserBasic(token: string): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
 	// * Wii U sends Basic auth as `username password`, where the password may not have spaces
 	// * This is not to spec, but that is the consoles fault not ours
-	const [username, password] = Buffer.from(token, 'base64').toString().split(' ');
-	const user = await getUserByUsername(username);
+	const decoded: string = Buffer.from(token, 'base64').toString();
+	const parts: string[] = decoded.split(' ');
+
+	const username: string = parts[0];
+	const password: string = parts[1];
+
+	const user: HydratedPNIDDocument = await getUserByUsername(username);
 
 	if (!user) {
 		return null;
 	}
 
-	const hashedPassword = util.nintendoPasswordHash(password, user.pid);
+	const hashedPassword: string = util.nintendoPasswordHash(password, user.pid);
 
 	if (!bcrypt.compareSync(hashedPassword, user.password)) {
 		return null;
@@ -95,17 +102,17 @@ export async function getUserBasic(token) {
 	return user;
 }
 
-export async function getUserBearer(token) {
+export async function getUserBearer(token: string): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
 	try {
-		const decryptedToken = await util.decryptToken(Buffer.from(token, 'base64'));
-		const unpackedToken = util.unpackToken(decryptedToken);
+		const decryptedToken: Buffer = await util.decryptToken(Buffer.from(token, 'base64'));
+		const unpackedToken: Token = util.unpackToken(decryptedToken);
 
-		const user = await getUserByPID(unpackedToken.pid);
+		const user: HydratedPNIDDocument = await getUserByPID(unpackedToken.pid);
 
 		if (user) {
-			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
+			const expireTime: number = Math.floor((Number(unpackedToken.expire_time) / 1000));
 
 			if (Math.floor(Date.now() / 1000) > expireTime) {
 				return null;
@@ -113,40 +120,38 @@ export async function getUserBearer(token) {
 		}
 
 		return user;
-	} catch (error) {
+	} catch (error: any) {
 		// TODO: Handle error
 		logger.error(error);
 		return null;
 	}
 }
 
-export async function getUserProfileJSONByPID(pid) {
+export async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile> {
 	verifyConnected();
 
-	const user = await getUserByPID(pid);
-	const device = user.get('devices')[0]; // * Just grab the first device
-	let device_attributes;
+	const user: HydratedPNIDDocument = await getUserByPID(pid);
+	const device: HydratedDeviceDocument = user.get('devices')[0]; // * Just grab the first device
+	let device_attributes: [{
+		device_attribute: {
+			name: string;
+			value: string;
+			created_date: string;
+		};
+	}];
 
 	if (device) {
-		device_attributes = device.get('device_attributes').map(({name, value, created_date}) => {
-			const deviceAttributeDocument = {
+		device_attributes = device.get('device_attributes').map(({name, value, created_date}) => ({
+			device_attribute: {
 				name,
 				value,
-				created_date: ''
-			};
-
-			if (created_date) {
-				deviceAttributeDocument.created_date = created_date;
+				created_date: created_date ? created_date : ''
 			}
-
-			return {
-				device_attribute: deviceAttributeDocument
-			};
-		});
+		}));
 	}
 
-	const userObject = {
-		//accounts: {}, We need to figure this out, no idea what these values mean or what they do
+	return <PNIDProfile>{
+		//accounts: {}, // * We need to figure this out, no idea what these values mean or what they do
 		active_flag: user.get('flags.active') ? 'Y' : 'N',
 		birth_date: user.get('birthdate'),
 		country: user.get('country'),
@@ -167,7 +172,7 @@ export async function getUserProfileJSONByPID(pid) {
 			type: 'DEFAULT',
 			updated_by: 'USER', // * Can also be INTERNAL WS, don't know the difference
 			validated: user.get('email.validated') ? 'Y' : 'N',
-			validated_date: ''
+			validated_date: user.get('email.validated') ? user.get('email.validated_date') : ''
 		},
 		mii: {
 			status: 'COMPLETED',
@@ -192,39 +197,33 @@ export async function getUserProfileJSONByPID(pid) {
 		user_id: user.get('username'),
 		utc_offset: user.get('timezone.offset')
 	};
-
-	if (user.get('email.validated')) {
-		userObject.email.validated_date = user.get('email.validated_date');
-	}
-
-	return userObject;
 }
 
-function getServer(gameServerId, accessMode) {
-	return Server.findOne({
+export async function getServer(gameServerId: string, accessMode: string): Promise<HydratedServerDocument> {
+	return await Server.findOne({
 		game_server_id: gameServerId,
-		access_mode: accessMode,
+		access_mode: accessMode
 	});
 }
 
-function getServerByTitleId(titleId, accessMode) {
-	return Server.findOne({
+export async function getServerByTitleId(titleId: string, accessMode: string): Promise<HydratedServerDocument> {
+	return await Server.findOne({
 		title_ids: titleId,
-		access_mode: accessMode,
+		access_mode: accessMode
 	});
 }
 
-export async function addUserConnection(pnid, data, type) {
+export async function addUserConnection(pnid: HydratedPNIDDocument, data: ConnectionData, type: string): Promise<ConnectionResponse> {
 	if (type === 'discord') {
 		return await addUserConnectionDiscord(pnid, data);
 	}
 }
 
-export async function addUserConnectionDiscord(pnid, data) {
-	const valid = discordConnectionSchema.validate(data);
+export async function addUserConnectionDiscord(pnid: HydratedPNIDDocument, data: DiscordConnectionData): Promise<ConnectionResponse> {
+	const valid: joi.ValidationResult = discordConnectionSchema.validate(data);
 
 	if (valid.error) {
-		return {
+		return <ConnectionResponse>{
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing connection data'
@@ -237,27 +236,27 @@ export async function addUserConnectionDiscord(pnid, data) {
 		}
 	});
 
-	return {
+	return <ConnectionResponse>{
 		app: 'api',
 		status: 200
 	};
 }
 
-export async function removeUserConnection(pnid, type) {
+export async function removeUserConnection(pnid: HydratedPNIDDocument, type: string): Promise<ConnectionResponse> {
 	// * Add more connections later?
 	if (type === 'discord') {
 		return await removeUserConnectionDiscord(pnid);
 	}
 }
 
-export async function removeUserConnectionDiscord(pnid) {
+export async function removeUserConnectionDiscord(pnid: HydratedPNIDDocument): Promise<ConnectionResponse> {
 	await PNID.updateOne({ pid: pnid.get('pid') }, {
 		$set: {
 			'connections.discord.id': ''
 		}
 	});
 
-	return {
+	return <ConnectionResponse>{
 		app: 'api',
 		status: 200
 	};

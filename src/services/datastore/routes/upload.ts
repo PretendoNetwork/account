@@ -1,30 +1,35 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
-import { Router } from 'express';
+import express from 'express';
 import Dicer from 'dicer';
 import util from '@/util';
 
-const router = Router();
+const router: express.Router = express.Router();
 
-const signatureSecret = fs.readFileSync(`${__dirname}/../../../../certs/nex/datastore/secret.key`);
+const signatureSecret: Buffer = fs.readFileSync(`${__dirname}/../../../../certs/nex/datastore/secret.key`);
 
-function multipartParser(request, response, next) {
-	const RE_BOUNDARY = /^multipart\/.+?(?:; boundary=(?:(?:"(.+)")|(?:([^\s]+))))$/i;
-	const RE_FILE_NAME = /name="(.*)"/;
-	const boundary = RE_BOUNDARY.exec(request.header('content-type'));
-	const dicer = new Dicer({ boundary: boundary[1] || boundary[2] });
-	const files = {};
+function multipartParser(request: express.Request, response: express.Response, next: express.NextFunction) {
+	const RE_BOUNDARY: RegExp = /^multipart\/.+?(?:; boundary=(?:(?:"(.+)")|(?:([^\s]+))))$/i;
+	const RE_FILE_NAME: RegExp = /name="(.*)"/;
 
-	dicer.on('part', part => {
-		let fileBuffer = Buffer.alloc(0);
-		let fileName = '';
+	const boundary: RegExpExecArray = RE_BOUNDARY.exec(request.header('content-type'));
+	const dicer: Dicer = new Dicer({ boundary: boundary[1] || boundary[2] });
+	const files: { [key: string]: Buffer } = {};
+
+	dicer.on('part', (part: Dicer.PartStream) => {
+		let fileBuffer: Buffer = Buffer.alloc(0);
+		let fileName: string = '';
 
 		part.on('header', header => {
 			fileName = RE_FILE_NAME.exec(header['content-disposition'][0])[1];
 		});
 
-		part.on('data', data => {
-			fileBuffer = Buffer.concat([fileBuffer, data]);
+		part.on('data', (data: Buffer | string) => {
+			if (data instanceof String) {
+				data = Buffer.from(data);
+			}
+
+			fileBuffer = Buffer.concat([fileBuffer, data as Buffer]);
 		});
 
 		part.on('end', () => {
@@ -40,36 +45,34 @@ function multipartParser(request, response, next) {
 	request.pipe(dicer);
 }
 
-router.post('/upload', multipartParser, async (request, response) => {
-	const {
-		bucket,    // Space name
-		key,       // path
-		file,      // the file content
-		acl,       // S3 ACL
-		pid,       // uploading user PID
-		date,      // upload time
-		signature, // data signature
-	} = request.files;
+router.post('/upload', multipartParser, async (request: express.Request, response: express.Response) => {
+	const bucket: string = request.files.bucket.toString();
+	const key: string = request.files.key.toString();
+	const file: Buffer = request.files.file;
+	const acl: string = request.files.acl.toString();
+	const pid: string = request.files.pid.toString();
+	const date: string = request.files.date.toString();
+	const signature: string = request.files.signature.toString();
 
 	// Signatures only good for 1 minute
-	const minute = 1000 * 60;
-	const minuteAgo = Date.now() - minute;
+	const minute: number = 1000 * 60;
+	const minuteAgo: number = Date.now() - minute;
 
 	if (Number(date) < Math.floor(minuteAgo / 1000)) {
 		return response.sendStatus(400);
 	}
 
-	const data = pid.toString() + bucket.toString() + key.toString() + date.toString();
+	const data: string = `${pid}${bucket}${key}${date}`;
 
-	const hmac = crypto.createHmac('sha256', signatureSecret).update(data).digest('hex');
+	const hmac: string = crypto.createHmac('sha256', signatureSecret).update(data).digest('hex');
 
-	console.log(hmac, signature.toString());
+	console.log(hmac, signature);
 
-	if (hmac !== signature.toString()) {
+	if (hmac !== signature) {
 		return response.sendStatus(400);
 	}
 
-	await util.uploadCDNAsset(bucket.toString(), key.toString(), file, acl.toString());
+	await util.uploadCDNAsset(bucket, key, file, acl);
 	response.sendStatus(200);
 });
 

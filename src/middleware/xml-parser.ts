@@ -1,27 +1,29 @@
+import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { document as xmlParser } from 'xmlbuilder2';
 
-export function XMLMiddleware(request, response, next) {
+export function XMLMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	if (request.method == 'POST' || request.method == 'PUT') {
-		const headers = request.headers;
-		let body = '';
+		const contentType: string = request.headers['content-type'];
+		const contentLength: string = request.headers['content-length'];
+		let body: string = '';
 
 		if (
-			!headers['content-type'] ||
-			!headers['content-type'].toLowerCase().includes('xml')
+			!contentType ||
+			!contentType.toLowerCase().includes('xml')
 		) {
 			return next();
 		}
 
 		if (
-			!headers['content-length'] ||
-			parseInt(headers['content-length']) === 0
+			!contentLength ||
+			parseInt(contentLength) === 0
 		) {
 			return next();
 		}
 
 		request.setEncoding('utf-8');
-		request.on('data', (chunk) => {
+		request.on('data', (chunk: string) => {
 			body += chunk;
 		});
 

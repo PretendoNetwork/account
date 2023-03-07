@@ -1,8 +1,8 @@
 process.title = 'Pretendo - Account';
-
-const configManager = require('@config-manager');
-
-configManager.configure();
+process.on('uncaughtException', (err, origin) => {
+	console.log(err);
+	console.log(origin);
+});
 
 import express from 'express';
 import morgan from 'morgan';
@@ -20,7 +20,7 @@ import api from '@/services/api';
 import localcdn from '@/services/local-cdn';
 import assets from '@/services/assets';
 
-const { config } = configManager;
+import { config } from '@/config-manager';
 
 const { http: { port } } = config;
 const app = express();
@@ -47,9 +47,9 @@ app.use(assets);
 
 // 404 handler
 logger.info('Creating 404 status handler');
-app.use((request, response) => {
-	const fullUrl = util.fullUrl(request);
-	const deviceId = request.headers['X-Nintendo-Device-ID'] || 'Unknown';
+app.use((request: express.Request, response: express.Response) => {
+	const fullUrl: string = util.fullUrl(request);
+	const deviceId: string = request.headers['X-Nintendo-Device-ID'] as string || 'Unknown';
 
 	logger.warn(`HTTP 404 at ${fullUrl} from ${deviceId}`);
 
@@ -63,10 +63,10 @@ app.use((request, response) => {
 
 // non-404 error handler
 logger.info('Creating non-404 status handler');
-app.use((error, request, response, _next) => {
-	const status = error.status || 500;
-	const fullUrl = util.fullUrl(request);
-	const deviceId = request.headers['X-Nintendo-Device-ID'] || 'Unknown';
+app.use((error: any, request: express.Request, response: express.Response, _next: express.NextFunction) => {
+	const status: number = error.status || 500;
+	const fullUrl: string = util.fullUrl(request);
+	const deviceId: string = request.headers['X-Nintendo-Device-ID'] as string || 'Unknown';
 
 	logger.warn(`HTTP ${status} at ${fullUrl} from ${deviceId}: ${error.message}`);
 
@@ -78,7 +78,7 @@ app.use((error, request, response, _next) => {
 	});
 });
 
-async function main() {
+async function main(): Promise<void> {
 	// Starts the server
 	logger.info('Starting server');
 

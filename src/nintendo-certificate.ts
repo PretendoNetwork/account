@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import NodeRSA from 'node-rsa';
+import { SignatureSize } from '@/types/common/signature-size';
 
 const WIIU_DEVICE_PUB_PEM = `-----BEGIN PUBLIC KEY-----
 MFIwEAYHKoZIzj0CAQYFK4EEABsDPgAEAP1WBBgs8XUJIQDDCK5IOZEbb5+h1TqV
@@ -40,29 +41,31 @@ const CTR_LFCS_B_PUB = Buffer.from([
 	0xAF, 0x07, 0xEB, 0x9C, 0xBF, 0xA9, 0xC9
 ]);
 
+
+
 // Signature options
-const SIGNATURE_SIZES = {
-	RSA_4096_SHA1: {
+const SIGNATURE_SIZES: { [key: string]: SignatureSize } = {
+	RSA_4096_SHA1: <SignatureSize>{
 		SIZE: 0x200,
 		PADDING_SIZE: 0x3C
 	},
-	RSA_2048_SHA1: {
+	RSA_2048_SHA1: <SignatureSize>{
 		SIZE: 0x100,
 		PADDING_SIZE: 0x3C
 	},
-	ELLIPTIC_CURVE_SHA1: {
+	ELLIPTIC_CURVE_SHA1: <SignatureSize>{
 		SIZE: 0x3C,
 		PADDING_SIZE: 0x40
 	},
-	RSA_4096_SHA256: {
+	RSA_4096_SHA256: <SignatureSize>{
 		SIZE: 0x200,
 		PADDING_SIZE: 0x3C
 	},
-	RSA_2048_SHA256: {
+	RSA_2048_SHA256: <SignatureSize>{
 		SIZE: 0x100,
 		PADDING_SIZE: 0x3C
 	},
-	ECDSA_SHA256: {
+	ECDSA_SHA256: <SignatureSize>{
 		SIZE: 0x3C,
 		PADDING_SIZE: 0x40
 	}
@@ -81,7 +84,7 @@ export class NintendoCertificate {
 	valid: boolean;
 	publicKeyData: Buffer;
 
-	constructor(certificate) {
+	constructor(certificate: string | Buffer) {
 		this._certificate = null;
 		this._certificateBody = null;
 		this.signatureType = null;
@@ -116,7 +119,7 @@ export class NintendoCertificate {
 			// Assume regular certificate
 			this.signatureType = this._certificate.readUInt32BE(0x00);
 
-			const signatureTypeSizes = this._signatureTypeSizes(this.signatureType);
+			const signatureTypeSizes: SignatureSize = this._signatureTypeSizes(this.signatureType);
 
 			this._certificateBody = this._certificate.subarray(0x4 + signatureTypeSizes.SIZE + signatureTypeSizes.PADDING_SIZE);
 
@@ -129,7 +132,7 @@ export class NintendoCertificate {
 		}
 	}
 
-	_signatureTypeSizes(signatureType) {
+	_signatureTypeSizes(signatureType: number): SignatureSize {
 		switch (signatureType) {
 			case 0x10000:
 				return SIGNATURE_SIZES.RSA_4096_SHA1;
@@ -168,7 +171,7 @@ export class NintendoCertificate {
 	}
 
 	_verifySignatureRSA4096() {
-		const publicKey = new NodeRSA();
+		const publicKey: NodeRSA = new NodeRSA();
 
 		publicKey.importKey({
 			n: this.publicKeyData.subarray(0x0, 0x200),
@@ -179,7 +182,7 @@ export class NintendoCertificate {
 	}
 
 	_verifySignatureRSA2048() {
-		const publicKey = new NodeRSA();
+		const publicKey: NodeRSA = new NodeRSA();
 
 		publicKey.importKey({
 			n: this.publicKeyData.subarray(0x0, 0x100),
@@ -194,8 +197,8 @@ export class NintendoCertificate {
 	// from bytes to PEM!
 	// https://github.com/Myriachan
 	_verifySignatureECDSA() {
-		const pem = this.issuer == 'Root-CA00000003-MS00000012' ? WIIU_DEVICE_PUB_PEM : CTR_DEVICE_PUB_PEM;
-		const key = {
+		const pem: string = this.issuer == 'Root-CA00000003-MS00000012' ? WIIU_DEVICE_PUB_PEM : CTR_DEVICE_PUB_PEM;
+		const key: crypto.VerifyPublicKeyInput = {
 			key: pem,
 			dsaEncoding: 'ieee-p1363' as crypto.DSAEncoding
 		};
@@ -204,7 +207,7 @@ export class NintendoCertificate {
 	}
 
 	_verifySignatureLFCS() {
-		const publicKey = new NodeRSA();
+		const publicKey: NodeRSA = new NodeRSA();
 
 		publicKey.importKey({
 			n: CTR_LFCS_B_PUB,

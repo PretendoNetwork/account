@@ -1,5 +1,5 @@
-import { Model } from 'mongoose';
-import { DeviceSchema } from '@/models/device';
+import { Model, Types, HydratedDocument } from 'mongoose';
+import { IDevice } from '@/types/mongoose/device';
 
 export interface IPNID {
 	access_level: number;
@@ -44,14 +44,14 @@ export interface IPNID {
 		marketing: boolean;
 		off_device: boolean;
 	};
-	devices: typeof DeviceSchema[];
+	devices: Types.DocumentArray<IDevice>;
 	identification: { // user identification tokens
 		email_code: string;
 		email_token: string;
 		access_token: {
 			value: string;
 			ttl: number;
-		},
+		};
 		refresh_token: {
 			value: string;
 			ttl: number;
@@ -73,4 +73,8 @@ export interface IPNIDMethods {
 	getServerMode(): string;
 }
 
-export interface PNIDModel extends Model<IPNID, {}, IPNIDMethods> {}
+export interface IPNIDQueryHelpers {}
+
+export interface PNIDModel extends Model<IPNID, IPNIDQueryHelpers, IPNIDMethods> {}
+
+export type HydratedPNIDDocument = HydratedDocument<IPNID, IPNIDMethods>

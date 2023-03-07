@@ -1,6 +1,7 @@
+import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 
-const VALID_CLIENT_ID_SECRET_PAIRS = {
+const VALID_CLIENT_ID_SECRET_PAIRS: { [key: string]: string } = {
 	// * 'Key' is the client ID, 'Value' is the client secret
 	'a2efa818a34fa16b8afbc8a74eba3eda': 'c91cdb5658bd4954ade78533a339cf9a', // * Possibly WiiU exclusive?
 	'daf6227853bcbdce3d75baee8332b': '3eff548eac636e2bf45bb7b375e7b6b0', // * Possibly 3DS exclusive?
@@ -8,20 +9,21 @@ const VALID_CLIENT_ID_SECRET_PAIRS = {
 };
 
 
-export function nintendoClientHeaderCheck(request, response, next) {
+export function nintendoClientHeaderCheck(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', new Date().getTime());
+	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	const {headers} = request;
+	const clientId: string = request.headers['x-nintendo-client-id'] as string;
+	const clientSecret: string = request.headers['x-nintendo-client-secret'] as string;
 
 	if (
-		!headers['x-nintendo-client-id'] ||
-		!headers['x-nintendo-client-secret'] ||
-		!VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']] ||
-		headers['x-nintendo-client-secret'] !== VALID_CLIENT_ID_SECRET_PAIRS[headers['x-nintendo-client-id']]
+		!clientId ||
+		!clientSecret ||
+		!VALID_CLIENT_ID_SECRET_PAIRS[clientId] ||
+		clientSecret !== VALID_CLIENT_ID_SECRET_PAIRS[clientId]
 	) {
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'client_id',
@@ -30,6 +32,8 @@ export function nintendoClientHeaderCheck(request, response, next) {
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	return next();

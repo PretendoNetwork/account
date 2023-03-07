@@ -1,13 +1,12 @@
-import { HydratedDocument } from 'mongoose';
 import NintendoCertificate from '@/nintendo-certificate';
-import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
-import { INEXAccount, INEXAccountMethods } from '@/types/mongoose/nex-account';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 
 declare global {
 	namespace Express {
 		interface Request {
-			pnid?: HydratedDocument<IPNID, IPNIDMethods>;
-			nexUser?: HydratedDocument<INEXAccount, INEXAccountMethods>;
+			pnid?: HydratedPNIDDocument;
+			nexUser?: HydratedNEXAccountDocument;
 			isCemu?: boolean;
 			files?: Record<string, any>;
 			certificate?: NintendoCertificate;

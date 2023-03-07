@@ -5,11 +5,11 @@ import subdomain from 'express-subdomain';
 import logger from '@/logger';
 
 // Router to handle the subdomain restriction
-const conntest = express.Router();
+const conntest: express.Router = express.Router();
 
 // Setup route
 logger.info('[conntest] Applying imported routes');
-conntest.get('/', async (request, response) => {
+conntest.get('/', async (request: express.Request, response: express.Response) => {
 	response.set('Content-Type', 'text/html');
 	response.set('X-Organization', 'Nintendo');
 
@@ -27,7 +27,7 @@ This is test.html page
 });
 
 // Main router for endpoints
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Create subdomains
 logger.info('[conntest] Creating \'conntest\' subdomain');

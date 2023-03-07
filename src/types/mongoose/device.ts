@@ -1,5 +1,5 @@
-import { Model } from 'mongoose';
-import { DeviceAttributeSchema } from '@/models/device';
+import { Model, Types, HydratedDocument } from 'mongoose';
+import { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 
 type MODEL = 'wup' | 'ctr' | 'spr' | 'ftr' | 'ktr' | 'red' | 'jan';
 type ACCESS_LEVEL = 0 | 1 | 2 | 3;
@@ -11,11 +11,11 @@ export interface IDevice {
 	device_id: number;
 	device_type: number;
 	serial: string;
-	device_attributes: typeof DeviceAttributeSchema[];
+	device_attributes: Types.DocumentArray<IDeviceAttribute>;
 	soap: {
 		token: string;
 		account_id: number;
-	},
+	};
 	// * 3DS-specific stuff
 	environment: string;
 	mac_hash: string;
@@ -27,4 +27,8 @@ export interface IDevice {
 
 export interface IDeviceMethods {}
 
-export interface DeviceModel extends Model<IDevice, {}, IDeviceMethods> {}
+export interface IDeviceQueryHelpers {}
+
+export interface DeviceModel extends Model<IDevice, IDeviceQueryHelpers, IDeviceMethods> {}
+
+export type HydratedDeviceDocument = HydratedDocument<IDevice, IDeviceMethods>

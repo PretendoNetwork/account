@@ -7,7 +7,7 @@ import routes from '@/services/nasc/routes';
 import logger from '@/logger';
 
 // Router to handle the subdomain restriction
-const nasc = express.Router();
+const nasc: express.Router = express.Router();
 
 logger.info('[NASC] Importing middleware');
 nasc.use(NASCMiddleware);
@@ -17,7 +17,7 @@ logger.info('[NASC] Applying imported routes');
 nasc.use('/ac', routes.AC);
 
 // Main router for endpoints
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Create subdomains
 logger.info('[NASC] Creating \'nasc\' subdomain');

@@ -1,12 +1,13 @@
 
 import crypto from 'node:crypto';
-import { Router } from 'express';
+import express from 'express';
 import emailvalidator from 'email-validator';
 import bcrypt from 'bcrypt';
 import fs from 'fs-extra';
 import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
+import mongoose from 'mongoose';
 import database from '@/database';
 import cache from '@/cache';
 import util from '@/util';
@@ -14,36 +15,38 @@ import logger from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
+import { CryptoOptions } from '@/types/common/crypto-options';
+import { TokenOptions } from '@/types/common/token-options';
+import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router = Router();
+const router: express.Router = express.Router();
 
-const PNID_VALID_CHARACTERS_REGEX = /^[\w\-\.]*$/gm;
-const PNID_PUNCTUATION_START_REGEX = /^[\_\-\.]/gm;
-const PNID_PUNCTUATION_END_REGEX = /[\_\-\.]$/gm;
-const PNID_PUNCTUATION_DUPLICATE_REGEX = /[\_\-\.]{2,}/gm;
+const PNID_VALID_CHARACTERS_REGEX: RegExp = /^[\w\-\.]*$/gm;
+const PNID_PUNCTUATION_START_REGEX: RegExp = /^[\_\-\.]/gm;
+const PNID_PUNCTUATION_END_REGEX: RegExp = /[\_\-\.]$/gm;
+const PNID_PUNCTUATION_DUPLICATE_REGEX: RegExp = /[\_\-\.]{2,}/gm;
 
 // This sucks
-const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
-const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[\_\-\.]).*/;
-const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[\_\-\.]).*/;
-const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
+const PASSWORD_WORD_OR_NUMBER_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*\d).*/;
+const PASSWORD_WORD_OR_PUNCTUATION_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*[\_\-\.]).*/;
+const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX: RegExp = /(?=.*\d)(?=.*[\_\-\.]).*/;
+const PASSWORD_REPEATED_CHARACTER_REGEX: RegExp = /(.)\1\1/;
 
-const DEFAULT_MII_DATA = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9', 'base64');
+const DEFAULT_MII_DATA: Buffer = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9', 'base64');
 
 /**
  * [POST]
  * Implementation of: https://api.pretendo.cc/v1/register
  * Description: Creates a new user PNID
  */
-router.post('/', async (request, response) => {
-	const { body } = request;
-
-	const email = body.email?.trim();
-	const username = body.username?.trim();
-	const miiName = body.mii_name?.trim();
-	const password = body.password?.trim();
-	const passwordConfirm = body.password_confirm?.trim();
-	const hCaptchaResponse = body.hCaptchaResponse?.trim();
+router.post('/', async (request: express.Request, response: express.Response) => {
+	const email: string = request.body.email?.trim();
+	const username: string = request.body.username?.trim();
+	const miiName: string = request.body.mii_name?.trim();
+	const password: string = request.body.password?.trim();
+	const passwordConfirm: string = request.body.password_confirm?.trim();
+	const hCaptchaResponse: string = request.body.hCaptchaResponse?.trim();
 
 	if (!disabledFeatures.captcha) {
 		if (!hCaptchaResponse || hCaptchaResponse === '') {
@@ -54,7 +57,7 @@ router.post('/', async (request, response) => {
 			});
 		}
 
-		const captchaVerify = await hcaptcha.verify(config.hcaptcha.secret, hCaptchaResponse);
+		const captchaVerify: VerifyResponse = await hcaptcha.verify(config.hcaptcha.secret, hCaptchaResponse);
 
 		if (!captchaVerify.success) {
 			return response.status(400).json({
@@ -138,7 +141,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const userExists = await database.doesUserExist(username);
+	const userExists: boolean = await database.doesUserExist(username);
 
 	if (userExists) {
 		return response.status(400).json({
@@ -212,7 +215,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const miiNameBuffer = Buffer.from(miiName, 'utf16le'); // UTF8 to UTF16
+	const miiNameBuffer: Buffer = Buffer.from(miiName, 'utf16le'); // UTF8 to UTF16
 
 	if (miiNameBuffer.length > 0x14) {
 		return response.status(400).json({
@@ -222,14 +225,14 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const mii = new Mii(DEFAULT_MII_DATA);
+	const mii: Mii = new Mii(DEFAULT_MII_DATA);
 	mii.miiName = miiName;
 
-	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
-	let pnid;
-	let nexAccount;
+	const creationDate: string = moment().format('YYYY-MM-DDTHH:MM:SS');
+	let pnid: HydratedPNIDDocument;
+	let nexAccount: HydratedNEXAccountDocument;
 
-	const session = await database.connection().startSession();
+	const session: mongoose.ClientSession = await database.connection().startSession();
 	await session.startTransaction();
 
 	try {
@@ -251,8 +254,8 @@ router.post('/', async (request, response) => {
 
 		await nexAccount.save({ session });
 
-		const primaryPasswordHash = util.nintendoPasswordHash(password, nexAccount.get('pid'));
-		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
+		const primaryPasswordHash: string = util.nintendoPasswordHash(password, nexAccount.get('pid'));
+		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid = new PNID({
 			pid: nexAccount.get('pid'),
@@ -323,7 +326,7 @@ router.post('/', async (request, response) => {
 
 	await util.sendConfirmationEmail(pnid);
 
-	const cryptoPath = `${__dirname}/../../../../../certs/service/account`;
+	const cryptoPath: string = `${__dirname}/../../../../../certs/service/account`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
@@ -334,15 +337,15 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const publicKey = await cache.getServicePublicKey('account');
-	const secretKey = await cache.getServiceSecretKey('account');
+	const publicKey: Buffer = await cache.getServicePublicKey('account');
+	const secretKey: Buffer = await cache.getServiceSecretKey('account');
 
-	const cryptoOptions = {
+	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
 		hmac_secret: secretKey
 	};
 
-	const accessTokenOptions = {
+	const accessTokenOptions: TokenOptions = {
 		system_type: 0xF, // API
 		token_type: 0x1, // OAuth Access,
 		pid: pnid.get('pid'),
@@ -351,7 +354,7 @@ router.post('/', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const refreshTokenOptions = {
+	const refreshTokenOptions: TokenOptions = {
 		system_type: 0xF, // API
 		token_type: 0x2, // OAuth Refresh,
 		pid: pnid.get('pid'),
@@ -360,8 +363,8 @@ router.post('/', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken = await util.generateToken(cryptoOptions, accessTokenOptions);
-	const refreshToken = await util.generateToken(cryptoOptions, refreshTokenOptions);
+	const accessToken: string = await util.generateToken(cryptoOptions, accessTokenOptions);
+	const refreshToken: string = await util.generateToken(cryptoOptions, refreshTokenOptions);
 
 	response.json({
 		access_token: accessToken,

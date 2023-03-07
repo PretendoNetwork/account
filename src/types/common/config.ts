@@ -37,7 +37,7 @@ export interface Config {
 		base_url: string;
 	};
 	website_base: string;
-};
+}
 
 export interface DisabledFeatures {
 	redis: boolean;

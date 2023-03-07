@@ -1,9 +1,12 @@
-import { Router } from 'express';
+import express from 'express';
 import database from '@/database';
+import { ConnectionData } from '@/types/services/api/connection-data';
+import { ConnectionResponse } from '@/types/services/api/connection-response';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router = Router();
+const router: express.Router = express.Router();
 
-const VALID_CONNECTION_TYPES = [
+const VALID_CONNECTION_TYPES: string[] = [
 	'discord'
 ];
 
@@ -12,10 +15,10 @@ const VALID_CONNECTION_TYPES = [
  * Implementation of for: https://api.pretendo.cc/v1/connections/add/TYPE
  * Description: Adds an account connection to the users PNID
  */
-router.post('/add/:type', async (request, response) => {
-	const { body, pnid } = request;
-	const { type } = request.params;
-	const { data } = body;
+router.post('/add/:type', async (request: express.Request, response: express.Response) => {
+	const data: ConnectionData = request.body?.data;
+	const pnid: HydratedPNIDDocument = request.pnid;
+	const type: string = request.params.type;
 
 	if (!pnid) {
 		return response.status(400).json({
@@ -41,7 +44,7 @@ router.post('/add/:type', async (request, response) => {
 		});
 	}
 
-	const result = await database.addUserConnection(pnid, data, type);
+	const result: ConnectionResponse = await database.addUserConnection(pnid, data, type);
 
 	response.status(result.status).json(result);
 });
@@ -51,9 +54,9 @@ router.post('/add/:type', async (request, response) => {
  * Implementation of for: https://api.pretendo.cc/v1/connections/remove/TYPE
  * Description: Removes an account connection from the users PNID
  */
-router.delete('/remove/:type', async (request, response) => {
-	const { pnid } = request;
-	const { type } = request.params;
+router.delete('/remove/:type', async (request: express.Request, response: express.Response) => {
+	const pnid: HydratedPNIDDocument = request.pnid;
+	const type: string = request.params.type;
 
 	if (!pnid) {
 		return response.status(400).json({
@@ -71,7 +74,7 @@ router.delete('/remove/:type', async (request, response) => {
 		});
 	}
 
-	const result = await database.removeUserConnection(pnid, type);
+	const result: ConnectionResponse = await database.removeUserConnection(pnid, type);
 
 	response.status(result.status).json(result);
 });

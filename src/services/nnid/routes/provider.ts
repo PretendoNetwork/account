@@ -1,24 +1,29 @@
-import { Router } from 'express';
+import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import fs from 'fs-extra';
 import database from '@/database';
 import util from '@/util';
 import cache from '@/cache';
 import { NEXAccount } from '@/models/nex-account';
+import { CryptoOptions } from '@/types/common/crypto-options';
+import { TokenOptions } from '@/types/common/token-options';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { HydratedServerDocument } from '@/types/mongoose/server';
+import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 
-const router = Router();
+const router: express.Router = express.Router();
 
 /**
  * [GET]
  * Replacement for: https://account.nintendo.net/v1/api/provider/service_token/@me
  * Description: Gets a service token
  */
-router.get('/service_token/@me', async (request, response) => {
-	const { pnid } = request;
+router.get('/service_token/@me', async (request: express.Request, response: express.Response) => {
+	const pnid: HydratedPNIDDocument = request.pnid;
 
-	const titleId = request.headers['x-nintendo-title-id'] as string;
-	const serverAccessLevel = pnid.get('server_access_level');
-	const server = await database.getServerByTitleId(titleId, serverAccessLevel);
+	const titleId: string = request.headers['x-nintendo-title-id'] as string;
+	const serverAccessLevel: string = pnid.get('server_access_level');
+	const server: HydratedServerDocument = await database.getServerByTitleId(titleId, serverAccessLevel);
 
 	if (!server) {
 		return response.send(xmlbuilder.create({
@@ -31,9 +36,10 @@ router.get('/service_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const { service_name, device } = server;
+	const serverName: string = server.service_name;
+	const device: number = server.device;
 
-	const cryptoPath = `${__dirname}/../../../../certs/service/${service_name}`;
+	const cryptoPath: string = `${__dirname}/../../../../certs/service/${serverName}`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
@@ -47,15 +53,15 @@ router.get('/service_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const publicKey = await cache.getServicePublicKey(service_name);
-	const secretKey = await cache.getServiceSecretKey(service_name);
+	const publicKey: Buffer = await cache.getServicePublicKey(serverName);
+	const secretKey: Buffer = await cache.getServiceSecretKey(serverName);
 
-	const cryptoOptions = {
+	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
 		hmac_secret: secretKey
 	};
 
-	const tokenOptions = {
+	const tokenOptions: TokenOptions = {
 		system_type: device,
 		token_type: 0x4, // service token,
 		pid: pnid.get('pid'),
@@ -64,7 +70,7 @@ router.get('/service_token/@me', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let serviceToken = await util.generateToken(cryptoOptions, tokenOptions);
+	let serviceToken: string = await util.generateToken(cryptoOptions, tokenOptions);
 
 	if (request.isCemu) {
 		serviceToken = Buffer.from(serviceToken, 'base64').toString('hex');
@@ -82,9 +88,9 @@ router.get('/service_token/@me', async (request, response) => {
  * Replacement for: https://account.nintendo.net/v1/api/provider/nex_token/@me
  * Description: Gets a NEX server address and token
  */
-router.get('/nex_token/@me', async (request, response) => {
-	const { game_server_id: gameServerID } = request.query;
-	const { pnid } = request;
+router.get('/nex_token/@me', async (request: express.Request, response: express.Response) => {
+	const pnid: HydratedPNIDDocument = request.pnid;
+	const gameServerID: string = request.query.game_server_id as string;
 
 	if (!gameServerID) {
 		return response.send(xmlbuilder.create({
@@ -97,8 +103,8 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const serverAccessLevel = pnid.get('server_access_level');
-	const server = await database.getServer(gameServerID, serverAccessLevel);
+	const serverAccessLevel: string = pnid.get('server_access_level');
+	const server: HydratedServerDocument = await database.getServer(gameServerID, serverAccessLevel);
 
 	if (!server) {
 		return response.send(xmlbuilder.create({
@@ -111,10 +117,13 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const { service_name, ip, port, device } = server;
-	const titleId = request.headers['x-nintendo-title-id'] as string;
+	const serverName: string = server.service_name;
+	const ip: string = server.ip;
+	const port: number = server.port;
+	const device: number = server.device;
+	const titleId: string = request.headers['x-nintendo-title-id'] as string;
 
-	const cryptoPath = `${__dirname}/../../../../certs/nex/${service_name}`;
+	const cryptoPath: string = `${__dirname}/../../../../certs/nex/${serverName}`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
@@ -128,15 +137,15 @@ router.get('/nex_token/@me', async (request, response) => {
 		}).end());
 	}
 
-	const publicKey = await cache.getNEXPublicKey(service_name);
-	const secretKey= await cache.getNEXSecretKey(service_name);
+	const publicKey: Buffer = await cache.getNEXPublicKey(serverName);
+	const secretKey: Buffer = await cache.getNEXSecretKey(serverName);
 
-	const cryptoOptions = {
+	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
 		hmac_secret: secretKey
 	};
 
-	const tokenOptions = {
+	const tokenOptions: TokenOptions = {
 		system_type: device,
 		token_type: 0x3, // nex token,
 		pid: pnid.get('pid'),
@@ -145,7 +154,7 @@ router.get('/nex_token/@me', async (request, response) => {
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const nexUser = await NEXAccount.findOne({
+	const nexUser: HydratedNEXAccountDocument = await NEXAccount.findOne({
 		owning_pid: pnid.get('pid')
 	});
 
@@ -154,7 +163,7 @@ router.get('/nex_token/@me', async (request, response) => {
 		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
 	}
 
-	let nexToken = await util.generateToken(cryptoOptions, tokenOptions);
+	let nexToken: string = await util.generateToken(cryptoOptions, tokenOptions);
 
 	if (request.isCemu) {
 		nexToken = Buffer.from(nexToken, 'base64').toString('hex');

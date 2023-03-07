@@ -1,13 +1,13 @@
-import { Router } from 'express';
+import express from 'express';
 import validator from 'validator';
 import database from '@/database';
 import util from '@/util';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router = Router();
+const router: express.Router = express.Router();
 
-router.post('/', async (request, response) => {
-	const { body } = request;
-	const { input } = body;
+router.post('/', async (request: express.Request, response: express.Response) => {
+	const input: string = request.body?.input;
 
 	if (!input || input.trim() === '') {
 		return response.status(400).json({
@@ -17,7 +17,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	let pnid;
+	let pnid: HydratedPNIDDocument;
 
 	if (validator.isEmail(input)) {
 		pnid = await database.getUserByEmailAddress(input);

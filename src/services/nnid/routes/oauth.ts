@@ -1,22 +1,25 @@
-import { Router } from 'express';
+import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import fs from 'fs-extra';
 import database from '@/database';
 import util from '@/util';
+import { TokenOptions } from '@/types/common/token-options';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router = Router();
+const router: express.Router = express.Router();
 
 /**
  * [POST]
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
  * Description: Generates an access token for a user
  */
-router.post('/access_token/generate', async (request, response) => {
-	const { body } = request;
-	const { grant_type, user_id, password } = body;
+router.post('/access_token/generate', async (request: express.Request, response: express.Response) => {
+	const grantType: string = request.body?.grant_type;
+	const username: string = request.body?.user_id;
+	const password: string = request.body?.password;
 
-	if (!['password', 'refresh_token'].includes(grant_type)) {
+	if (!['password', 'refresh_token'].includes(grantType)) {
 		response.status(400);
 		return response.send(xmlbuilder.create({
 			error: {
@@ -27,7 +30,7 @@ router.post('/access_token/generate', async (request, response) => {
 		}).end());
 	}
 
-	if (!user_id || user_id.trim() === '') {
+	if (!username || username.trim() === '') {
 		response.status(400);
 		return response.send(xmlbuilder.create({
 			error: {
@@ -49,7 +52,7 @@ router.post('/access_token/generate', async (request, response) => {
 		}).end());
 	}
 
-	const pnid = await database.getUserByUsername(user_id);
+	const pnid: HydratedPNIDDocument = await database.getUserByUsername(username);
 
 	if (!pnid || !await bcrypt.compare(password, pnid.password)) {
 		response.status(400);
@@ -72,7 +75,7 @@ router.post('/access_token/generate', async (request, response) => {
 		}).end());
 	}
 
-	const cryptoPath = `${__dirname}/../../../../certs/service/account`;
+	const cryptoPath: string = `${__dirname}/../../../../certs/service/account`;
 
 	if (!await fs.pathExists(cryptoPath)) {
 		// Need to generate keys
@@ -86,22 +89,22 @@ router.post('/access_token/generate', async (request, response) => {
 		}).end());
 	}
 
-	const accessTokenOptions = {
+	const accessTokenOptions: TokenOptions = {
 		system_type: 0x1, // WiiU
 		token_type: 0x1, // OAuth Access,
 		pid: pnid.get('pid'),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const refreshTokenOptions = {
+	const refreshTokenOptions: TokenOptions = {
 		system_type: 0x1, // WiiU
 		token_type: 0x2, // OAuth Refresh,
 		pid: pnid.get('pid'),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let accessToken = await util.generateToken(null, accessTokenOptions);
-	let refreshToken = await util.generateToken(null, refreshTokenOptions);
+	let accessToken: string = await util.generateToken(null, accessTokenOptions);
+	let refreshToken: string = await util.generateToken(null, refreshTokenOptions);
 
 	if (request.isCemu) {
 		accessToken = Buffer.from(accessToken, 'base64').toString('hex');

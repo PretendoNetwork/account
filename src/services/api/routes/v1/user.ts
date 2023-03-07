@@ -1,12 +1,14 @@
-import { Router } from 'express';
+import express from 'express';
 import joi from 'joi';
 import { PNID } from '@/models/pnid';
 import { config } from '@/config-manager';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { UpdateUserRequest } from '@/types/services/api/update-user-request';
 
-const router = Router();
+const router: express.Router = express.Router();
 
 // TODO: Extend this later with more settings
-const userSchema = joi.object({
+const userSchema: joi.ObjectSchema = joi.object({
 	mii: joi.object({
 		name: joi.string(),
 		primary: joi.string(),
@@ -19,8 +21,8 @@ const userSchema = joi.object({
  * Implementation of for: https://api.pretendo.cc/v1/user
  * Description: Gets PNID details about the current user
  */
-router.get('/', async (request, response) => {
-	const { pnid } = request;
+router.get('/', async (request: express.Request, response: express.Response) => {
+	const pnid: HydratedPNIDDocument = request.pnid;
 
 	if (!pnid) {
 		return response.status(400).json({
@@ -67,8 +69,9 @@ router.get('/', async (request, response) => {
  * Implementation of for: https://api.pretendo.cc/v1/user
  * Description: Updates PNID certain details about the current user
  */
-router.post('/', async (request, response) => {
-	const { body, pnid } = request;
+router.post('/', async (request: express.Request, response: express.Response) => {
+	const pnid: HydratedPNIDDocument = request.pnid;
+	const updateUserRequest: UpdateUserRequest = request.body;
 
 	if (!pnid) {
 		return response.status(400).json({
@@ -78,7 +81,7 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const valid = userSchema.validate(body);
+	const valid: joi.ValidationResult = userSchema.validate(updateUserRequest);
 
 	if (valid.error) {
 		return response.status(400).json({
@@ -88,11 +91,13 @@ router.post('/', async (request, response) => {
 		});
 	}
 
-	const { pid } = pnid;
+	// TODO - Make this do something
 
-	const updateData = {};
+	//const pid: number = pnid.pid;
 
-	await PNID.updateOne({ pid }, { $set: updateData }).exec();
+	//const updateData = {};
+
+	//await PNID.updateOne({ pid }, { $set: updateData }).exec();
 
 	return response.json({
 		access_level: pnid.access_level,

@@ -1,19 +1,20 @@
 import dns from 'node:dns';
-import { Router } from 'express';
+import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
 import database from '@/database';
 import util from '@/util';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router = Router();
+const router: express.Router = express.Router();
 
 /**
  * [POST]
  * Replacement for: https://account.nintendo.net/v1/api/support/validate/email
  * Description: Verifies a provided email address is valid
  */
-router.post('/validate/email', async (request, response) => {
-	const { email } = request.body;
+router.post('/validate/email', async (request: express.Request, response: express.Response) => {
+	const email: string = request.body;
 
 	if (!email) {
 		return response.send(xmlbuilder.create({
@@ -27,9 +28,9 @@ router.post('/validate/email', async (request, response) => {
 		}).end());
 	}
 
-	const domain = email.split('@')[1];
+	const domain: string = email.split('@')[1];
 
-	dns.resolveMx(domain, (error) => {
+	dns.resolveMx(domain, (error: NodeJS.ErrnoException) => {
 		if (error) {
 			return response.send(xmlbuilder.create({
 				errors: {
@@ -51,10 +52,11 @@ router.post('/validate/email', async (request, response) => {
  * Replacement for: https://account.nintendo.net/v1/api/support/email_confirmation/:pid/:code
  * Description: Verifies a users email via 6 digit code
  */
-router.put('/email_confirmation/:pid/:code', async (request, response) => {
-	const { pid, code } = request.params;
+router.put('/email_confirmation/:pid/:code', async (request: express.Request, response: express.Response) => {
+	const code: string = request.params.code;
+	const pid: number = Number(request.params.pid);
 
-	const pnid = await database.getUserByPID(pid);
+	const pnid: HydratedPNIDDocument = await database.getUserByPID(pid);
 
 	if (!pnid) {
 		return response.status(400).send(xmlbuilder.create({
@@ -78,7 +80,7 @@ router.put('/email_confirmation/:pid/:code', async (request, response) => {
 		}).end());
 	}
 
-	const validatedDate = moment().format('YYYY-MM-DDTHH:MM:SS');
+	const validatedDate: string = moment().format('YYYY-MM-DDTHH:MM:SS');
 
 	pnid.set('email.reachable', true);
 	pnid.set('email.validated', true);
@@ -96,10 +98,10 @@ router.put('/email_confirmation/:pid/:code', async (request, response) => {
  * Replacement for: https://account.nintendo.net/v1/api/support/resend_confirmation
  * Description: Resends a users confirmation email
  */
-router.get('/resend_confirmation', async (request, response) => {
-	const pid = request.headers['x-nintendo-pid'];
+router.get('/resend_confirmation', async (request: express.Request, response: express.Response) => {
+	const pid: number = Number(request.headers['x-nintendo-pid']);
 
-	const pnid = await database.getUserByPID(pid);
+	const pnid: HydratedPNIDDocument = await database.getUserByPID(pid);
 
 	if (!pnid) {
 		// TODO - Unsure if this is the right error
@@ -124,10 +126,10 @@ router.get('/resend_confirmation', async (request, response) => {
  * Description: Sends the user a password reset email
  * NOTE: On NN this was a temp password that expired after 24 hours. We do not do that
  */
-router.get('/forgotten_password/:pid', async (request, response) => {
-	const { pid } = request.params;
+router.get('/forgotten_password/:pid', async (request: express.Request, response: express.Response) => {
+	const pid: number = Number(request.params.pid);
 
-	const pnid = await database.getUserByPID(pid);
+	const pnid: HydratedPNIDDocument = await database.getUserByPID(pid);
 
 	if (!pnid) {
 		// TODO - Better errors

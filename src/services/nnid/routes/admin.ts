@@ -1,39 +1,27 @@
-import { Router } from 'express';
+import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { PNID } from '@/models/pnid';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router = Router();
+const router: express.Router = express.Router();
 
 /**
  * [GET]
  * Replacement for: https://account.nintendo.net/v1/api/admin/mapped_ids
  * Description: Maps between NNID usernames and PIDs
  */
-router.get('/mapped_ids', async (request, response) => {
-
-	let inputType: string;
+router.get('/mapped_ids', async (request: express.Request, response: express.Response) => {
+	const inputType: string = request.query.input_type as string;
+	const outputType: string = request.query.output_type as string;
 	let inputList: string[];
-	let outputType: string;
 	let queryInput: string;
 	let queryOutput: string;
-
-	if (Array.isArray(request.query.input_type)) {
-		inputType = request.query.input_type[0] as string;
-	} else {
-		inputType = request.query.input_type as string;
-	}
 
 	if (Array.isArray(request.query.input)) {
 		inputList = request.query.input as string[];
 	} else {
 		const input = request.query.input as string;
 		inputList = input.split(',');
-	}
-
-	if (Array.isArray(request.query.output_type)) {
-		outputType = request.query.output_type[0] as string;
-	} else {
-		outputType = request.query.output_type as string;
 	}
 
 	inputList = inputList.filter(input => input); // * Remove null inputs
@@ -55,20 +43,30 @@ router.get('/mapped_ids', async (request, response) => {
 	// but it ensures that each input
 	// ALWAYS has an output and filters
 	// out unwanted input/output types
-	const results = [];
-	const allowedTypes = ['pid', 'user_id'];
+	const results: {
+		in_id: string;
+		out_id: string;
+	}[] = [];
+	const allowedTypes: string[] = ['pid', 'user_id'];
 
 	for (const input of inputList) {
-		const result = {
+		const result: {
+			in_id: string;
+			out_id: string;
+		} = {
 			in_id: input,
 			out_id: ''
 		};
 
 		if (allowedTypes.includes(inputType) && allowedTypes.includes(outputType)) {
-			const query = {};
+			const query: {
+				usernameLower?: string;
+				pid?: number;
+			} = {};
+
 			query[queryInput] = input;
 
-			const searchResult = await PNID.findOne(query);
+			const searchResult: HydratedPNIDDocument = await PNID.findOne(query);
 
 			if (searchResult) {
 				result.out_id = searchResult.get(queryOutput);

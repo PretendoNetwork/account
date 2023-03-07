@@ -1,15 +1,19 @@
+import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import database from '@/database';
+import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-export async function PNIDMiddleware(request, response, next) {
-	const { headers } = request;
+export async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
+	const authHeader: string = request.headers.authorization;
 
-	if (!headers.authorization || !(headers.authorization.startsWith('Bearer') || headers.authorization.startsWith('Basic'))) {
+	if (!authHeader || !(authHeader.startsWith('Bearer') || authHeader.startsWith('Basic'))) {
 		return next();
 	}
 
-	let [type, token] = headers.authorization.split(' ');
-	let user;
+	const parts: string[] = authHeader.split(' ');
+	const type: string = parts[0];
+	let token: string = parts[1];
+	let user: HydratedPNIDDocument;
 
 	if (request.isCemu) {
 		token = Buffer.from(token, 'hex').toString('base64');
@@ -25,7 +29,7 @@ export async function PNIDMiddleware(request, response, next) {
 		response.status(401);
 
 		if (type === 'Bearer') {
-			return response.send(xmlbuilder.create({
+			response.send(xmlbuilder.create({
 				errors: {
 					error: {
 						cause: 'access_token',
@@ -34,9 +38,11 @@ export async function PNIDMiddleware(request, response, next) {
 					}
 				}
 			}).end());
+
+			return;
 		}
 
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '1105',
@@ -44,10 +50,12 @@ export async function PNIDMiddleware(request, response, next) {
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	if (user.get('access_level') < 0) {
-		return response.status(400).send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0122',
@@ -55,6 +63,8 @@ export async function PNIDMiddleware(request, response, next) {
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	request.pnid = user;
