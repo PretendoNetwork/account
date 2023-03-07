@@ -45,25 +45,25 @@ function verifyConnected(): void {
 async function getUserByUsername(username: string): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
-	return await PNID.findOne({
+	return await PNID.findOne<HydratedPNIDDocument>({
 		usernameLower: username.toLowerCase()
-	}) as HydratedPNIDDocument;
+	});
 }
 
 async function getUserByPID(pid: number): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
-	return await PNID.findOne({
+	return await PNID.findOne<HydratedPNIDDocument>({
 		pid
-	}) as HydratedPNIDDocument;
+	});
 }
 
 async function getUserByEmailAddress(email: string): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
-	return await PNID.findOne({
+	return await PNID.findOne<HydratedPNIDDocument>({
 		'email.address': new RegExp(email, 'i') // * Ignore case
-	}) as HydratedPNIDDocument;
+	});
 }
 
 async function doesUserExist(username: string): Promise<boolean> {
