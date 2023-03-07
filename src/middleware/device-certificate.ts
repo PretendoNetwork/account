@@ -1,7 +1,7 @@
 import express from 'express';
 import NintendoCertificate from '@/nintendo-certificate';
 
-export function deviceCertificateMiddleware(request: express.Request, _response: express.Response, next: express.NextFunction): void {
+function deviceCertificateMiddleware(request: express.Request, _response: express.Response, next: express.NextFunction): void {
 	const certificate: string = request.headers['x-nintendo-device-cert'] as string;
 
 	if (!certificate) {

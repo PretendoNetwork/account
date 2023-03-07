@@ -41,8 +41,6 @@ const CTR_LFCS_B_PUB = Buffer.from([
 	0xAF, 0x07, 0xEB, 0x9C, 0xBF, 0xA9, 0xC9
 ]);
 
-
-
 // Signature options
 const SIGNATURE_SIZES: { [key: string]: SignatureSize } = {
 	RSA_4096_SHA1: <SignatureSize>{
@@ -71,7 +69,7 @@ const SIGNATURE_SIZES: { [key: string]: SignatureSize } = {
 	}
 };
 
-export class NintendoCertificate {
+class NintendoCertificate {
 	_certificate: Buffer;
 	_certificateBody: Buffer;
 	signatureType: number;

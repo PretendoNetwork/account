@@ -14,7 +14,7 @@ export interface IServer {
 
 export interface IServerMethods {}
 
-export interface IServerQueryHelpers {}
+interface IServerQueryHelpers {}
 
 export interface ServerModel extends Model<IServer, IServerQueryHelpers, IServerMethods> {}
 

@@ -9,7 +9,7 @@ import { DeviceSchema } from '@/models/device';
 import util from '@/util';
 import { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 
-export const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
+const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	access_level: {
 		type: Number,
 		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
@@ -212,8 +212,3 @@ PNIDSchema.method('getServerMode', function getServerMode(): string {
 });
 
 export const PNID: PNIDModel = model<IPNID, PNIDModel>('PNID', PNIDSchema);
-
-export default {
-	PNIDSchema,
-	PNID
-};

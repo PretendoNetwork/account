@@ -17,7 +17,7 @@ export interface INEXAccountMethods {
 	generatePassword(): void;
 }
 
-export interface INEXAccountQueryHelpers {}
+interface INEXAccountQueryHelpers {}
 
 export interface NEXAccountModel extends Model<INEXAccount, INEXAccountQueryHelpers, INEXAccountMethods> {}
 

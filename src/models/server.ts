@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import { IServer, IServerMethods, ServerModel } from '@/types/mongoose/server';
 
-export const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
+const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 	ip: String, // Example: 1.1.1.1
 	port: Number, // Example: 60000
 	service_name: String, // Example: friends
@@ -17,8 +17,3 @@ export const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 ServerSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 
 export const Server: ServerModel = model<IServer, ServerModel>('Server', ServerSchema);
-
-export default {
-	ServerSchema,
-	Server,
-};

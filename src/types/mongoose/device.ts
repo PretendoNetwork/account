@@ -27,7 +27,7 @@ export interface IDevice {
 
 export interface IDeviceMethods {}
 
-export interface IDeviceQueryHelpers {}
+interface IDeviceQueryHelpers {}
 
 export interface DeviceModel extends Model<IDevice, IDeviceQueryHelpers, IDeviceMethods> {}
 

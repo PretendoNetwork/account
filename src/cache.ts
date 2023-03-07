@@ -10,7 +10,7 @@ const SERVICE_CERTS_BASE: string = `${__dirname}/../certs/service`;
 const NEX_CERTS_BASE: string = `${__dirname}/../certs/nex`;
 const LOCAL_CDN_BASE: string = `${__dirname}/../cdn`;
 
-export async function connect(): Promise<void> {
+async function connect(): Promise<void> {
 	if (!disabledFeatures.redis) {
 		client = redis.createClient(config.redis.client);
 		client.on('error', (err) => console.log('Redis Client Error', err));
@@ -19,7 +19,7 @@ export async function connect(): Promise<void> {
 	}
 }
 
-export async function setCachedFile(fileName: string, value: Buffer): Promise<void> {
+async function setCachedFile(fileName: string, value: Buffer): Promise<void> {
 	if (disabledFeatures.redis) {
 		memoryCache[fileName] = value;
 	} else {
@@ -27,7 +27,7 @@ export async function setCachedFile(fileName: string, value: Buffer): Promise<vo
 	}
 }
 
-export async function getCachedFile(fileName: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getCachedFile(fileName: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let cachedFile: Buffer;
 
 	if (disabledFeatures.redis) {
@@ -44,7 +44,7 @@ export async function getCachedFile(fileName: string, encoding?: BufferEncoding)
 
 // * NEX server cache functions
 
-export async function getNEXPublicKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getNEXPublicKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let publicKey: Buffer = await getCachedFile(`nex:${name}:public_key`, encoding);
 
 	if (publicKey === null) {
@@ -55,7 +55,7 @@ export async function getNEXPublicKey(name: string, encoding?: BufferEncoding): 
 	return publicKey;
 }
 
-export async function getNEXPrivateKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getNEXPrivateKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let privateKey: Buffer = await getCachedFile(`nex:${name}:private_key`, encoding);
 
 	if (privateKey === null) {
@@ -66,7 +66,7 @@ export async function getNEXPrivateKey(name: string, encoding?: BufferEncoding):
 	return privateKey;
 }
 
-export async function getNEXSecretKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getNEXSecretKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let secretKey: Buffer = await getCachedFile(`nex:${name}:secret_key`, encoding);
 
 	if (secretKey === null) {
@@ -78,7 +78,7 @@ export async function getNEXSecretKey(name: string, encoding?: BufferEncoding): 
 	return secretKey;
 }
 
-export async function getNEXAESKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getNEXAESKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let aesKey: Buffer = await getCachedFile(`nex:${name}:aes_key`, encoding);
 
 	if (aesKey === null) {
@@ -90,25 +90,25 @@ export async function getNEXAESKey(name: string, encoding?: BufferEncoding): Pro
 	return aesKey;
 }
 
-export async function setNEXPublicKey(name: string, value: Buffer): Promise<void> {
+async function setNEXPublicKey(name: string, value: Buffer): Promise<void> {
 	await setCachedFile(`nex:${name}:public_key`, value);
 }
 
-export async function setNEXPrivateKey(name: string, value: Buffer): Promise<void> {
+async function setNEXPrivateKey(name: string, value: Buffer): Promise<void> {
 	await setCachedFile(`nex:${name}:private_key`, value);
 }
 
-export async function setNEXSecretKey(name: string, value: Buffer): Promise<void> {
+async function setNEXSecretKey(name: string, value: Buffer): Promise<void> {
 	await setCachedFile(`nex:${name}:secret_key`, value);
 }
 
-export async function setNEXAESKey(name: string, value: Buffer): Promise<void> {
+async function setNEXAESKey(name: string, value: Buffer): Promise<void> {
 	await setCachedFile(`nex:${name}:aes_key`, value);
 }
 
 // * 3rd party service cache functions
 
-export async function getServicePublicKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getServicePublicKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let publicKey: Buffer = await getCachedFile(`service:${name}:public_key`, encoding);
 
 	if (publicKey === null) {
@@ -119,7 +119,7 @@ export async function getServicePublicKey(name: string, encoding?: BufferEncodin
 	return publicKey;
 }
 
-export async function getServicePrivateKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getServicePrivateKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let privateKey: Buffer = await getCachedFile(`service:${name}:private_key`, encoding);
 
 	if (privateKey === null) {
@@ -130,7 +130,7 @@ export async function getServicePrivateKey(name: string, encoding?: BufferEncodi
 	return privateKey;
 }
 
-export async function getServiceSecretKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getServiceSecretKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let secretKey: Buffer = await getCachedFile(`service:${name}:secret_key`, encoding);
 
 	if (secretKey === null) {
@@ -142,7 +142,7 @@ export async function getServiceSecretKey(name: string, encoding?: BufferEncodin
 	return secretKey;
 }
 
-export async function getServiceAESKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getServiceAESKey(name: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let aesKey: Buffer = await getCachedFile(`service:${name}:aes_key`, encoding);
 
 	if (aesKey === null) {
@@ -154,25 +154,25 @@ export async function getServiceAESKey(name: string, encoding?: BufferEncoding):
 	return aesKey;
 }
 
-export async function setServicePublicKey(name: string, value: Buffer): Promise<void> {
+async function setServicePublicKey(name: string, value: Buffer): Promise<void> {
 	await setCachedFile(`service:${name}:public_key`, value);
 }
 
-export async function setServicePrivateKey(name: string, value: Buffer): Promise<void> {
+async function setServicePrivateKey(name: string, value: Buffer): Promise<void> {
 	await setCachedFile(`service:${name}:private_key`, value);
 }
 
-export async function setServiceSecretKey(name: string, value: Buffer): Promise<void> {
+async function setServiceSecretKey(name: string, value: Buffer): Promise<void> {
 	await setCachedFile(`service:${name}:secret_key`, value);
 }
 
-export async function setServiceAESKey(name: string, value: Buffer): Promise<void> {
+async function setServiceAESKey(name: string, value: Buffer): Promise<void> {
 	await setCachedFile(`service:${name}:aes_key`, value);
 }
 
 // * Local CDN cache functions
 
-export async function getLocalCDNFile(name: string, encoding?: BufferEncoding): Promise<Buffer> {
+async function getLocalCDNFile(name: string, encoding?: BufferEncoding): Promise<Buffer> {
 	let file: Buffer = await getCachedFile(`local_cdn:${name}`, encoding);
 
 	if (file === null) {
@@ -186,7 +186,7 @@ export async function getLocalCDNFile(name: string, encoding?: BufferEncoding): 
 	return file;
 }
 
-export async function setLocalCDNFile(name: string, value: Buffer): Promise<void> {
+async function setLocalCDNFile(name: string, value: Buffer): Promise<void> {
 	await setCachedFile(`local_cdn:${name}`, value);
 }
 

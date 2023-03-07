@@ -2,7 +2,7 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { document as xmlParser } from 'xmlbuilder2';
 
-export function XMLMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): void {
+function XMLMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	if (request.method == 'POST' || request.method == 'PUT') {
 		const contentType: string = request.headers['content-type'];
 		const contentLength: string = request.headers['content-length'];

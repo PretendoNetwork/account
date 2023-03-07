@@ -13,7 +13,7 @@ if (!disabledFeatures.email) {
 	transporter = nodemailer.createTransport(config.email);
 }
 
-export async function sendMail(options: MailerOptions): Promise<void> {
+async function sendMail(options: MailerOptions): Promise<void> {
 	if (!disabledFeatures.email) {
 		const { to, subject, username, paragraph, preview, text, link, confirmation  } = options;
 

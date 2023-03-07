@@ -8,6 +8,6 @@ export interface IDeviceAttribute {
 
 export interface IDeviceAttributeMethods {}
 
-export interface IDeviceAttributeQueryHelpers {}
+interface IDeviceAttributeQueryHelpers {}
 
 export interface DeviceAttributeModel extends Model<IDeviceAttribute, IDeviceAttributeQueryHelpers, IDeviceAttributeMethods> {}

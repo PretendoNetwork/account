@@ -73,7 +73,7 @@ export interface IPNIDMethods {
 	getServerMode(): string;
 }
 
-export interface IPNIDQueryHelpers {}
+interface IPNIDQueryHelpers {}
 
 export interface PNIDModel extends Model<IPNID, IPNIDQueryHelpers, IPNIDMethods> {}
 

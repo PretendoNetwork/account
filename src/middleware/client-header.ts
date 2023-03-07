@@ -9,7 +9,7 @@ const VALID_CLIENT_ID_SECRET_PAIRS: { [key: string]: string } = {
 };
 
 
-export function nintendoClientHeaderCheck(request: express.Request, response: express.Response, next: express.NextFunction): void {
+function nintendoClientHeaderCheck(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());

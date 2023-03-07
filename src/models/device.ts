@@ -2,13 +2,13 @@ import { Schema, model } from 'mongoose';
 import { IDeviceAttribute, IDeviceAttributeMethods, DeviceAttributeModel } from '@/types/mongoose/device-attribute';
 import { IDevice, IDeviceMethods, DeviceModel } from '@/types/mongoose/device';
 
-export const DeviceAttributeSchema = new Schema<IDeviceAttribute, DeviceAttributeModel, IDeviceAttributeMethods>({
+const DeviceAttributeSchema = new Schema<IDeviceAttribute, DeviceAttributeModel, IDeviceAttributeMethods>({
 	created_date: String,
 	name: String,
 	value: String
 });
 
-export const DeviceAttribute: DeviceAttributeModel = model<IDeviceAttribute, DeviceAttributeModel>('DeviceAttribute', DeviceAttributeSchema);
+const DeviceAttribute: DeviceAttributeModel = model<IDeviceAttribute, DeviceAttributeModel>('DeviceAttribute', DeviceAttributeSchema);
 
 export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 	is_emulator: {
@@ -51,10 +51,3 @@ export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 });
 
 export const Device: DeviceModel = model<IDevice, DeviceModel>('Device', DeviceSchema);
-
-export default {
-	DeviceSchema,
-	Device,
-	DeviceAttributeSchema,
-	DeviceAttribute
-};

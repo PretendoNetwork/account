@@ -11,7 +11,7 @@ import { NASCRequestParams } from '@/types/services/nasc/request-params';
 import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import { HydratedDeviceDocument } from '@/types/mongoose/device';
 
-export async function NASCMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
+async function NASCMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	const requestParams: NASCRequestParams = request.body;
 
 	if (!requestParams.action ||

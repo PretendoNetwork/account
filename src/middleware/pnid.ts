@@ -3,7 +3,7 @@ import xmlbuilder from 'xmlbuilder';
 import database from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-export async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
+async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	const authHeader: string = request.headers.authorization;
 
 	if (!authHeader || !(authHeader.startsWith('Bearer') || authHeader.startsWith('Basic'))) {

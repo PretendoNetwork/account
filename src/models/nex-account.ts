@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import { INEXAccount, INEXAccountMethods, NEXAccountModel } from '@/types/mongoose/nex-account';
 
-export const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMethods>({
+const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMethods>({
 	device_type: {
 		type: String,
 		enum: [
@@ -70,8 +70,3 @@ NEXAccountSchema.method('generatePassword', function generatePassword(): void {
 });
 
 export const NEXAccount: NEXAccountModel = model<INEXAccount, NEXAccountModel>('NEXAccount', NEXAccountSchema);
-
-export default {
-	NEXAccountSchema,
-	NEXAccount
-};

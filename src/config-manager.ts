@@ -156,8 +156,3 @@ if (disabledFeatures.s3) {
 		logger.warn('Both s3 and Redis are disabled. Large CDN files will use the in-memory cache, which may result in high memory use. Please enable s3 if you\'re running a production server.');
 	}
 }
-
-export default {
-	config,
-	disabledFeatures
-};
