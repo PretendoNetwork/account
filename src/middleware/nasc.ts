@@ -104,13 +104,13 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	});
 
 	if (device) {
-		if (device.access_level < 0) {
+		if (device.get('access_level') < 0) {
 			response.status(200).send(util.nascError('102'));
 			return;
 		}
 
 		if (pid) {
-			const linkedPIDs = device.linked_pids;
+			const linkedPIDs = device.get('linked_pids');
 
 			if (!linkedPIDs.includes(pid)) {
 				response.status(200).send(util.nascError('102'));
@@ -137,7 +137,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 				await nexAccount.save({ session });
 
-				pid = nexAccount.pid;
+				pid = Number(nexAccount.get('pid'));
 
 				// Set password
 
@@ -176,7 +176,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 	const nexUser: HydratedNEXAccountDocument = await NEXAccount.findOne({ pid });
 
-	if (!nexUser || nexUser.access_level < 0) {
+	if (!nexUser || nexUser.get('access_level') < 0) {
 		response.status(200).send(util.nascError('102'));
 		return;
 	}

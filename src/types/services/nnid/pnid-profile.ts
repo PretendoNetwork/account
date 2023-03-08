@@ -6,13 +6,13 @@ export interface PNIDProfile {
 	birth_date: string;
 	country: string;
 	create_date: string;
-	device_attributes: {
+	device_attributes: [{
 		device_attribute: {
 			name: string;
 			value: string;
 			created_date: string;
 		};
-	}[];
+	}];
 	gender: string;
 	language: string;
 	updated: string;
@@ -21,7 +21,7 @@ export interface PNIDProfile {
 	pid: number;
 	email: {
 		address: string;
-		id: number;
+		id: string;
 		parent: YesNoBoolString;
 		primary: YesNoBoolString;
 		reachable: YesNoBoolString;
@@ -38,7 +38,7 @@ export interface PNIDProfile {
 		mii_images: {
 			mii_image: {
 				cached_url: string;
-				id: number;
+				id: string;
 				url: string;
 				type: 'standard';
 			}

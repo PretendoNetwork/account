@@ -54,7 +54,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
-	if (user.access_level < 0) {
+	if (user.get('access_level') < 0) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {

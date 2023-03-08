@@ -127,17 +127,17 @@ async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile> {
 	verifyConnected();
 
 	const user: HydratedPNIDDocument = await getUserByPID(pid);
-	const device: HydratedDeviceDocument = user.devices[0]; // * Just grab the first device
-	let device_attributes: {
+	const device: HydratedDeviceDocument = user.get('devices')[0]; // * Just grab the first device
+	let device_attributes: [{
 		device_attribute: {
 			name: string;
 			value: string;
 			created_date: string;
 		};
-	}[];
+	}];
 
 	if (device) {
-		device_attributes = device.device_attributes.map(({name, value, created_date}) => ({
+		device_attributes = device.get('device_attributes').map(({name, value, created_date}) => ({
 			device_attribute: {
 				name,
 				value,
@@ -148,50 +148,50 @@ async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile> {
 
 	return <PNIDProfile>{
 		//accounts: {}, // * We need to figure this out, no idea what these values mean or what they do
-		active_flag: user.flags.active ? 'Y' : 'N',
-		birth_date: user.birthdate,
-		country: user.country,
-		create_date: user.creation_date,
+		active_flag: user.get('flags.active') ? 'Y' : 'N',
+		birth_date: user.get('birthdate'),
+		country: user.get('country'),
+		create_date: user.get('creation_date'),
 		device_attributes: device_attributes,
-		gender: user.gender,
-		language: user.language,
-		updated: user.updated,
-		marketing_flag: user.flags.marketing ? 'Y' : 'N',
-		off_device_flag: user.flags.off_device ? 'Y' : 'N',
-		pid: user.pid,
+		gender: user.get('gender'),
+		language: user.get('language'),
+		updated: user.get('updated'),
+		marketing_flag: user.get('flags.marketing') ? 'Y' : 'N',
+		off_device_flag: user.get('flags.off_device') ? 'Y' : 'N',
+		pid: user.get('pid'),
 		email: {
-			address: user.email.address,
-			id: user.email.id,
-			parent: user.email.parent ? 'Y' : 'N',
-			primary: user.email.primary ? 'Y' : 'N',
-			reachable: user.email.reachable ? 'Y' : 'N',
+			address: user.get('email.address'),
+			id: user.get('email.id'),
+			parent: user.get('email.parent') ? 'Y' : 'N',
+			primary: user.get('email.primary') ? 'Y' : 'N',
+			reachable: user.get('email.reachable') ? 'Y' : 'N',
 			type: 'DEFAULT',
 			updated_by: 'USER', // * Can also be INTERNAL WS, don't know the difference
-			validated: user.email.validated ? 'Y' : 'N',
-			validated_date: user.email.validated ? user.email.validated_date : ''
+			validated: user.get('email.validated') ? 'Y' : 'N',
+			validated_date: user.get('email.validated') ? user.get('email.validated_date') : ''
 		},
 		mii: {
 			status: 'COMPLETED',
-			data: user.mii.data.replace(/(\r\n|\n|\r)/gm, ''),
-			id: user.mii.id,
-			mii_hash: user.mii.hash,
+			data: user.get('mii.data').replace(/(\r\n|\n|\r)/gm, ''),
+			id: user.get('mii.id'),
+			mii_hash: user.get('mii.hash'),
 			mii_images: {
 				mii_image: {
 					// * Images MUST be loaded over HTTPS or console ignores them
 					// * Bunny CDN is the only CDN which seems to support TLS 1.0/1.1 (required)
 					cached_url: `${config.cdn.base_url}/mii/${user.pid}/standard.tga`,
-					id: user.mii.image_id,
+					id: user.get('mii.image_id'),
 					url: `${config.cdn.base_url}/mii/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},
-			name: user.mii.name,
-			primary: user.mii.primary ? 'Y' : 'N',
+			name: user.get('mii.name'),
+			primary: user.get('mii.primary') ? 'Y' : 'N',
 		},
-		region: user.region,
-		tz_name: user.timezone.name,
-		user_id: user.username,
-		utc_offset: user.timezone.offset
+		region: user.get('region'),
+		tz_name: user.get('timezone.name'),
+		user_id: user.get('username'),
+		utc_offset: user.get('timezone.offset')
 	};
 }
 
@@ -226,7 +226,7 @@ async function addUserConnectionDiscord(pnid: HydratedPNIDDocument, data: Discor
 		};
 	}
 
-	await PNID.updateOne({ pid: pnid.pid }, {
+	await PNID.updateOne({ pid: pnid.get('pid') }, {
 		$set: {
 			'connections.discord.id': data.id
 		}
@@ -246,7 +246,7 @@ async function removeUserConnection(pnid: HydratedPNIDDocument, type: string): P
 }
 
 async function removeUserConnectionDiscord(pnid: HydratedPNIDDocument): Promise<ConnectionResponse> {
-	await PNID.updateOne({ pid: pnid.pid }, {
+	await PNID.updateOne({ pid: pnid.get('pid') }, {
 		$set: {
 			'connections.discord.id': ''
 		}

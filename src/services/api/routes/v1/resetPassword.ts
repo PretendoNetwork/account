@@ -82,7 +82,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	if (password.toLowerCase() === pnid.usernameLower) {
+	if (password.toLowerCase() === pnid.get('usernameLower')) {
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -114,7 +114,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	const primaryPasswordHash: string = util.nintendoPasswordHash(password, pnid.pid);
+	const primaryPasswordHash: string = util.nintendoPasswordHash(password, pnid.get('pid'));
 	const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 	pnid.password = passwordHash;

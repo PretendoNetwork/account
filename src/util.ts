@@ -257,14 +257,14 @@ function nascError(errorCode: string): URLSearchParams {
 
 async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const options: MailerOptions = {
-		to: pnid.email.address,
+		to: pnid.get('email.address'),
 		subject: '[Pretendo Network] Please confirm your email address',
-		username: pnid.username,
+		username: pnid.get('username'),
 		confirmation: {
-			href: `https://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token}`,
-			code: pnid.identification.email_code
+			href: `https://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')}`,
+			code: pnid.get('identification.email_code')
 		},
-		text: `Hello ${pnid.username}! \r\n\r\nYour Pretendo Network ID activation is almost complete. Please click the link to confirm your e-mail address and complete the activation process: \r\nhttps://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token} \r\n\r\nYou may also enter the following 6-digit code on your console: ${pnid.identification.email_code}`
+		text: `Hello ${pnid.get('username')}! \r\n\r\nYour Pretendo Network ID activation is almost complete. Please click the link to confirm your e-mail address and complete the activation process: \r\nhttps://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')} \r\n\r\nYou may also enter the following 6-digit code on your console: ${pnid.get('identification.email_code')}`
 	};
 
 	await mailer.sendMail(options);
@@ -272,11 +272,11 @@ async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNI
 
 async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void>  {
 	const options: MailerOptions = {
-		to: pnid.email.address,
+		to: pnid.get('email.address'),
 		subject: '[Pretendo Network] Email address confirmed',
-		username: pnid.username,
+		username: pnid.get('username'),
 		paragraph: 'your email address has been confirmed. We hope you have fun on Pretendo Network!',
-		text: `Dear ${pnid.username}, \r\n\r\nYour email address has been confirmed. We hope you have fun on Pretendo Network!`
+		text: `Dear ${pnid.get('username')}, \r\n\r\nYour email address has been confirmed. We hope you have fun on Pretendo Network!`
 	};
 
 	await mailer.sendMail(options);
@@ -294,8 +294,8 @@ async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IP
 	const tokenOptions: TokenOptions = {
 		system_type: 0xF, // API
 		token_type: 0x5, // Password reset
-		pid: pnid.pid,
-		access_level: pnid.access_level,
+		pid: pnid.get('pid'),
+		access_level: pnid.get('access_level'),
 		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // Only valid for 24 hours
 	};
@@ -303,15 +303,15 @@ async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IP
 	const passwordResetToken: string = await generateToken(cryptoOptions, tokenOptions);
 
 	const mailerOptions: MailerOptions = {
-		to: pnid.email.address,
+		to: pnid.get('email.address'),
 		subject: '[Pretendo Network] Forgot Password',
-		username: pnid.username,
+		username: pnid.get('username'),
 		paragraph: 'a password reset has been requested from this account. If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.',
 		link: {
 			text: 'Reset password',
 			href: `${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
 		},
-		text: `Dear ${pnid.username}, a password reset has been requested from this account. \r\n\r\nIf you did not request the password reset, please ignore this email. \r\nIf you did request this password reset, please click the link to reset your password: ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
+		text: `Dear ${pnid.get('username')}, a password reset has been requested from this account. \r\n\r\nIf you did not request the password reset, please ignore this email. \r\nIf you did request this password reset, please click the link to reset your password: ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
 	};
 
 	await mailer.sendMail(mailerOptions);
