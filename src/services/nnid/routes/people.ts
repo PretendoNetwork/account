@@ -68,9 +68,9 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	}
 
 	// * request.body is a Map, as is request.body.person
-	const person: Person = request.body.get('person');
+	const person: Person = request.body.person;
 
-	const userExists: boolean = await database.doesUserExist(person.get('user_id'));
+	const userExists: boolean = await database.doesUserExist(person.user_id);
 
 	if (userExists) {
 		response.status(400);
@@ -105,11 +105,11 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		// NN with a NNID will always use the NNID PID
 		// even if the provided NEX PID is different
 		// To fix this we make them the same PID
-		nexAccount.owning_pid = nexAccount.get('pid');
+		nexAccount.owning_pid = nexAccount.pid;
 
 		await nexAccount.save({ session });
 
-		const primaryPasswordHash: string = util.nintendoPasswordHash(person.get('password'), nexAccount.get('pid'));
+		const primaryPasswordHash: string = util.nintendoPasswordHash(person.password, nexAccount.pid);
 		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 		const countryCode: string = person.get('country');

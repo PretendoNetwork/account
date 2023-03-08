@@ -1,5 +1,5 @@
 import { Model, Types, HydratedDocument } from 'mongoose';
-import { IDevice } from '@/types/mongoose/device';
+import { HydratedDeviceDocument } from '@/types/mongoose/device';
 
 export interface IPNID {
 	access_level: number;
@@ -44,7 +44,7 @@ export interface IPNID {
 		marketing: boolean;
 		off_device: boolean;
 	};
-	devices: Types.DocumentArray<IDevice>;
+	devices: Types.DocumentArray<HydratedDeviceDocument>;
 	identification: { // user identification tokens
 		email_code: string;
 		email_token: string;
