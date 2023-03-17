@@ -61,8 +61,9 @@ async function getUserByPID(pid: number): Promise<HydratedPNIDDocument> {
 async function getUserByEmailAddress(email: string): Promise<HydratedPNIDDocument> {
 	verifyConnected();
 
+	// TODO - Update documents to store email normalized
 	return await PNID.findOne<HydratedPNIDDocument>({
-		'email.address': new RegExp(email, 'i') // * Ignore case
+		'email.address': email
 	});
 }
 
