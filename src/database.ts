@@ -147,7 +147,7 @@ export async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile>
 		}));
 	}
 
-	return <PNIDProfile>{
+	return {
 		//accounts: {}, // * We need to figure this out, no idea what these values mean or what they do
 		active_flag: user.get('flags.active') ? 'Y' : 'N',
 		birth_date: user.get('birthdate'),
@@ -220,7 +220,7 @@ export async function addUserConnectionDiscord(pnid: HydratedPNIDDocument, data:
 	const valid: joi.ValidationResult = discordConnectionSchema.validate(data);
 
 	if (valid.error) {
-		return <ConnectionResponse>{
+		return {
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing connection data'
@@ -233,7 +233,7 @@ export async function addUserConnectionDiscord(pnid: HydratedPNIDDocument, data:
 		}
 	});
 
-	return <ConnectionResponse>{
+	return {
 		app: 'api',
 		status: 200
 	};
@@ -253,7 +253,7 @@ export async function removeUserConnectionDiscord(pnid: HydratedPNIDDocument): P
 		}
 	});
 
-	return <ConnectionResponse>{
+	return {
 		app: 'api',
 		status: 200
 	};

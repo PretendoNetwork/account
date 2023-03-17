@@ -200,7 +200,7 @@ export async function decryptToken(token: Buffer): Promise<Buffer> {
 
 export function unpackToken(token: Buffer): Token {
 	if (token.length <= 14) {
-		return <Token>{
+		return {
 			system_type: token.readUInt8(0x0),
 			token_type: token.readUInt8(0x1),
 			pid: token.readUInt32LE(0x2),
@@ -208,7 +208,7 @@ export function unpackToken(token: Buffer): Token {
 		};
 	}
 
-	return <Token>{
+	return {
 		system_type: token.readUInt8(0x0),
 		token_type: token.readUInt8(0x1),
 		pid: token.readUInt32LE(0x2),
