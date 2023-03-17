@@ -1,7 +1,7 @@
 import express from 'express';
 import moment from 'moment';
 import { PNID } from '@/models/pnid';
-import util from '@/util';
+import { sendEmailConfirmedEmail } from '@/util';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router: express.Router = express.Router();
@@ -37,7 +37,7 @@ router.get('/verify', async (request: express.Request, response: express.Respons
 
 	await pnid.save();
 
-	await util.sendEmailConfirmedEmail(pnid);
+	await sendEmailConfirmedEmail(pnid);
 
 	response.status(200).send('Email validated. You may close this window');
 });

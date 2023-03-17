@@ -1,20 +1,21 @@
 import express from 'express';
 import subdomain from 'express-subdomain';
-import routes from '@/services/datastore/routes';
-import logger from '@/logger';
+import { LOG_INFO } from '@/logger';
+
+import upload from '@/services/datastore/routes/upload';
 
 // Router to handle the subdomain
 const datastore: express.Router = express.Router();
 
 // Setup routes
-logger.info('[DATASTORE] Applying imported routes');
-datastore.use(routes.UPLOAD);
+LOG_INFO('[DATASTORE] Applying imported routes');
+datastore.use(upload);
 
 // Main router for endpoints
 const router: express.Router = express.Router();
 
 // Create subdomains
-logger.info('[DATASTORE] Creating \'datastore\' subdomain');
+LOG_INFO('[DATASTORE] Creating \'datastore\' subdomain');
 router.use(subdomain('datastore', datastore));
 
 export default router;

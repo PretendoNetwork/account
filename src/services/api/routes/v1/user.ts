@@ -1,6 +1,6 @@
 import express from 'express';
 import joi from 'joi';
-import { PNID } from '@/models/pnid';
+//import { PNID } from '@/models/pnid';
 import { config } from '@/config-manager';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { UpdateUserRequest } from '@/types/services/api/update-user-request';

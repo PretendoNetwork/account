@@ -1,12 +1,12 @@
 import express from 'express';
-import cache from '@/cache';
+import { getLocalCDNFile } from '@/cache';
 
 const router: express.Router = express.Router();
 
 router.get('/*', async (request: express.Request, response: express.Response) => {
 	const filePath: string = request.params[0] as string;
 
-	const file: Buffer = await cache.getLocalCDNFile(filePath);
+	const file: Buffer = await getLocalCDNFile(filePath);
 
 	if (file) {
 		response.send(file);

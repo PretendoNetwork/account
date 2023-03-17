@@ -2,13 +2,13 @@
 
 import express from 'express';
 import subdomain from 'express-subdomain';
-import logger from '@/logger';
+import { LOG_INFO } from '@/logger';
 
 // Router to handle the subdomain restriction
 const conntest: express.Router = express.Router();
 
 // Setup route
-logger.info('[conntest] Applying imported routes');
+LOG_INFO('[conntest] Applying imported routes');
 conntest.get('/', async (request: express.Request, response: express.Response) => {
 	response.set('Content-Type', 'text/html');
 	response.set('X-Organization', 'Nintendo');
@@ -23,14 +23,14 @@ conntest.get('/', async (request: express.Request, response: express.Response) =
 This is test.html page
 </body>
 </html>
-`)
+`);
 });
 
 // Main router for endpoints
 const router: express.Router = express.Router();
 
 // Create subdomains
-logger.info('[conntest] Creating \'conntest\' subdomain');
+LOG_INFO('[conntest] Creating \'conntest\' subdomain');
 router.use(subdomain('conntest', conntest));
 
 export default router;

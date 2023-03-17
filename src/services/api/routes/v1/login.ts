@@ -1,9 +1,9 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import fs from 'fs-extra';
-import database from '@/database';
-import cache from '@/cache';
-import util from '@/util';
+import { getUserByUsername, getUserBearer } from '@/database';
+import { getServicePublicKey, getServiceSecretKey } from '@/cache';
+import { nintendoPasswordHash, generateToken} from '@/util';
 import { CryptoOptions } from '@/types/common/crypto-options';
 import { TokenOptions } from '@/types/common/token-options';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
@@ -57,7 +57,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	let pnid: HydratedPNIDDocument;
 
 	if (grantType === 'password') {
-		pnid = await database.getUserByUsername(username);
+		pnid = await getUserByUsername(username);
 
 		if (!pnid) {
 			return response.status(400).json({
@@ -67,7 +67,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 			});
 		}
 
-		const hashedPassword: string = util.nintendoPasswordHash(password, pnid.get('pid'));
+		const hashedPassword: string = nintendoPasswordHash(password, pnid.get('pid'));
 
 		if (!pnid || !bcrypt.compareSync(hashedPassword, pnid.password)) {
 			return response.status(400).json({
@@ -77,7 +77,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 			});
 		}
 	} else {
-		pnid = await database.getUserBearer(refreshToken);
+		pnid = await getUserBearer(refreshToken);
 
 		if (!pnid) {
 			return response.status(400).json({
@@ -99,8 +99,8 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	const publicKey: Buffer = await cache.getServicePublicKey('account');
-	const secretKey: Buffer = await cache.getServiceSecretKey('account');
+	const publicKey: Buffer = await getServicePublicKey('account');
+	const secretKey: Buffer = await getServiceSecretKey('account');
 
 	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
@@ -125,8 +125,8 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken: string = await util.generateToken(cryptoOptions, accessTokenOptions);
-	const newRefreshToken: string = await util.generateToken(cryptoOptions, refreshTokenOptions);
+	const accessToken: string = await generateToken(cryptoOptions, accessTokenOptions);
+	const newRefreshToken: string = await generateToken(cryptoOptions, refreshTokenOptions);
 
 	response.json({
 		access_token: accessToken,

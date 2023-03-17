@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { PNID } from '@/models/pnid';
-import util from '@/util';
+import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
 import { Token } from '@/types/common/token';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -28,8 +28,8 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
 	let unpackedToken: Token;
 	try {
-		const decryptedToken: Buffer = await util.decryptToken(Buffer.from(token, 'base64'));
-		unpackedToken = util.unpackToken(decryptedToken);
+		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'base64'));
+		unpackedToken = unpackToken(decryptedToken);
 	} catch (error) {
 		console.log(error);
 		return response.status(400).json({
@@ -114,7 +114,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	const primaryPasswordHash: string = util.nintendoPasswordHash(password, pnid.get('pid'));
+	const primaryPasswordHash: string = nintendoPasswordHash(password, pnid.get('pid'));
 	const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 	pnid.password = passwordHash;

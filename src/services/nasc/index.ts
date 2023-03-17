@@ -3,24 +3,25 @@
 import express from 'express';
 import subdomain from 'express-subdomain';
 import NASCMiddleware from '@/middleware/nasc';
-import routes from '@/services/nasc/routes';
-import logger from '@/logger';
+import { LOG_INFO } from '@/logger';
+
+import ac from '@/services/nasc/routes/ac';
 
 // Router to handle the subdomain restriction
 const nasc: express.Router = express.Router();
 
-logger.info('[NASC] Importing middleware');
+LOG_INFO('[NASC] Importing middleware');
 nasc.use(NASCMiddleware);
 
 // Setup routes
-logger.info('[NASC] Applying imported routes');
-nasc.use('/ac', routes.AC);
+LOG_INFO('[NASC] Applying imported routes');
+nasc.use('/ac', ac);
 
 // Main router for endpoints
 const router: express.Router = express.Router();
 
 // Create subdomains
-logger.info('[NASC] Creating \'nasc\' subdomain');
+LOG_INFO('[NASC] Creating \'nasc\' subdomain');
 router.use(subdomain('nasc', nasc));
 
 export default router;

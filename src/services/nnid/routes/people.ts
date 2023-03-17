@@ -6,12 +6,14 @@ import moment from 'moment';
 import mongoose from 'mongoose';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import ratelimit from '@/middleware/ratelimit';
-import database from '@/database';
-import util from '@/util';
+import { connection as databaseConnection, doesUserExist, getUserProfileJSONByPID } from '@/database';
+import { nintendoPasswordHash, sendConfirmationEmail } from '@/util';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
-import logger from '@/logger';
+import { LOG_ERROR } from '@/logger';
+
 import timezones from '@/services/nnid/timezones.json';
+
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import { RegionLanguages } from '@/types/services/nnid/region-languages';
@@ -29,7 +31,7 @@ const router: express.Router = express.Router();
 router.get('/:username', async (request: express.Request, response: express.Response) => {
 	const username: string = request.params.username;
 
-	const userExists: boolean = await database.doesUserExist(username);
+	const userExists: boolean = await doesUserExist(username);
 
 	if (userExists) {
 		response.status(400);
@@ -70,7 +72,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	// * request.body is a Map, as is request.body.person
 	const person: Person = request.body.get('person');
 
-	const userExists: boolean = await database.doesUserExist(person.get('user_id'));
+	const userExists: boolean = await doesUserExist(person.get('user_id'));
 
 	if (userExists) {
 		response.status(400);
@@ -89,7 +91,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	let pnid: HydratedPNIDDocument;
 	let nexAccount: HydratedNEXAccountDocument;
 
-	const session: mongoose.ClientSession = await database.connection().startSession();
+	const session: mongoose.ClientSession = await databaseConnection().startSession();
 	await session.startTransaction();
 
 	try {
@@ -109,7 +111,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 		await nexAccount.save({ session });
 
-		const primaryPasswordHash: string = util.nintendoPasswordHash(person.get('password'), nexAccount.get('pid'));
+		const primaryPasswordHash: string = nintendoPasswordHash(person.get('password'), nexAccount.get('pid'));
 		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 		const countryCode: string = person.get('country');
@@ -172,7 +174,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 		await session.commitTransaction();
 	} catch (error) {
-		logger.error('[POST] /v1/api/people: ' + error);
+		LOG_ERROR('[POST] /v1/api/people: ' + error);
 
 		await session.abortTransaction();
 
@@ -191,7 +193,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		await session.endSession();
 	}
 
-	await util.sendConfirmationEmail(pnid);
+	await sendConfirmationEmail(pnid);
 
 	response.send(xmlbuilder.create({
 		person: {
@@ -212,7 +214,7 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 
 	const pnid: HydratedPNIDDocument = request.pnid;
 
-	const person: PNIDProfile = await database.getUserProfileJSONByPID(pnid.get('pid'));
+	const person: PNIDProfile = await getUserProfileJSONByPID(pnid.get('pid'));
 
 	response.send(xmlbuilder.create({
 		person
@@ -237,7 +239,7 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 
 	const pnid: HydratedPNIDDocument = request.pnid;
 
-	const person: PNIDProfile = await database.getUserProfileJSONByPID(pnid.pid);
+	const person: PNIDProfile = await getUserProfileJSONByPID(pnid.pid);
 
 	response.send(xmlbuilder.create({
 		person
@@ -295,7 +297,7 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 
 	const pnid: HydratedPNIDDocument = request.pnid;
 
-	const person: PNIDProfile = await database.getUserProfileJSONByPID(pnid.get('pid'));
+	const person: PNIDProfile = await getUserProfileJSONByPID(pnid.get('pid'));
 
 	response.send(xmlbuilder.create({
 		person
@@ -428,7 +430,7 @@ router.put('/@me', async (request: express.Request, response: express.Response) 
 	const timezone: RegionTimezone = regionTimezones.find(tz => tz.area === timezoneName);
 
 	if (person.get('password')) {
-		const primaryPasswordHash: string = util.nintendoPasswordHash(person.get('password'), pnid.get('pid'));
+		const primaryPasswordHash: string = nintendoPasswordHash(person.get('password'), pnid.get('pid'));
 		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid.password = passwordHash;
@@ -523,7 +525,7 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 
 	await pnid.save();
 
-	await util.sendConfirmationEmail(pnid);
+	await sendConfirmationEmail(pnid);
 
 	response.send('');
 });

@@ -2,8 +2,8 @@ import dns from 'node:dns';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
-import database from '@/database';
-import util from '@/util';
+import { getUserByPID } from '@/database';
+import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail } from '@/util';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router: express.Router = express.Router();
@@ -56,7 +56,7 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 	const code: string = request.params.code;
 	const pid: number = Number(request.params.pid);
 
-	const pnid: HydratedPNIDDocument = await database.getUserByPID(pid);
+	const pnid: HydratedPNIDDocument = await getUserByPID(pid);
 
 	if (!pnid) {
 		return response.status(400).send(xmlbuilder.create({
@@ -88,7 +88,7 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 
 	await pnid.save();
 
-	await util.sendEmailConfirmedEmail(pnid);
+	await sendEmailConfirmedEmail(pnid);
 
 	response.status(200).send('');
 });
@@ -101,7 +101,7 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 router.get('/resend_confirmation', async (request: express.Request, response: express.Response) => {
 	const pid: number = Number(request.headers['x-nintendo-pid']);
 
-	const pnid: HydratedPNIDDocument = await database.getUserByPID(pid);
+	const pnid: HydratedPNIDDocument = await getUserByPID(pid);
 
 	if (!pnid) {
 		// TODO - Unsure if this is the right error
@@ -115,7 +115,7 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
 		}).end());
 	}
 
-	await util.sendConfirmationEmail(pnid);
+	await sendConfirmationEmail(pnid);
 
 	response.status(200).send('');
 });
@@ -129,7 +129,7 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
 router.get('/forgotten_password/:pid', async (request: express.Request, response: express.Response) => {
 	const pid: number = Number(request.params.pid);
 
-	const pnid: HydratedPNIDDocument = await database.getUserByPID(pid);
+	const pnid: HydratedPNIDDocument = await getUserByPID(pid);
 
 	if (!pnid) {
 		// TODO - Better errors
@@ -144,7 +144,7 @@ router.get('/forgotten_password/:pid', async (request: express.Request, response
 		}).end());
 	}
 
-	await util.sendForgotPasswordEmail(pnid);
+	await sendForgotPasswordEmail(pnid);
 
 	response.status(200).send('');
 });

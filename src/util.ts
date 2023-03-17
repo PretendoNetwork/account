@@ -5,8 +5,8 @@ import aws from 'aws-sdk';
 import fs from 'fs-extra';
 import express from 'express';
 import mongoose from 'mongoose';
-import mailer from '@/mailer';
-import cache from '@/cache';
+import { sendMail } from '@/mailer';
+import { getServiceAESKey, getServicePrivateKey, getServiceSecretKey, getServicePublicKey } from '@/cache';
 import { config, disabledFeatures } from '@/config-manager';
 import { CryptoOptions } from '@/types/common/crypto-options';
 import { TokenOptions } from '@/types/common/token-options';
@@ -24,7 +24,7 @@ if (!disabledFeatures.s3) {
 	});
 }
 
-function nintendoPasswordHash(password: string, pid: number): string {
+export function nintendoPasswordHash(password: string, pid: number): string {
 	const pidBuffer: Buffer = Buffer.alloc(4);
 	pidBuffer.writeUInt32LE(pid);
 
@@ -37,21 +37,21 @@ function nintendoPasswordHash(password: string, pid: number): string {
 	return crypto.createHash('sha256').update(unpacked).digest().toString('hex');
 }
 
-function nintendoBase64Decode(encoded: string): Buffer {
+export function nintendoBase64Decode(encoded: string): Buffer {
 	encoded = encoded.replaceAll('.', '+').replaceAll('-', '/').replaceAll('*', '=');
 	return Buffer.from(encoded, 'base64');
 }
 
-function nintendoBase64Encode(decoded: string | Buffer): string {
+export function nintendoBase64Encode(decoded: string | Buffer): string {
 	const encoded: string = Buffer.from(decoded).toString('base64');
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
-async function generateToken(cryptoOptions: CryptoOptions | null, tokenOptions: TokenOptions): Promise<string> {
+export async function generateToken(cryptoOptions: CryptoOptions | null, tokenOptions: TokenOptions): Promise<string> {
 	// Access and refresh tokens use a different format since they must be much smaller
 	// They take no extra crypto options
 	if (!cryptoOptions) {
-		const aesKey: Buffer = await cache.getServiceAESKey('account', 'hex');
+		const aesKey: Buffer = await getServiceAESKey('account', 'hex');
 
 		const dataBuffer: Buffer = Buffer.alloc(1 + 1 + 4 + 8);
 
@@ -136,11 +136,11 @@ async function generateToken(cryptoOptions: CryptoOptions | null, tokenOptions: 
 	return token.toString('base64'); // Encode to base64 for transport
 }
 
-async function decryptToken(token: Buffer): Promise<Buffer> {
+export async function decryptToken(token: Buffer): Promise<Buffer> {
 	// Access and refresh tokens use a different format since they must be much smaller
 	// Assume a small length means access or refresh token
 	if (token.length <= 32) {
-		const aesKey: Buffer = await cache.getServiceAESKey('account', 'hex');
+		const aesKey: Buffer = await getServiceAESKey('account', 'hex');
 
 		const iv: Buffer = Buffer.alloc(16);
 
@@ -154,8 +154,8 @@ async function decryptToken(token: Buffer): Promise<Buffer> {
 		return decryptedBody;
 	}
 
-	const privateKeyBytes: Buffer = await cache.getServicePrivateKey('account');
-	const secretKey: Buffer = await cache.getServiceSecretKey('account');
+	const privateKeyBytes: Buffer = await getServicePrivateKey('account');
+	const secretKey: Buffer = await getServiceSecretKey('account');
 
 	const privateKey: NodeRSA = new NodeRSA(privateKeyBytes, 'pkcs1-private-pem', {
 		environment: 'browser',
@@ -198,7 +198,7 @@ async function decryptToken(token: Buffer): Promise<Buffer> {
 	return decryptedBody;
 }
 
-function unpackToken(token: Buffer): Token {
+export function unpackToken(token: Buffer): Token {
 	if (token.length <= 14) {
 		return <Token>{
 			system_type: token.readUInt8(0x0),
@@ -218,7 +218,7 @@ function unpackToken(token: Buffer): Token {
 	};
 }
 
-function fullUrl(request: express.Request): string {
+export function fullUrl(request: express.Request): string {
 	const protocol: string = request.protocol;
 	const host: string = request.host;
 	const opath: string = request.originalUrl;
@@ -226,7 +226,7 @@ function fullUrl(request: express.Request): string {
 	return `${protocol}://${host}${opath}`;
 }
 
-async function uploadCDNAsset(bucket: string, key: string, data: Buffer, acl: string): Promise<void> {
+export async function uploadCDNAsset(bucket: string, key: string, data: Buffer, acl: string): Promise<void> {
 	if (disabledFeatures.s3) {
 		await writeLocalCDNFile(key, data);
 	} else {
@@ -239,7 +239,7 @@ async function uploadCDNAsset(bucket: string, key: string, data: Buffer, acl: st
 	}
 }
 
-async function writeLocalCDNFile(key: string, data: Buffer): Promise<void> {
+export async function writeLocalCDNFile(key: string, data: Buffer): Promise<void> {
 	const filePath: string = config.cdn.disk_path;
 	const folder: string = path.dirname(filePath);
 
@@ -247,7 +247,7 @@ async function writeLocalCDNFile(key: string, data: Buffer): Promise<void> {
 	await fs.writeFile(filePath, data);
 }
 
-function nascError(errorCode: string): URLSearchParams {
+export function nascError(errorCode: string): URLSearchParams {
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('1'),
 		returncd: errorCode == 'null' ? errorCode : nintendoBase64Encode(errorCode),
@@ -255,7 +255,7 @@ function nascError(errorCode: string): URLSearchParams {
 	});
 }
 
-async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
+export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const options: MailerOptions = {
 		to: pnid.get('email.address'),
 		subject: '[Pretendo Network] Please confirm your email address',
@@ -267,10 +267,10 @@ async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNI
 		text: `Hello ${pnid.get('username')}! \r\n\r\nYour Pretendo Network ID activation is almost complete. Please click the link to confirm your e-mail address and complete the activation process: \r\nhttps://api.pretendo.cc/v1/email/verify?token=${pnid.get('identification.email_token')} \r\n\r\nYou may also enter the following 6-digit code on your console: ${pnid.get('identification.email_code')}`
 	};
 
-	await mailer.sendMail(options);
+	await sendMail(options);
 }
 
-async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void>  {
+export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void>  {
 	const options: MailerOptions = {
 		to: pnid.get('email.address'),
 		subject: '[Pretendo Network] Email address confirmed',
@@ -279,12 +279,12 @@ async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IP
 		text: `Dear ${pnid.get('username')}, \r\n\r\nYour email address has been confirmed. We hope you have fun on Pretendo Network!`
 	};
 
-	await mailer.sendMail(options);
+	await sendMail(options);
 }
 
-async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
-	const publicKey: Buffer = await cache.getServicePublicKey('account');
-	const secretKey: Buffer = await cache.getServiceSecretKey('account');
+export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
+	const publicKey: Buffer = await getServicePublicKey('account');
+	const secretKey: Buffer = await getServiceSecretKey('account');
 
 	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
@@ -314,20 +314,5 @@ async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IP
 		text: `Dear ${pnid.get('username')}, a password reset has been requested from this account. \r\n\r\nIf you did not request the password reset, please ignore this email. \r\nIf you did request this password reset, please click the link to reset your password: ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
 	};
 
-	await mailer.sendMail(mailerOptions);
+	await sendMail(mailerOptions);
 }
-
-export default {
-	nintendoPasswordHash,
-	nintendoBase64Decode,
-	nintendoBase64Encode,
-	generateToken,
-	decryptToken,
-	unpackToken,
-	fullUrl,
-	uploadCDNAsset,
-	nascError,
-	sendConfirmationEmail,
-	sendEmailConfirmedEmail,
-	sendForgotPasswordEmail
-};

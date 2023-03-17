@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import express from 'express';
 import Dicer from 'dicer';
-import util from '@/util';
+import { uploadCDNAsset } from '@/util';
 
 const router: express.Router = express.Router();
 
@@ -72,7 +72,7 @@ router.post('/upload', multipartParser, async (request: express.Request, respons
 		return response.sendStatus(400);
 	}
 
-	await util.uploadCDNAsset(bucket, key, file, acl);
+	await uploadCDNAsset(bucket, key, file, acl);
 	response.sendStatus(200);
 });
 

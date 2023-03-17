@@ -1,8 +1,9 @@
 import express from 'express';
 import subdomain from 'express-subdomain';
-import routes from '@/services/local-cdn/routes';
 import { config, disabledFeatures } from '@/config-manager';
-import logger from '@/logger';
+import { LOG_INFO } from '@/logger';
+
+import get from '@/services/local-cdn/routes/get';
 
 const router: express.Router = express.Router();
 
@@ -13,14 +14,14 @@ if (disabledFeatures.s3) {
 	const localcdn: express.Router = express.Router();
 
 	// * Setup routes
-	logger.info('[LOCAL-CDN] Applying imported routes');
-	localcdn.use(routes.GET);
+	LOG_INFO('[LOCAL-CDN] Applying imported routes');
+	localcdn.use(get);
 
 	// * Create subdomains
-	logger.info(`[LOCAL-CDN] Creating '${config.cdn.subdomain}' subdomain`);
+	LOG_INFO(`[LOCAL-CDN] Creating '${config.cdn.subdomain}' subdomain`);
 	router.use(subdomain(config.cdn.subdomain, localcdn));
 } else {
-	logger.info('[LOCAL-CDN] s3 enabled, skipping local CDN');
+	LOG_INFO('[LOCAL-CDN] s3 enabled, skipping local CDN');
 }
 
 export default router;

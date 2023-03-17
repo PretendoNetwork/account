@@ -3,10 +3,10 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { Device } from '@/models/device';
 import { NEXAccount } from '@/models/nex-account';
-import util from '@/util';
-import database from '@/database';
+import { nascError, nintendoBase64Decode } from '@/util';
+import { connection as databaseConnection } from '@/database';
 import NintendoCertificate from '@/nintendo-certificate';
-import logger from '@/logger';
+import { LOG_ERROR } from '@/logger';
 import { NASCRequestParams } from '@/types/services/nasc/request-params';
 import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import { HydratedDeviceDocument } from '@/types/mongoose/device';
@@ -21,16 +21,16 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		!requestParams.titleid ||
 		!requestParams.servertype
 	) {
-		response.status(200).send(util.nascError('null')); // This is what Nintendo sends
+		response.status(200).send(nascError('null')); // This is what Nintendo sends
 		return;
 	}
 
-	const action: string = util.nintendoBase64Decode(requestParams.action).toString();
-	const fcdcert: Buffer = util.nintendoBase64Decode(requestParams.fcdcert);
-	const serialNumber: string = util.nintendoBase64Decode(requestParams.csnum).toString();
-	const macAddress: string = util.nintendoBase64Decode(requestParams.macadr).toString();
-	const titleID: string = util.nintendoBase64Decode(requestParams.titleid).toString();
-	const environment: string = util.nintendoBase64Decode(requestParams.servertype).toString();
+	const action: string = nintendoBase64Decode(requestParams.action).toString();
+	const fcdcert: Buffer = nintendoBase64Decode(requestParams.fcdcert);
+	const serialNumber: string = nintendoBase64Decode(requestParams.csnum).toString();
+	const macAddress: string = nintendoBase64Decode(requestParams.macadr).toString();
+	const titleID: string = nintendoBase64Decode(requestParams.titleid).toString();
+	const environment: string = nintendoBase64Decode(requestParams.servertype).toString();
 
 	const macAddressHash: string = crypto.createHash('sha256').update(macAddress).digest('base64');
 	const fcdcertHash: string = crypto.createHash('sha256').update(fcdcert).digest('base64');
@@ -40,31 +40,31 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	let password: string;
 
 	if (requestParams.userid) {
-		pid = Number(util.nintendoBase64Decode(requestParams.userid).toString());
+		pid = Number(nintendoBase64Decode(requestParams.userid).toString());
 	}
 
 	if (requestParams.uidhmac) {
-		pidHmac = util.nintendoBase64Decode(requestParams.uidhmac).toString();
+		pidHmac = nintendoBase64Decode(requestParams.uidhmac).toString();
 	}
 
 	if (requestParams.passwd) {
-		password = util.nintendoBase64Decode(requestParams.passwd).toString();
+		password = nintendoBase64Decode(requestParams.passwd).toString();
 	}
 
 	if (action !== 'LOGIN' && action !== 'SVCLOC') {
-		response.status(200).send(util.nascError('null')); // This is what Nintendo sends
+		response.status(200).send(nascError('null')); // This is what Nintendo sends
 		return;
 	}
 
 	const cert: NintendoCertificate = new NintendoCertificate(fcdcert);
 
 	if (!cert.valid) {
-		response.status(200).send(util.nascError('121'));
+		response.status(200).send(nascError('121'));
 		return;
 	}
 
 	if (!validNintendoMACAddress(macAddress)) {
-		response.status(200).send(util.nascError('null'));
+		response.status(200).send(nascError('null'));
 		return;
 	}
 
@@ -91,7 +91,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	}
 
 	if (!model) {
-		response.status(200).send(util.nascError('null'));
+		response.status(200).send(nascError('null'));
 		return;
 	}
 
@@ -105,7 +105,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 	if (device) {
 		if (device.get('access_level') < 0) {
-			response.status(200).send(util.nascError('102'));
+			response.status(200).send(nascError('102'));
 			return;
 		}
 
@@ -113,7 +113,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 			const linkedPIDs = device.get('linked_pids');
 
 			if (!linkedPIDs.includes(pid)) {
-				response.status(200).send(util.nascError('102'));
+				response.status(200).send(nascError('102'));
 				return;
 			}
 		}
@@ -123,7 +123,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		if (password && !pid && !pidHmac) {
 			// Register new user
 
-			const session: mongoose.ClientSession = await database.connection().startSession();
+			const session: mongoose.ClientSession = await databaseConnection().startSession();
 			await session.startTransaction();
 
 			try {
@@ -159,12 +159,12 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 				await session.commitTransaction();
 			} catch (error) {
-				logger.error('[NASC] REGISTER ACCOUNT: ' + error);
+				LOG_ERROR('[NASC] REGISTER ACCOUNT: ' + error);
 
 				await session.abortTransaction();
 
 				// 3DS expects 200 even on error
-				response.status(200).send(util.nascError('102'));
+				response.status(200).send(nascError('102'));
 				return;
 			} finally {
 				// * This runs regardless of failure
@@ -177,7 +177,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	const nexUser: HydratedNEXAccountDocument = await NEXAccount.findOne({ pid });
 
 	if (!nexUser || nexUser.get('access_level') < 0) {
-		response.status(200).send(util.nascError('102'));
+		response.status(200).send(nascError('102'));
 		return;
 	}
 

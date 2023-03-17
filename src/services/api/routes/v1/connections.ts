@@ -1,5 +1,5 @@
 import express from 'express';
-import database from '@/database';
+import { addUserConnection, removeUserConnection } from '@/database';
 import { ConnectionData } from '@/types/services/api/connection-data';
 import { ConnectionResponse } from '@/types/services/api/connection-response';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
@@ -44,7 +44,7 @@ router.post('/add/:type', async (request: express.Request, response: express.Res
 		});
 	}
 
-	const result: ConnectionResponse = await database.addUserConnection(pnid, data, type);
+	const result: ConnectionResponse = await addUserConnection(pnid, data, type);
 
 	response.status(result.status).json(result);
 });
@@ -74,7 +74,7 @@ router.delete('/remove/:type', async (request: express.Request, response: expres
 		});
 	}
 
-	const result: ConnectionResponse = await database.removeUserConnection(pnid, type);
+	const result: ConnectionResponse = await removeUserConnection(pnid, type);
 
 	response.status(result.status).json(result);
 });

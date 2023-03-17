@@ -6,7 +6,7 @@ import TGA from 'tga';
 import got from 'got';
 import Mii from 'mii-js';
 import { DeviceSchema } from '@/models/device';
-import util from '@/util';
+import { uploadCDNAsset } from '@/util';
 import { HydratedPNIDDocument, IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 
 const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
@@ -185,8 +185,8 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 
 	const userMiiKey: string = `mii/${this.get('pid')}`;
 
-	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/standard.tga`, tga, 'public-read');
-	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
+	await uploadCDNAsset('pn-cdn', `${userMiiKey}/standard.tga`, tga, 'public-read');
+	await uploadCDNAsset('pn-cdn', `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
 
 	const expressions: string[] = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
 	for (const expression of expressions) {
@@ -197,7 +197,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 			instanceCount: '1',
 		});
 		const miiStudioExpressionImageData: Buffer = await got(miiStudioExpressionUrl).buffer();
-		await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
+		await uploadCDNAsset('pn-cdn', `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
 	}
 
 	const miiStudioBodyUrl: string = mii.studioUrl({
@@ -206,7 +206,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 		instanceCount: '1',
 	});
 	const miiStudioBodyImageData: Buffer = await got(miiStudioBodyUrl).buffer();
-	await util.uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
+	await uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 });
 
 PNIDSchema.method('getServerMode', function getServerMode(): string {

@@ -1,9 +1,9 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import fs from 'fs-extra';
-import database from '@/database';
-import util from '@/util';
-import cache from '@/cache';
+import { getServerByTitleId, getServer } from '@/database';
+import { generateToken } from '@/util';
+import { getServicePublicKey, getServiceSecretKey, getNEXPublicKey, getNEXSecretKey } from '@/cache';
 import { NEXAccount } from '@/models/nex-account';
 import { CryptoOptions } from '@/types/common/crypto-options';
 import { TokenOptions } from '@/types/common/token-options';
@@ -23,7 +23,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 
 	const titleId: string = request.headers['x-nintendo-title-id'] as string;
 	const serverAccessLevel: string = pnid.get('server_access_level');
-	const server: HydratedServerDocument = await database.getServerByTitleId(titleId, serverAccessLevel);
+	const server: HydratedServerDocument = await getServerByTitleId(titleId, serverAccessLevel);
 
 	if (!server) {
 		return response.send(xmlbuilder.create({
@@ -53,8 +53,8 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		}).end());
 	}
 
-	const publicKey: Buffer = await cache.getServicePublicKey(serverName);
-	const secretKey: Buffer = await cache.getServiceSecretKey(serverName);
+	const publicKey: Buffer = await getServicePublicKey(serverName);
+	const secretKey: Buffer = await getServiceSecretKey(serverName);
 
 	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
@@ -70,7 +70,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let serviceToken: string = await util.generateToken(cryptoOptions, tokenOptions);
+	let serviceToken: string = await generateToken(cryptoOptions, tokenOptions);
 
 	if (request.isCemu) {
 		serviceToken = Buffer.from(serviceToken, 'base64').toString('hex');
@@ -104,7 +104,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	}
 
 	const serverAccessLevel: string = pnid.get('server_access_level');
-	const server: HydratedServerDocument = await database.getServer(gameServerID, serverAccessLevel);
+	const server: HydratedServerDocument = await getServer(gameServerID, serverAccessLevel);
 
 	if (!server) {
 		return response.send(xmlbuilder.create({
@@ -137,8 +137,8 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		}).end());
 	}
 
-	const publicKey: Buffer = await cache.getNEXPublicKey(serverName);
-	const secretKey: Buffer = await cache.getNEXSecretKey(serverName);
+	const publicKey: Buffer = await getNEXPublicKey(serverName);
+	const secretKey: Buffer = await getNEXSecretKey(serverName);
 
 	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
@@ -163,7 +163,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
 	}
 
-	let nexToken: string = await util.generateToken(cryptoOptions, tokenOptions);
+	let nexToken: string = await generateToken(cryptoOptions, tokenOptions);
 
 	if (request.isCemu) {
 		nexToken = Buffer.from(nexToken, 'base64').toString('hex');

@@ -8,10 +8,10 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import mongoose from 'mongoose';
-import database from '@/database';
-import cache from '@/cache';
-import util from '@/util';
-import logger from '@/logger';
+import { doesUserExist, connection as databaseConnection } from '@/database';
+import { getServicePublicKey, getServiceSecretKey } from '@/cache';
+import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
@@ -141,7 +141,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	const userExists: boolean = await database.doesUserExist(username);
+	const userExists: boolean = await doesUserExist(username);
 
 	if (userExists) {
 		return response.status(400).json({
@@ -232,7 +232,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	let pnid: HydratedPNIDDocument;
 	let nexAccount: HydratedNEXAccountDocument;
 
-	const session: mongoose.ClientSession = await database.connection().startSession();
+	const session: mongoose.ClientSession = await databaseConnection().startSession();
 	await session.startTransaction();
 
 	try {
@@ -254,7 +254,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
 		await nexAccount.save({ session });
 
-		const primaryPasswordHash: string = util.nintendoPasswordHash(password, nexAccount.get('pid'));
+		const primaryPasswordHash: string = nintendoPasswordHash(password, nexAccount.get('pid'));
 		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid = new PNID({
@@ -309,7 +309,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
 		await session.commitTransaction();
 	} catch (error) {
-		logger.error('[POST] /v1/register: ' + error);
+		LOG_ERROR('[POST] /v1/register: ' + error);
 
 		await session.abortTransaction();
 
@@ -324,7 +324,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		await session.endSession();
 	}
 
-	await util.sendConfirmationEmail(pnid);
+	await sendConfirmationEmail(pnid);
 
 	const cryptoPath: string = `${__dirname}/../../../../../certs/service/account`;
 
@@ -337,8 +337,8 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	const publicKey: Buffer = await cache.getServicePublicKey('account');
-	const secretKey: Buffer = await cache.getServiceSecretKey('account');
+	const publicKey: Buffer = await getServicePublicKey('account');
+	const secretKey: Buffer = await getServiceSecretKey('account');
 
 	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
@@ -363,8 +363,8 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken: string = await util.generateToken(cryptoOptions, accessTokenOptions);
-	const refreshToken: string = await util.generateToken(cryptoOptions, refreshTokenOptions);
+	const accessToken: string = await generateToken(cryptoOptions, accessTokenOptions);
+	const refreshToken: string = await generateToken(cryptoOptions, refreshTokenOptions);
 
 	response.json({
 		access_token: accessToken,

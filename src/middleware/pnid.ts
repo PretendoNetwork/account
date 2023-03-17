@@ -1,6 +1,6 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
-import database from '@/database';
+import { getUserBasic, getUserBearer } from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
@@ -20,9 +20,9 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	}
 
 	if (type === 'Basic') {
-		user = await database.getUserBasic(token);
+		user = await getUserBasic(token);
 	} else {
-		user = await database.getUserBearer(token);
+		user = await getUserBearer(token);
 	}
 
 	if (!user) {

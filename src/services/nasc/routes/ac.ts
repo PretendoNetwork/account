@@ -1,7 +1,7 @@
 import express from 'express';
-import util from '@/util';
-import database from '@/database';
-import cache from '@/cache';
+import { nintendoBase64Encode, nintendoBase64Decode, nascError, generateToken } from '@/util';
+import { getServerByTitleId } from '@/database';
+import { getNEXPublicKey, getNEXSecretKey } from '@/cache';
 import { CryptoOptions } from '@/types/common/crypto-options';
 import { TokenOptions } from '@/types/common/token-options';
 import { NASCRequestParams } from '@/types/services/nasc/request-params';
@@ -17,7 +17,7 @@ const router: express.Router = express.Router();
  */
 router.post('/', async (request: express.Request, response: express.Response) => {
 	const requestParams: NASCRequestParams = request.body;
-	const action: string = util.nintendoBase64Decode(requestParams.action).toString();
+	const action: string = nintendoBase64Decode(requestParams.action).toString();
 	let responseData: URLSearchParams;
 
 	switch (action) {
@@ -34,7 +34,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
 async function processLoginRequest(request: express.Request): Promise<URLSearchParams> {
 	const requestParams: NASCRequestParams = request.body;
-	const titleID: string = util.nintendoBase64Decode(requestParams.titleid).toString();
+	const titleID: string = nintendoBase64Decode(requestParams.titleid).toString();
 	const nexUser: HydratedNEXAccountDocument = request.nexUser;
 
 	// TODO: REMOVE AFTER PUBLIC LAUNCH
@@ -45,18 +45,18 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 		serverAccessLevel = nexUser.get('server_access_level');
 	}
 
-	const server: HydratedServerDocument = await database.getServerByTitleId(titleID, serverAccessLevel);
+	const server: HydratedServerDocument = await getServerByTitleId(titleID, serverAccessLevel);
 
 	if (!server || !server.service_name || !server.ip || !server.port) {
-		return util.nascError('110');
+		return nascError('110');
 	}
 
 	const serverName: string = server.service_name;
 	const ip: string = server.ip;
 	const port: number = server.port;
 
-	const publicKey: Buffer = await cache.getNEXPublicKey(serverName);
-	const secretKey: Buffer = await cache.getNEXSecretKey(serverName);
+	const publicKey: Buffer = await getNEXPublicKey(serverName);
+	const secretKey: Buffer = await getNEXSecretKey(serverName);
 
 	const cryptoOptions: CryptoOptions = {
 		public_key: publicKey,
@@ -72,26 +72,26 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let nexToken: string = await util.generateToken(cryptoOptions, tokenOptions);
-	nexToken = util.nintendoBase64Encode(Buffer.from(nexToken, 'base64'));
+	let nexToken: string = await generateToken(cryptoOptions, tokenOptions);
+	nexToken = nintendoBase64Encode(Buffer.from(nexToken, 'base64'));
 
 	return new URLSearchParams({
-		locator: util.nintendoBase64Encode(`${ip}:${port}`),
-		retry: util.nintendoBase64Encode('0'),
-		returncd: util.nintendoBase64Encode('001'),
+		locator: nintendoBase64Encode(`${ip}:${port}`),
+		retry: nintendoBase64Encode('0'),
+		returncd: nintendoBase64Encode('001'),
 		token: nexToken,
-		datetime: util.nintendoBase64Encode(Date.now().toString()),
+		datetime: nintendoBase64Encode(Date.now().toString()),
 	});
 }
 
 async function processServiceTokenRequest(_request: express.Request): Promise<URLSearchParams> {
 	return new URLSearchParams({
-		retry: util.nintendoBase64Encode('0'),
-		returncd: util.nintendoBase64Encode('007'),
-		servicetoken: util.nintendoBase64Encode(Buffer.alloc(64).toString()), // hard coded for now
-		statusdata: util.nintendoBase64Encode('Y'),
-		svchost: util.nintendoBase64Encode('n/a'),
-		datetime: util.nintendoBase64Encode(Date.now().toString()),
+		retry: nintendoBase64Encode('0'),
+		returncd: nintendoBase64Encode('007'),
+		servicetoken: nintendoBase64Encode(Buffer.alloc(64).toString()), // hard coded for now
+		statusdata: nintendoBase64Encode('Y'),
+		svchost: nintendoBase64Encode('n/a'),
+		datetime: nintendoBase64Encode(Date.now().toString()),
 	});
 }
 

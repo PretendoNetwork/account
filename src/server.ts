@@ -7,10 +7,10 @@ process.on('uncaughtException', (err, origin) => {
 import express from 'express';
 import morgan from 'morgan';
 import xmlparser from '@/middleware/xml-parser';
-import cache from '@/cache';
-import database from '@/database';
-import util from '@/util';
-import logger from '@/logger';
+import { connect as connectCache } from '@/cache';
+import { connect as connectDatabase } from '@/database';
+import { fullUrl } from '@/util';
+import { LOG_INFO, LOG_SUCCESS, LOG_WARN } from '@/logger';
 
 import conntest from '@/services/conntest';
 import nnid from '@/services/nnid';
@@ -28,7 +28,7 @@ const app = express();
 // START APPLICATION
 
 // Create router
-logger.info('Setting up Middleware');
+LOG_INFO('Setting up Middleware');
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({
@@ -46,12 +46,12 @@ app.use(localcdn);
 app.use(assets);
 
 // 404 handler
-logger.info('Creating 404 status handler');
+LOG_INFO('Creating 404 status handler');
 app.use((request: express.Request, response: express.Response) => {
-	const fullUrl: string = util.fullUrl(request);
+	const url: string = fullUrl(request);
 	const deviceId: string = request.headers['X-Nintendo-Device-ID'] as string || 'Unknown';
 
-	logger.warn(`HTTP 404 at ${fullUrl} from ${deviceId}`);
+	LOG_WARN(`HTTP 404 at ${url} from ${deviceId}`);
 
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
@@ -62,13 +62,13 @@ app.use((request: express.Request, response: express.Response) => {
 });
 
 // non-404 error handler
-logger.info('Creating non-404 status handler');
+LOG_INFO('Creating non-404 status handler');
 app.use((error: any, request: express.Request, response: express.Response, _next: express.NextFunction) => {
 	const status: number = error.status || 500;
-	const fullUrl: string = util.fullUrl(request);
+	const url: string = fullUrl(request);
 	const deviceId: string = request.headers['X-Nintendo-Device-ID'] as string || 'Unknown';
 
-	logger.warn(`HTTP ${status} at ${fullUrl} from ${deviceId}: ${error.message}`);
+	LOG_WARN(`HTTP ${status} at ${url} from ${deviceId}: ${error.message}`);
 
 	response.status(status);
 	response.json({
@@ -80,13 +80,13 @@ app.use((error: any, request: express.Request, response: express.Response, _next
 
 async function main(): Promise<void> {
 	// Starts the server
-	logger.info('Starting server');
+	LOG_INFO('Starting server');
 
-	await database.connect();
-	await cache.connect();
+	await connectDatabase();
+	await connectCache();
 
 	app.listen(port, () => {
-		logger.success(`Server started on port ${port}`);
+		LOG_SUCCESS(`Server started on port ${port}`);
 	});
 }
 
