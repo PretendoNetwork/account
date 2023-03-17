@@ -28,12 +28,12 @@ export async function setCachedFile(fileName: string, value: Buffer): Promise<vo
 }
 
 export async function getCachedFile(fileName: string, encoding?: BufferEncoding): Promise<Buffer> {
-	let cachedFile: Buffer;
+	let cachedFile: Buffer = Buffer.alloc(0);
 
 	if (disabledFeatures.redis) {
 		cachedFile = memoryCache[fileName] || null;
 	} else {
-		const redisValue: string = await client.get(fileName);
+		const redisValue: string | null = await client.get(fileName);
 		if (redisValue) {
 			cachedFile = Buffer.from(redisValue, encoding);
 		}
@@ -177,7 +177,7 @@ export async function getLocalCDNFile(name: string, encoding?: BufferEncoding): 
 
 	if (file === null) {
 		if (await fs.pathExists(`${LOCAL_CDN_BASE}/${name}`)) {
-			const fileBuffer: string = await fs.readFile(`${LOCAL_CDN_BASE}/${name}`, { encoding });
+			const fileBuffer: string | Buffer = await fs.readFile(`${LOCAL_CDN_BASE}/${name}`, { encoding });
 			file = Buffer.from(fileBuffer);
 			await setLocalCDNFile(name, file);
 		}

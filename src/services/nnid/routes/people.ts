@@ -212,9 +212,21 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 
-	const person: PNIDProfile = await getUserProfileJSONByPID(pnid.get('pid'));
+	if (!pnid) {
+		// TODO - Research this error more
+		response.status(404);
+		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	}
+
+	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.get('pid'));
+
+	if (!person) {
+		// TODO - Research this error more
+		response.status(404);
+		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	}
 
 	response.send(xmlbuilder.create({
 		person
@@ -237,9 +249,21 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 
 	// TODO - CHANGE THIS. WE NEED TO SAVE CONSOLE DETAILS !!!
 
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 
-	const person: PNIDProfile = await getUserProfileJSONByPID(pnid.pid);
+	if (!pnid) {
+		// TODO - Research this error more
+		response.status(404);
+		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	}
+
+	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.get('pid'));
+
+	if (!person) {
+		// TODO - Research this error more
+		response.status(404);
+		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	}
 
 	response.send(xmlbuilder.create({
 		person
@@ -256,13 +280,19 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 	const deviceId: string = request.headers['x-nintendo-device-id'] as string;
 	const acceptLanguage: string = request.headers['accept-language'] as string;
 	const platformId: string = request.headers['x-nintendo-platform-id'] as string;
 	const region: string = request.headers['x-nintendo-region'] as string;
 	const serialNumber: string = request.headers['x-nintendo-serial-number'] as string;
 	const systemVersion: string = request.headers['x-nintendo-system-version'] as string;
+
+	if (!pnid) {
+		// TODO - Research this error more
+		response.status(404);
+		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	}
 
 	response.send(xmlbuilder.create({
 		devices: [
@@ -295,9 +325,21 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', moment().add(5, 'h').toString());
 
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 
-	const person: PNIDProfile = await getUserProfileJSONByPID(pnid.get('pid'));
+	if (!pnid) {
+		// TODO - Research this error more
+		response.status(404);
+		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	}
+
+	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.get('pid'));
+
+	if (!person) {
+		// TODO - Research this error more
+		response.status(404);
+		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	}
 
 	response.send(xmlbuilder.create({
 		person
@@ -326,14 +368,22 @@ router.get('/@me/devices/status', async (_request: express.Request, response: ex
  * Description: Updates a users Mii
  */
 router.put('/@me/miis/@primary', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
+
+	if (!pnid) {
+		// TODO - Research this error more
+		response.status(404);
+		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	}
 
 	// TODO - Make this more strictly typed?
 	const mii: Map<string, string> = request.body.get('mii');
 
-	const name: string = mii.get('name');
-	const primary: string = mii.get('primary');
-	const data: string = mii.get('data');
+	// TODO - Better checks
+
+	const name: string | undefined = mii.get('name') || '';
+	const primary: string | undefined = mii.get('primary') || '';
+	const data: string | undefined = mii.get('data') || '';
 
 	await pnid.updateMii({ name, primary, data });
 
@@ -349,7 +399,7 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
 		response.status(400);
@@ -375,7 +425,7 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
  * Description: Deletes a NNID
  */
 router.put('/@me/deletion', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
 		response.status(400);
@@ -400,7 +450,7 @@ router.put('/@me/deletion', async (request: express.Request, response: express.R
  * Description: Updates a PNIDs account details
  */
 router.put('/@me', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 	const person: Person = request.body.get('person');
 
 	if (!pnid) {
@@ -454,7 +504,7 @@ router.put('/@me', async (request: express.Request, response: express.Response) 
  * Description: Gets a list (why?) of PNID emails
  */
 router.get('/@me/emails', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
 		response.status(400);
@@ -495,12 +545,12 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
  * Description: Updates a users email address
  */
 router.put('/@me/emails/@primary', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	// TODO - Make this more strictly typed?
 	const email: Map<string, string> = request.body.get('email');
 
-	if (!pnid) {
+	if (!pnid || !email) {
 		response.status(400);
 
 		return response.end(xmlbuilder.create({
@@ -514,7 +564,8 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 		}).end());
 	}
 
-	pnid.set('email.address', email.get('address').toLowerCase());
+	// TODO - Better email check
+	pnid.set('email.address', (email.get('address') || '').toLowerCase());
 	pnid.set('email.reachable', false);
 	pnid.set('email.validated', false);
 	pnid.set('email.validated_date', '');

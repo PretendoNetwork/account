@@ -4,8 +4,8 @@ import { document as xmlParser } from 'xmlbuilder2';
 
 function XMLMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	if (request.method == 'POST' || request.method == 'PUT') {
-		const contentType: string = request.headers['content-type'];
-		const contentLength: string = request.headers['content-length'];
+		const contentType: string | undefined = request.headers['content-type'];
+		const contentLength: string | undefined = request.headers['content-length'];
 		let body: string = '';
 
 		if (

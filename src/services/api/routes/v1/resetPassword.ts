@@ -47,7 +47,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	const pnid: HydratedPNIDDocument = await PNID.findOne({ pid: unpackedToken.pid });
+	const pnid: HydratedPNIDDocument | null = await PNID.findOne({ pid: unpackedToken.pid });
 
 	if (!pnid) {
 		return response.status(400).json({

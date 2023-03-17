@@ -7,7 +7,7 @@ import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 const router: express.Router = express.Router();
 
 router.get('/verify', async (request: express.Request, response: express.Response) => {
-	let token: string = request.query.token as string;
+	const token: string = request.query.token as string;
 
 	if (!token || token.trim() == '') {
 		return response.status(400).json({
@@ -17,7 +17,7 @@ router.get('/verify', async (request: express.Request, response: express.Respons
 		});
 	}
 
-	const pnid: HydratedPNIDDocument = await PNID.findOne({
+	const pnid: HydratedPNIDDocument | null = await PNID.findOne({
 		'identification.email_token': token
 	});
 

@@ -17,7 +17,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	let pnid: HydratedPNIDDocument;
+	let pnid: HydratedPNIDDocument | null;
 
 	if (validator.isEmail(input)) {
 		pnid = await getUserByEmailAddress(input);

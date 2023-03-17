@@ -52,7 +52,7 @@ router.post('/access_token/generate', async (request: express.Request, response:
 		}).end());
 	}
 
-	const pnid: HydratedPNIDDocument = await getUserByUsername(username);
+	const pnid: HydratedPNIDDocument | null = await getUserByUsername(username);
 
 	if (!pnid || !await bcrypt.compare(password, pnid.password)) {
 		response.status(400);
@@ -103,12 +103,14 @@ router.post('/access_token/generate', async (request: express.Request, response:
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let accessToken: string = await generateToken(null, accessTokenOptions);
-	let refreshToken: string = await generateToken(null, refreshTokenOptions);
+	let accessToken: string | null = await generateToken(null, accessTokenOptions);
+	let refreshToken: string | null = await generateToken(null, refreshTokenOptions);
+
+	// TODO - Handle null tokens
 
 	if (request.isCemu) {
-		accessToken = Buffer.from(accessToken, 'base64').toString('hex');
-		refreshToken = Buffer.from(refreshToken, 'base64').toString('hex');
+		accessToken = Buffer.from(accessToken || '', 'base64').toString('hex');
+		refreshToken = Buffer.from(refreshToken || '', 'base64').toString('hex');
 	}
 
 	response.send(xmlbuilder.create({

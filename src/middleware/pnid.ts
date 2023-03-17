@@ -4,7 +4,7 @@ import { getUserBasic, getUserBearer } from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
-	const authHeader: string = request.headers.authorization;
+	const authHeader: string | undefined = request.headers.authorization;
 
 	if (!authHeader || !(authHeader.startsWith('Bearer') || authHeader.startsWith('Basic'))) {
 		return next();
@@ -13,7 +13,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	const parts: string[] = authHeader.split(' ');
 	const type: string = parts[0];
 	let token: string = parts[1];
-	let user: HydratedPNIDDocument;
+	let user: HydratedPNIDDocument | null;
 
 	if (request.isCemu) {
 		token = Buffer.from(token, 'hex').toString('base64');

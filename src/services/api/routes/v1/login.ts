@@ -54,7 +54,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	let pnid: HydratedPNIDDocument;
+	let pnid: HydratedPNIDDocument | null;
 
 	if (grantType === 'password') {
 		pnid = await getUserByUsername(username);
@@ -125,8 +125,10 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken: string = await generateToken(cryptoOptions, accessTokenOptions);
-	const newRefreshToken: string = await generateToken(cryptoOptions, refreshTokenOptions);
+	const accessToken: string | null = await generateToken(cryptoOptions, accessTokenOptions);
+	const newRefreshToken: string | null = await generateToken(cryptoOptions, refreshTokenOptions);
+
+	// TODO - Handle null tokens
 
 	response.json({
 		access_token: accessToken,

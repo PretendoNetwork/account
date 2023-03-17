@@ -18,7 +18,7 @@ const router: express.Router = express.Router();
 router.post('/', async (request: express.Request, response: express.Response) => {
 	const requestParams: NASCRequestParams = request.body;
 	const action: string = nintendoBase64Decode(requestParams.action).toString();
-	let responseData: URLSearchParams;
+	let responseData: URLSearchParams = nascError('null');
 
 	switch (action) {
 		case 'LOGIN':
@@ -35,7 +35,12 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 async function processLoginRequest(request: express.Request): Promise<URLSearchParams> {
 	const requestParams: NASCRequestParams = request.body;
 	const titleID: string = nintendoBase64Decode(requestParams.titleid).toString();
-	const nexUser: HydratedNEXAccountDocument = request.nexUser;
+	const nexUser: HydratedNEXAccountDocument | null = request.nexUser;
+
+	if (!nexUser) {
+		// TODO - Research this error more
+		return nascError('null');
+	}
 
 	// TODO: REMOVE AFTER PUBLIC LAUNCH
 	// LET EVERYONE IN THE `test` FRIENDS SERVER
@@ -45,7 +50,7 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 		serverAccessLevel = nexUser.get('server_access_level');
 	}
 
-	const server: HydratedServerDocument = await getServerByTitleId(titleID, serverAccessLevel);
+	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
 
 	if (!server || !server.service_name || !server.ip || !server.port) {
 		return nascError('110');
@@ -72,8 +77,10 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let nexToken: string = await generateToken(cryptoOptions, tokenOptions);
-	nexToken = nintendoBase64Encode(Buffer.from(nexToken, 'base64'));
+	// TODO - Handle null tokens
+
+	let nexToken: string | null = await generateToken(cryptoOptions, tokenOptions);
+	nexToken = nintendoBase64Encode(Buffer.from(nexToken || '', 'base64'));
 
 	return new URLSearchParams({
 		locator: nintendoBase64Encode(`${ip}:${port}`),

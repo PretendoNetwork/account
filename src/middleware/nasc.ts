@@ -35,9 +35,9 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	const macAddressHash: string = crypto.createHash('sha256').update(macAddress).digest('base64');
 	const fcdcertHash: string = crypto.createHash('sha256').update(fcdcert).digest('base64');
 
-	let pid: number;
-	let pidHmac: string;
-	let password: string;
+	let pid: number = 0; // * Real PIDs are always positive and non-zero
+	let pidHmac: string = '';
+	let password: string = '';
 
 	if (requestParams.userid) {
 		pid = Number(nintendoBase64Decode(requestParams.userid).toString());
@@ -68,7 +68,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
-	let model: string;
+	let model: string = '';
 	switch (serialNumber[0]) {
 		case 'C':
 			model = 'ctr';
@@ -95,7 +95,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
-	let device: HydratedDeviceDocument = await Device.findOne({
+	let device: HydratedDeviceDocument | null = await Device.findOne({
 		model,
 		serial: serialNumber,
 		environment,
@@ -174,7 +174,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		}
 	}
 
-	const nexUser: HydratedNEXAccountDocument = await NEXAccount.findOne({ pid });
+	const nexUser: HydratedNEXAccountDocument | null = await NEXAccount.findOne({ pid });
 
 	if (!nexUser || nexUser.get('access_level') < 0) {
 		response.status(200).send(nascError('102'));

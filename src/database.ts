@@ -42,7 +42,7 @@ export function verifyConnected(): void {
 	}
 }
 
-export async function getUserByUsername(username: string): Promise<HydratedPNIDDocument> {
+export async function getUserByUsername(username: string): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	return await PNID.findOne<HydratedPNIDDocument>({
@@ -50,7 +50,7 @@ export async function getUserByUsername(username: string): Promise<HydratedPNIDD
 	});
 }
 
-export async function getUserByPID(pid: number): Promise<HydratedPNIDDocument> {
+export async function getUserByPID(pid: number): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	return await PNID.findOne<HydratedPNIDDocument>({
@@ -58,7 +58,7 @@ export async function getUserByPID(pid: number): Promise<HydratedPNIDDocument> {
 	});
 }
 
-export async function getUserByEmailAddress(email: string): Promise<HydratedPNIDDocument> {
+export async function getUserByEmailAddress(email: string): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	// TODO - Update documents to store email normalized
@@ -73,7 +73,7 @@ export async function doesUserExist(username: string): Promise<boolean> {
 	return !!await getUserByUsername(username);
 }
 
-export async function getUserBasic(token: string): Promise<HydratedPNIDDocument> {
+export async function getUserBasic(token: string): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	// * Wii U sends Basic auth as `username password`, where the password may not have spaces
@@ -84,7 +84,7 @@ export async function getUserBasic(token: string): Promise<HydratedPNIDDocument>
 	const username: string = parts[0];
 	const password: string = parts[1];
 
-	const user: HydratedPNIDDocument = await getUserByUsername(username);
+	const user: HydratedPNIDDocument | null = await getUserByUsername(username);
 
 	if (!user) {
 		return null;
@@ -99,14 +99,14 @@ export async function getUserBasic(token: string): Promise<HydratedPNIDDocument>
 	return user;
 }
 
-export async function getUserBearer(token: string): Promise<HydratedPNIDDocument> {
+export async function getUserBearer(token: string): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	try {
 		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'base64'));
 		const unpackedToken: Token = unpackToken(decryptedToken);
 
-		const user: HydratedPNIDDocument = await getUserByPID(unpackedToken.pid);
+		const user: HydratedPNIDDocument | null = await getUserByPID(unpackedToken.pid);
 
 		if (user) {
 			const expireTime: number = Math.floor((Number(unpackedToken.expire_time) / 1000));
@@ -124,27 +124,38 @@ export async function getUserBearer(token: string): Promise<HydratedPNIDDocument
 	}
 }
 
-export async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile> {
+export async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile | null> {
 	verifyConnected();
 
-	const user: HydratedPNIDDocument = await getUserByPID(pid);
+	const user: HydratedPNIDDocument | null = await getUserByPID(pid);
+
+	if (!user) {
+		return null;
+	}
+
 	const device: HydratedDeviceDocument = user.get('devices')[0]; // * Just grab the first device
-	let device_attributes: [{
+	let device_attributes: {
 		device_attribute: {
 			name: string;
 			value: string;
 			created_date: string;
 		};
-	}];
+	}[] = [];
 
 	if (device) {
-		device_attributes = device.get('device_attributes').map(({name, value, created_date}) => ({
-			device_attribute: {
-				name,
-				value,
-				created_date: created_date ? created_date : ''
-			}
-		}));
+		device_attributes = device.get('device_attributes').map((attribute: { name: string; value: string; created_date: string; }) => {
+			const name: string = attribute.name;
+			const value: string = attribute.value;
+			const created_date: string = attribute.created_date;
+
+			return {
+				device_attribute: {
+					name,
+					value,
+					created_date: created_date ? created_date : ''
+				}
+			};
+		});
 	}
 
 	return {
@@ -196,21 +207,21 @@ export async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile>
 	};
 }
 
-export async function getServer(gameServerId: string, accessMode: string): Promise<HydratedServerDocument> {
+export async function getServer(gameServerId: string, accessMode: string): Promise<HydratedServerDocument | null> {
 	return await Server.findOne({
 		game_server_id: gameServerId,
 		access_mode: accessMode
 	});
 }
 
-export async function getServerByTitleId(titleId: string, accessMode: string): Promise<HydratedServerDocument> {
+export async function getServerByTitleId(titleId: string, accessMode: string): Promise<HydratedServerDocument | null> {
 	return await Server.findOne({
 		title_ids: titleId,
 		access_mode: accessMode
 	});
 }
 
-export async function addUserConnection(pnid: HydratedPNIDDocument, data: ConnectionData, type: string): Promise<ConnectionResponse> {
+export async function addUserConnection(pnid: HydratedPNIDDocument, data: ConnectionData, type: string): Promise<ConnectionResponse | undefined> {
 	if (type === 'discord') {
 		return await addUserConnectionDiscord(pnid, data);
 	}
@@ -239,7 +250,7 @@ export async function addUserConnectionDiscord(pnid: HydratedPNIDDocument, data:
 	};
 }
 
-export async function removeUserConnection(pnid: HydratedPNIDDocument, type: string): Promise<ConnectionResponse> {
+export async function removeUserConnection(pnid: HydratedPNIDDocument, type: string): Promise<ConnectionResponse | undefined> {
 	// * Add more connections later?
 	if (type === 'discord') {
 		return await removeUserConnectionDiscord(pnid);

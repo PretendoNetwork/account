@@ -64,9 +64,10 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 				pid?: number;
 			} = {};
 
+			// TODO - TS strict mode...what?
 			query[queryInput] = input;
 
-			const searchResult: HydratedPNIDDocument = await PNID.findOne(query);
+			const searchResult: HydratedPNIDDocument | null = await PNID.findOne(query);
 
 			if (searchResult) {
 				result.out_id = searchResult.get(queryOutput);

@@ -19,11 +19,25 @@ const router: express.Router = express.Router();
  * Description: Gets a service token
  */
 router.get('/service_token/@me', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
+
+	if (!pnid) {
+		response.status(400);
+
+		return response.end(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		}).end());
+	}
 
 	const titleId: string = request.headers['x-nintendo-title-id'] as string;
 	const serverAccessLevel: string = pnid.get('server_access_level');
-	const server: HydratedServerDocument = await getServerByTitleId(titleId, serverAccessLevel);
+	const server: HydratedServerDocument | null = await getServerByTitleId(titleId, serverAccessLevel);
 
 	if (!server) {
 		return response.send(xmlbuilder.create({
@@ -70,10 +84,12 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let serviceToken: string = await generateToken(cryptoOptions, tokenOptions);
+	let serviceToken: string | null = await generateToken(cryptoOptions, tokenOptions);
+
+	// TODO - Handle null tokens
 
 	if (request.isCemu) {
-		serviceToken = Buffer.from(serviceToken, 'base64').toString('hex');
+		serviceToken = Buffer.from(serviceToken || '', 'base64').toString('hex');
 	}
 
 	response.send(xmlbuilder.create({
@@ -89,7 +105,22 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
  * Description: Gets a NEX server address and token
  */
 router.get('/nex_token/@me', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
+
+	if (!pnid) {
+		response.status(400);
+
+		return response.end(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'access_token',
+					code: '0002',
+					message: 'Invalid access token'
+				}
+			}
+		}).end());
+	}
+
 	const gameServerID: string = request.query.game_server_id as string;
 
 	if (!gameServerID) {
@@ -104,7 +135,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	}
 
 	const serverAccessLevel: string = pnid.get('server_access_level');
-	const server: HydratedServerDocument = await getServer(gameServerID, serverAccessLevel);
+	const server: HydratedServerDocument | null = await getServer(gameServerID, serverAccessLevel);
 
 	if (!server) {
 		return response.send(xmlbuilder.create({
@@ -154,7 +185,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const nexUser: HydratedNEXAccountDocument = await NEXAccount.findOne({
+	const nexUser: HydratedNEXAccountDocument | null = await NEXAccount.findOne({
 		owning_pid: pnid.get('pid')
 	});
 
@@ -163,10 +194,12 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
 	}
 
-	let nexToken: string = await generateToken(cryptoOptions, tokenOptions);
+	let nexToken: string | null = await generateToken(cryptoOptions, tokenOptions);
+
+	// TODO = Handle null tokens
 
 	if (request.isCemu) {
-		nexToken = Buffer.from(nexToken, 'base64').toString('hex');
+		nexToken = Buffer.from(nexToken || '', 'base64').toString('hex');
 	}
 
 	response.send(xmlbuilder.create({

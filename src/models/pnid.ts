@@ -121,7 +121,7 @@ PNIDSchema.method('generatePID', async function generatePID(): Promise<void> {
 
 	const pid: number =  Math.floor(Math.random() * (max - min + 1) + min);
 
-	const inuse: HydratedPNIDDocument = await PNID.findOne({
+	const inuse: HydratedPNIDDocument | null = await PNID.findOne({
 		pid
 	});
 
@@ -143,7 +143,7 @@ PNIDSchema.method('generateEmailValidationCode', async function generateEmailVal
 PNIDSchema.method('generateEmailValidationToken', async function generateEmailValidationToken(): Promise<void> {
 	const token: string = crypto.randomBytes(32).toString('hex');
 
-	const inuse: HydratedPNIDDocument = await PNID.findOne({
+	const inuse: HydratedPNIDDocument | null = await PNID.findOne({
 		'identification.email_token': token
 	});
 

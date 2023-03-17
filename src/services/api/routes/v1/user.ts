@@ -22,7 +22,7 @@ const userSchema: joi.ObjectSchema = joi.object({
  * Description: Gets PNID details about the current user
  */
 router.get('/', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
 		return response.status(400).json({
@@ -70,7 +70,7 @@ router.get('/', async (request: express.Request, response: express.Response) => 
  * Description: Updates PNID certain details about the current user
  */
 router.post('/', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 	const updateUserRequest: UpdateUserRequest = request.body;
 
 	if (!pnid) {

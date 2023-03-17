@@ -15,7 +15,7 @@ export const disabledFeatures: DisabledFeatures = {
 
 LOG_INFO('Loading config');
 
-let mongooseConnectOptions: mongoose.ConnectOptions;
+let mongooseConnectOptions: mongoose.ConnectOptions = {};
 
 if (process.env.PN_ACT_CONFIG_MONGOOSE_CONNECT_OPTIONS_PATH) {
 	mongooseConnectOptions = fs.readJSONSync(process.env.PN_ACT_CONFIG_MONGOOSE_CONNECT_OPTIONS_PATH);
@@ -23,41 +23,41 @@ if (process.env.PN_ACT_CONFIG_MONGOOSE_CONNECT_OPTIONS_PATH) {
 
 export const config: Config = {
 	http: {
-		port: Number(process.env.PN_ACT_CONFIG_HTTP_PORT)
+		port: Number(process.env.PN_ACT_CONFIG_HTTP_PORT || '')
 	},
 	mongoose: {
-		connection_string: process.env.PN_ACT_CONFIG_MONGO_CONNECTION_STRING,
+		connection_string: process.env.PN_ACT_CONFIG_MONGO_CONNECTION_STRING || '',
 		options: mongooseConnectOptions
 	},
 	redis: {
 		client: {
-			url: process.env.PN_ACT_CONFIG_REDIS_URL
+			url: process.env.PN_ACT_CONFIG_REDIS_URL || ''
 		}
 	},
 	email: {
-		host: process.env.PN_ACT_CONFIG_EMAIL_HOST,
-		port: Number(process.env.PN_ACT_CONFIG_EMAIL_PORT),
-		secure: Boolean(process.env.PN_ACT_CONFIG_EMAIL_SECURE),
+		host: process.env.PN_ACT_CONFIG_EMAIL_HOST || '',
+		port: Number(process.env.PN_ACT_CONFIG_EMAIL_PORT || ''),
+		secure: Boolean(process.env.PN_ACT_CONFIG_EMAIL_SECURE || ''),
 		auth: {
-			user: process.env.PN_ACT_CONFIG_EMAIL_USERNAME,
-			pass: process.env.PN_ACT_CONFIG_EMAIL_PASSWORD
+			user: process.env.PN_ACT_CONFIG_EMAIL_USERNAME || '',
+			pass: process.env.PN_ACT_CONFIG_EMAIL_PASSWORD || ''
 		},
-		from: process.env.PN_ACT_CONFIG_EMAIL_FROM
+		from: process.env.PN_ACT_CONFIG_EMAIL_FROM || ''
 	},
 	s3: {
-		endpoint: process.env.PN_ACT_CONFIG_S3_ENDPOINT,
-		key: process.env.PN_ACT_CONFIG_S3_ACCESS_KEY,
-		secret: process.env.PN_ACT_CONFIG_S3_ACCESS_SECRET
+		endpoint: process.env.PN_ACT_CONFIG_S3_ENDPOINT || '',
+		key: process.env.PN_ACT_CONFIG_S3_ACCESS_KEY || '',
+		secret: process.env.PN_ACT_CONFIG_S3_ACCESS_SECRET || ''
 	},
 	hcaptcha: {
-		secret: process.env.PN_ACT_CONFIG_HCAPTCHA_SECRET
+		secret: process.env.PN_ACT_CONFIG_HCAPTCHA_SECRET || ''
 	},
 	cdn: {
-		subdomain: process.env.PN_ACT_CONFIG_CDN_SUBDOMAIN,
-		disk_path: process.env.PN_ACT_CONFIG_CDN_DISK_PATH,
-		base_url: process.env.PN_ACT_CONFIG_CDN_BASE_URL
+		subdomain: process.env.PN_ACT_CONFIG_CDN_SUBDOMAIN || '',
+		disk_path: process.env.PN_ACT_CONFIG_CDN_DISK_PATH || '',
+		base_url: process.env.PN_ACT_CONFIG_CDN_BASE_URL || ''
 	},
-	website_base: process.env.PN_ACT_CONFIG_WEBSITE_BASE
+	website_base: process.env.PN_ACT_CONFIG_WEBSITE_BASE || ''
 };
 
 LOG_INFO('Config loaded, checking integrity');

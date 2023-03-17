@@ -5,8 +5,8 @@ import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 declare global {
 	namespace Express {
 		interface Request {
-			pnid?: HydratedPNIDDocument;
-			nexUser?: HydratedNEXAccountDocument;
+			pnid: HydratedPNIDDocument | null;
+			nexUser: HydratedNEXAccountDocument | null;
 			isCemu?: boolean;
 			files?: Record<string, any>;
 			certificate?: NintendoCertificate;

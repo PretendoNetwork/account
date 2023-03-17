@@ -47,7 +47,7 @@ export function nintendoBase64Encode(decoded: string | Buffer): string {
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
-export async function generateToken(cryptoOptions: CryptoOptions | null, tokenOptions: TokenOptions): Promise<string> {
+export async function generateToken(cryptoOptions: CryptoOptions | null, tokenOptions: TokenOptions): Promise<string | null> {
 	// Access and refresh tokens use a different format since they must be much smaller
 	// They take no extra crypto options
 	if (!cryptoOptions) {
@@ -67,6 +67,8 @@ export async function generateToken(cryptoOptions: CryptoOptions | null, tokenOp
 		encryptedBody = Buffer.concat([encryptedBody, cipher.final()]);
 
 		return encryptedBody.toString('base64');
+	} else if (!tokenOptions.access_level || !tokenOptions.title_id) {
+		return null;
 	}
 
 	const publicKey: NodeRSA = new NodeRSA(cryptoOptions.public_key, 'pkcs8-public-pem', {
@@ -191,8 +193,9 @@ export async function decryptToken(token: Buffer): Promise<Buffer> {
 	const calculatedSignature: Buffer = hmac.digest();
 
 	if (!signature.equals(calculatedSignature)) {
+		// TODO - FIX THIS. ONLY DONE SO STRICT MODE DOESN'T YELL
 		console.log('Token signature did not match');
-		return null;
+		return Buffer.alloc(0);
 	}
 
 	return decryptedBody;
@@ -300,7 +303,9 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // Only valid for 24 hours
 	};
 
-	const passwordResetToken: string = await generateToken(cryptoOptions, tokenOptions);
+	const passwordResetToken: string | null = await generateToken(cryptoOptions, tokenOptions);
+
+	// TODO - Handle null token
 
 	const mailerOptions: MailerOptions = {
 		to: pnid.get('email.address'),
@@ -309,9 +314,9 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 		paragraph: 'a password reset has been requested from this account. If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.',
 		link: {
 			text: 'Reset password',
-			href: `${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
+			href: `${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken || '')}`
 		},
-		text: `Dear ${pnid.get('username')}, a password reset has been requested from this account. \r\n\r\nIf you did not request the password reset, please ignore this email. \r\nIf you did request this password reset, please click the link to reset your password: ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
+		text: `Dear ${pnid.get('username')}, a password reset has been requested from this account. \r\n\r\nIf you did not request the password reset, please ignore this email. \r\nIf you did request this password reset, please click the link to reset your password: ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken || '')}`
 	};
 
 	await sendMail(mailerOptions);

@@ -20,10 +20,10 @@ export async function sendMail(options: MailerOptions): Promise<void> {
 		let html: string = confirmation ? confirmationEmailTemplate : genericEmailTemplate;
 
 		html = html.replace(/{{username}}/g, username);
-		html = html.replace(/{{paragraph}}/g, paragraph);
-		html = html.replace(/{{preview}}/g, (preview || ''));
-		html = html.replace(/{{confirmation-href}}/g, (confirmation?.href || ''));
-		html = html.replace(/{{confirmation-code}}/g, (confirmation?.code || ''));
+		html = html.replace(/{{paragraph}}/g, paragraph || '');
+		html = html.replace(/{{preview}}/g, preview || '');
+		html = html.replace(/{{confirmation-href}}/g, confirmation?.href || '');
+		html = html.replace(/{{confirmation-code}}/g, confirmation?.code || '');
 
 		if (link) {
 			const { href, text } = link;

@@ -8,11 +8,22 @@ const router: express.Router = express.Router();
 
 const signatureSecret: Buffer = fs.readFileSync(`${__dirname}/../../../../certs/nex/datastore/secret.key`);
 
-function multipartParser(request: express.Request, response: express.Response, next: express.NextFunction) {
+function multipartParser(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	const RE_BOUNDARY: RegExp = /^multipart\/.+?(?:; boundary=(?:(?:"(.+)")|(?:([^\s]+))))$/i;
 	const RE_FILE_NAME: RegExp = /name="(.*)"/;
 
-	const boundary: RegExpExecArray = RE_BOUNDARY.exec(request.header('content-type'));
+	const contentType: string | undefined = request.header('content-type');
+
+	if (!contentType) {
+		return next();
+	}
+
+	const boundary: RegExpExecArray | null = RE_BOUNDARY.exec(contentType);
+
+	if (!boundary) {
+		return next();
+	}
+
 	const dicer: Dicer = new Dicer({ boundary: boundary[1] || boundary[2] });
 	const files: { [key: string]: Buffer } = {};
 
@@ -21,6 +32,7 @@ function multipartParser(request: express.Request, response: express.Response, n
 		let fileName: string = '';
 
 		part.on('header', header => {
+			// TODO - strict mode yells here
 			fileName = RE_FILE_NAME.exec(header['content-disposition'][0])[1];
 		});
 
@@ -46,6 +58,10 @@ function multipartParser(request: express.Request, response: express.Response, n
 }
 
 router.post('/upload', multipartParser, async (request: express.Request, response: express.Response) => {
+	if (!request.files) {
+		return response.sendStatus(500);
+	}
+
 	const bucket: string = request.files.bucket.toString();
 	const key: string = request.files.key.toString();
 	const file: Buffer = request.files.file;

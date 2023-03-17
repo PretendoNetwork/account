@@ -6,13 +6,13 @@ export interface PNIDProfile {
 	birth_date: string;
 	country: string;
 	create_date: string;
-	device_attributes: [{
+	device_attributes: {
 		device_attribute: {
 			name: string;
 			value: string;
 			created_date: string;
 		};
-	}];
+	}[];
 	gender: string;
 	language: string;
 	updated: string;

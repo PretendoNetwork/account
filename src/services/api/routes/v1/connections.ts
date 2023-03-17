@@ -17,7 +17,7 @@ const VALID_CONNECTION_TYPES: string[] = [
  */
 router.post('/add/:type', async (request: express.Request, response: express.Response) => {
 	const data: ConnectionData = request.body?.data;
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 	const type: string = request.params.type;
 
 	if (!pnid) {
@@ -44,9 +44,17 @@ router.post('/add/:type', async (request: express.Request, response: express.Res
 		});
 	}
 
-	const result: ConnectionResponse = await addUserConnection(pnid, data, type);
+	let result: ConnectionResponse | undefined = await addUserConnection(pnid, data, type);
 
-	response.status(result.status).json(result);
+	if (!result) {
+		result = {
+			app: 'api',
+			status: 500,
+			error: 'Unknown server error'
+		};
+	}
+
+	response.status(result.status || 500).json(result);
 });
 
 /**
@@ -55,7 +63,7 @@ router.post('/add/:type', async (request: express.Request, response: express.Res
  * Description: Removes an account connection from the users PNID
  */
 router.delete('/remove/:type', async (request: express.Request, response: express.Response) => {
-	const pnid: HydratedPNIDDocument = request.pnid;
+	const pnid: HydratedPNIDDocument | null = request.pnid;
 	const type: string = request.params.type;
 
 	if (!pnid) {
@@ -74,7 +82,15 @@ router.delete('/remove/:type', async (request: express.Request, response: expres
 		});
 	}
 
-	const result: ConnectionResponse = await removeUserConnection(pnid, type);
+	let result: ConnectionResponse | undefined = await removeUserConnection(pnid, type);
+
+	if (!result) {
+		result = {
+			app: 'api',
+			status: 500,
+			error: 'Unknown server error'
+		};
+	}
 
 	response.status(result.status).json(result);
 });
