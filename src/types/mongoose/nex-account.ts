@@ -1,7 +1,12 @@
 import { Model, HydratedDocument } from 'mongoose';
 
 type DEVICE = 'wiiu' | '3ds';
-type ACCESS_LEVEL = 0 | 1 | 2 | 3;
+enum ACCESS_LEVEL {
+	User = 0,
+	Admin = 1,
+	Owner = 2,
+	Dev = 3
+}
 
 export interface INEXAccount {
 	device_type: DEVICE;
