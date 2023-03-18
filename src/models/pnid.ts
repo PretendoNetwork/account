@@ -172,8 +172,8 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	const mii: Mii = new Mii(Buffer.from(miiData, 'base64'));
 	const miiStudioUrl: string = mii.studioUrl({
 		type: 'face',
-		width: '128',
-		instanceCount: '1',
+		width: 128,
+		instanceCount: 1,
 	});
 	const miiStudioNormalFaceImageData: Buffer = await got(miiStudioUrl).buffer();
 	const pngData: {
@@ -193,8 +193,8 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 		const miiStudioExpressionUrl: string = mii.studioUrl({
 			type: 'face',
 			expression: expression,
-			width: '128',
-			instanceCount: '1',
+			width: 128,
+			instanceCount: 1,
 		});
 		const miiStudioExpressionImageData: Buffer = await got(miiStudioExpressionUrl).buffer();
 		await uploadCDNAsset('pn-cdn', `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
@@ -202,8 +202,8 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 
 	const miiStudioBodyUrl: string = mii.studioUrl({
 		type: 'all_body',
-		width: '270',
-		instanceCount: '1',
+		width: 270,
+		instanceCount: 1,
 	});
 	const miiStudioBodyImageData: Buffer = await got(miiStudioBodyUrl).buffer();
 	await uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
