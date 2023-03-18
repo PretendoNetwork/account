@@ -56,7 +56,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
  * Description: Registers a new NNID
  */
 router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response) => {
-	if (!request.certificate.valid) {
+	if (!request.certificate || !request.certificate.valid) {
 		// TODO: Change this to a different error
 		response.status(400);
 
@@ -118,9 +118,20 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		const language: string = person.get('language');
 		const timezoneName: string = person.get('tz_name');
 
-		const regionLanguages: RegionLanguages = timezones[countryCode];
+		const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
-		const timezone: RegionTimezone = regionTimezones.find(tz => tz.area === timezoneName);
+		let timezone: RegionTimezone | undefined = regionTimezones.find(tz => tz.area === timezoneName);
+
+		if (!timezone) {
+			// TODO - Change this, handle the error
+			timezone = {
+				area: 'America/New_York',
+				language: 'en',
+				name: 'Eastern Time (US &amp; Canada)',
+				order: '11',
+				utc_offset: '-14400'
+			};
+		}
 
 		pnid = new PNID({
 			pid: nexAccount.get('pid'),
@@ -475,9 +486,20 @@ router.put('/@me', async (request: express.Request, response: express.Response) 
 	const marketingFlag: boolean = person.get('marketing_flag') ? person.get('marketing_flag') === 'Y' : pnid.get('flags.marketing');
 	const offDeviceFlag: boolean = person.get('off_device_flag') ? person.get('off_device_flag') === 'Y' : pnid.get('flags.off_device');
 
-	const regionLanguages: RegionLanguages = timezones[countryCode];
+	const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 	const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
-	const timezone: RegionTimezone = regionTimezones.find(tz => tz.area === timezoneName);
+	let timezone: RegionTimezone | undefined = regionTimezones.find(tz => tz.area === timezoneName);
+
+	if (!timezone) {
+		// TODO - Change this, handle the error
+		timezone = {
+			area: 'America/New_York',
+			language: 'en',
+			name: 'Eastern Time (US &amp; Canada)',
+			order: '11',
+			utc_offset: '-14400'
+		};
+	}
 
 	if (person.get('password')) {
 		const primaryPasswordHash: string = nintendoPasswordHash(person.get('password'), pnid.get('pid'));

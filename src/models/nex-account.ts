@@ -43,7 +43,7 @@ NEXAccountSchema.method('generatePID', async function generatePID(): Promise<voi
 
 	const pid: number = Math.floor(Math.random() * (max - min + 1) + min);
 
-	const inuse: HydratedNEXAccountDocument = await NEXAccount.findOne({ pid });
+	const inuse: HydratedNEXAccountDocument | null = await NEXAccount.findOne({ pid });
 
 	if (inuse) {
 		await this.generatePID();

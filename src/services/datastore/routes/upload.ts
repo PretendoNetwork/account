@@ -32,8 +32,12 @@ function multipartParser(request: express.Request, response: express.Response, n
 		let fileName: string = '';
 
 		part.on('header', header => {
-			// TODO - strict mode yells here
-			fileName = RE_FILE_NAME.exec(header['content-disposition'][0])[1];
+			const contentDisposition = header['content-disposition' as keyof object];
+			const regexResult = RE_FILE_NAME.exec(contentDisposition);
+
+			if (regexResult) {
+				fileName = regexResult[0];
+			}
 		});
 
 		part.on('data', (data: Buffer | string) => {

@@ -94,5 +94,6 @@ type Mii = {
 	creatorName: string;
 	checksum: number;
 
-	studioUrl: (options: MiiStudioURLOptions) => string
+	studioUrl: (options: MiiStudioURLOptions) => string;
+	encode: () => Buffer;
 };

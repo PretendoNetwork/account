@@ -154,7 +154,7 @@ router.get('/time_zones/:countryCode/:language', (request: express.Request, resp
 	const countryCode: string = request.params.countryCode;
 	const language: string = request.params.language;
 
-	const regionLanguages: RegionLanguages = timezones[countryCode];
+	const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 	const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
 
 	response.send(xmlbuilder.create({

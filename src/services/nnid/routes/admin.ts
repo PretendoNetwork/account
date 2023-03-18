@@ -39,10 +39,10 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 		queryOutput = 'pid';
 	}
 
-	// This is slower than PNID.where()
-	// but it ensures that each input
-	// ALWAYS has an output and filters
-	// out unwanted input/output types
+	// * This is slower than PNID.where()
+	// * but it ensures that each input
+	// * ALWAYS has an output and filters
+	// * out unwanted input/output types
 	const results: {
 		in_id: string;
 		out_id: string;
@@ -64,8 +64,19 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 				pid?: number;
 			} = {};
 
-			// TODO - TS strict mode...what?
-			query[queryInput] = input;
+			if (queryInput === 'usernameLower') {
+				query.usernameLower = input;
+			}
+
+			if (queryInput === 'pid') {
+				query.pid = Number(input);
+
+				if (isNaN(query.pid)) {
+					// * Bail early
+					results.push(result);
+					continue;
+				}
+			}
 
 			const searchResult: HydratedPNIDDocument | null = await PNID.findOne(query);
 

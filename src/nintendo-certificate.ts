@@ -83,16 +83,17 @@ class NintendoCertificate {
 	publicKeyData: Buffer;
 
 	constructor(certificate: string | Buffer) {
-		this._certificate = null;
-		this._certificateBody = null;
-		this.signatureType = null;
-		this.signature = null;
-		this.issuer = null;
-		this.keyType = null;
-		this.certificateName = null;
-		this.ngKeyId = null;
-		this.publicKey = null;
-		this.valid = null;
+		this._certificate = Buffer.alloc(0);
+		this._certificateBody = Buffer.alloc(0);
+		this.signatureType = 0;
+		this.signature = Buffer.alloc(0);
+		this.issuer = '';
+		this.keyType = 0;
+		this.certificateName = '';
+		this.ngKeyId = 0;
+		this.publicKey = Buffer.alloc(0);
+		this.valid = false;
+		this.publicKeyData = Buffer.alloc(0);
 
 		if (certificate) {
 			if (certificate instanceof Buffer) {
