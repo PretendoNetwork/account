@@ -128,7 +128,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 			try {
 				// Create new NEX account
-				const nexAccount: HydratedNEXAccountDocument = await new NEXAccount({
+				const nexAccount: HydratedNEXAccountDocument = new NEXAccount({
 					device_type: '3ds',
 					password
 				});
