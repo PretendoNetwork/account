@@ -9,8 +9,8 @@ const router: express.Router = express.Router();
 
 // This sucks
 const PASSWORD_WORD_OR_NUMBER_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*\d).*/;
-const PASSWORD_WORD_OR_PUNCTUATION_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*[\_\-\.]).*/;
-const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX: RegExp = /(?=.*\d)(?=.*[\_\-\.]).*/;
+const PASSWORD_WORD_OR_PUNCTUATION_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
+const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX: RegExp = /(?=.*\d)(?=.*[_\-.]).*/;
 const PASSWORD_REPEATED_CHARACTER_REGEX: RegExp = /(.)\1\1/;
 
 router.post('/', async (request: express.Request, response: express.Response) => {
