@@ -128,7 +128,7 @@ PNIDSchema.method('generatePID', async function generatePID(): Promise<void> {
 	if (inuse) {
 		await this.generatePID();
 	} else {
-		this.set('pid', pid);
+		this.pid = pid;
 	}
 });
 
@@ -137,7 +137,7 @@ PNIDSchema.method('generateEmailValidationCode', async function generateEmailVal
 	// Does not actually need to be unique to all users
 	const code: string = Math.random().toFixed(6).split('.')[1]; // Dirty one-liner to generate numbers of 6 length and padded 0
 
-	this.set('identification.email_code', code);
+	this.identification.email_code = code;
 });
 
 PNIDSchema.method('generateEmailValidationToken', async function generateEmailValidationToken(): Promise<void> {
@@ -150,17 +150,17 @@ PNIDSchema.method('generateEmailValidationToken', async function generateEmailVa
 	if (inuse) {
 		await this.generateEmailValidationToken();
 	} else {
-		this.set('identification.email_token', token);
+		this.identification.email_token = token;
 	}
 });
 
 PNIDSchema.method('updateMii', async function updateMii({name, primary, data}): Promise<void> {
-	this.set('mii.name', name);
-	this.set('mii.primary', primary === 'Y');
-	this.set('mii.data', data);
-	this.set('mii.hash', crypto.randomBytes(7).toString('hex'));
-	this.set('mii.id', crypto.randomBytes(4).readUInt32LE());
-	this.set('mii.image_id', crypto.randomBytes(4).readUInt32LE());
+	this.mii.name = name;
+	this.mii.primary = primary === 'Y';
+	this.mii.data = data;
+	this.mii.hash = crypto.randomBytes(7).toString('hex');
+	this.mii.id = crypto.randomBytes(4).readUInt32LE();
+	this.mii.image_id = crypto.randomBytes(4).readUInt32LE();
 
 	await this.generateMiiImages();
 

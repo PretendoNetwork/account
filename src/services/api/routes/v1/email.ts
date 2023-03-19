@@ -31,9 +31,9 @@ router.get('/verify', async (request: express.Request, response: express.Respons
 
 	const validatedDate: string = moment().format('YYYY-MM-DDTHH:MM:SS');
 
-	pnid.set('email.reachable', true);
-	pnid.set('email.validated', true);
-	pnid.set('email.validated_date', validatedDate);
+	pnid.email.reachable = true;
+	pnid.email.validated = true;
+	pnid.email.validated_date = validatedDate;
 
 	await pnid.save();
 

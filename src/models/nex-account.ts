@@ -48,7 +48,7 @@ NEXAccountSchema.method('generatePID', async function generatePID(): Promise<voi
 	if (inuse) {
 		await this.generatePID();
 	} else {
-		this.set('pid', pid);
+		this.pid = pid;
 	}
 });
 
@@ -66,7 +66,7 @@ NEXAccountSchema.method('generatePassword', function generatePassword(): void {
 		output.push(String(character()));
 	}
 
-	this.set('password', output.join(''));
+	this.password = output.join('');
 });
 
 export const NEXAccount: NEXAccountModel = model<INEXAccount, NEXAccountModel>('NEXAccount', NEXAccountSchema);

@@ -656,11 +656,11 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 	}
 
 	// TODO - Better email check
-	pnid.set('email.address', (email.get('address') || '').toLowerCase());
-	pnid.set('email.reachable', false);
-	pnid.set('email.validated', false);
-	pnid.set('email.validated_date', '');
-	pnid.set('email.id', crypto.randomBytes(4).readUInt32LE());
+	pnid.email.address = (email.get('address') || '').toLowerCase();
+	pnid.email.reachable = false;
+	pnid.email.validated = false;
+	pnid.email.validated_date = '';
+	pnid.email.id = crypto.randomBytes(4).readUInt32LE();
 
 	await pnid.generateEmailValidationCode();
 	await pnid.generateEmailValidationToken();
