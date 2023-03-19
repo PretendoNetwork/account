@@ -6,7 +6,7 @@ import moment from 'moment';
 import mongoose from 'mongoose';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import ratelimit from '@/middleware/ratelimit';
-import { connection as databaseConnection, doesUserExist, getUserProfileJSONByPID } from '@/database';
+import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
 import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail } from '@/util';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -31,7 +31,7 @@ const router: express.Router = express.Router();
 router.get('/:username', async (request: express.Request, response: express.Response) => {
 	const username: string = request.params.username;
 
-	const userExists: boolean = await doesUserExist(username);
+	const userExists: boolean = await doesPNIDExist(username);
 
 	if (userExists) {
 		response.status(400);
@@ -72,7 +72,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	// * request.body is a Map, as is request.body.person
 	const person: Person = request.body.get('person');
 
-	const userExists: boolean = await doesUserExist(person.get('user_id'));
+	const userExists: boolean = await doesPNIDExist(person.get('user_id'));
 
 	if (userExists) {
 		response.status(400);
@@ -238,7 +238,7 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 		}).end());
 	}
 
-	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.pid);
+	const person: PNIDProfile | null = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
@@ -289,7 +289,7 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 		}).end());
 	}
 
-	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.pid);
+	const person: PNIDProfile | null = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
@@ -399,7 +399,7 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 		}).end());
 	}
 
-	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.pid);
+	const person: PNIDProfile | null = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more

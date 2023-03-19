@@ -2,7 +2,7 @@ import dns from 'node:dns';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
-import { getUserByPID } from '@/database';
+import { getPNIDByPID } from '@/database';
 import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail } from '@/util';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -56,7 +56,7 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 	const code: string = request.params.code;
 	const pid: number = Number(request.params.pid);
 
-	const pnid: HydratedPNIDDocument | null = await getUserByPID(pid);
+	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
 
 	if (!pnid) {
 		return response.status(400).send(xmlbuilder.create({
@@ -101,7 +101,7 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 router.get('/resend_confirmation', async (request: express.Request, response: express.Response) => {
 	const pid: number = Number(request.headers['x-nintendo-pid']);
 
-	const pnid: HydratedPNIDDocument | null = await getUserByPID(pid);
+	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
 
 	if (!pnid) {
 		// TODO - Unsure if this is the right error
@@ -129,7 +129,7 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
 router.get('/forgotten_password/:pid', async (request: express.Request, response: express.Response) => {
 	const pid: number = Number(request.params.pid);
 
-	const pnid: HydratedPNIDDocument | null = await getUserByPID(pid);
+	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
 
 	if (!pnid) {
 		// TODO - Better errors

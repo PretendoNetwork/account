@@ -2,7 +2,7 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import fs from 'fs-extra';
-import { getUserByUsername } from '@/database';
+import { getPNIDByUsername } from '@/database';
 import { generateToken } from '@/util';
 import { TokenOptions } from '@/types/common/token-options';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
@@ -52,7 +52,7 @@ router.post('/access_token/generate', async (request: express.Request, response:
 		}).end());
 	}
 
-	const pnid: HydratedPNIDDocument | null = await getUserByUsername(username);
+	const pnid: HydratedPNIDDocument | null = await getPNIDByUsername(username);
 
 	if (!pnid || !await bcrypt.compare(password, pnid.password)) {
 		response.status(400);

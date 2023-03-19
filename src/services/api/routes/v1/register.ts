@@ -8,7 +8,7 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import mongoose from 'mongoose';
-import { doesUserExist, connection as databaseConnection } from '@/database';
+import { doesPNIDExist, connection as databaseConnection } from '@/database';
 import { getServicePublicKey, getServiceSecretKey } from '@/cache';
 import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
 import { LOG_ERROR } from '@/logger';
@@ -141,7 +141,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		});
 	}
 
-	const userExists: boolean = await doesUserExist(username);
+	const userExists: boolean = await doesPNIDExist(username);
 
 	if (userExists) {
 		return response.status(400).json({

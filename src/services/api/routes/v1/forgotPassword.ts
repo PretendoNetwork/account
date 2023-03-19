@@ -1,6 +1,6 @@
 import express from 'express';
 import validator from 'validator';
-import { getUserByEmailAddress, getUserByUsername } from '@/database';
+import { getPNIDByEmailAddress, getPNIDByUsername } from '@/database';
 import { sendForgotPasswordEmail } from '@/util';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -20,9 +20,9 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	let pnid: HydratedPNIDDocument | null;
 
 	if (validator.isEmail(input)) {
-		pnid = await getUserByEmailAddress(input);
+		pnid = await getPNIDByEmailAddress(input);
 	} else {
-		pnid = await getUserByUsername(input);
+		pnid = await getPNIDByUsername(input);
 	}
 
 	if (pnid) {

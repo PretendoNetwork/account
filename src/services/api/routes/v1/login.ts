@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import fs from 'fs-extra';
-import { getUserByUsername, getUserBearer } from '@/database';
+import { getPNIDByUsername, getPNIDByBearerAuth } from '@/database';
 import { getServicePublicKey, getServiceSecretKey } from '@/cache';
 import { nintendoPasswordHash, generateToken} from '@/util';
 import { CryptoOptions } from '@/types/common/crypto-options';
@@ -57,7 +57,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	let pnid: HydratedPNIDDocument | null;
 
 	if (grantType === 'password') {
-		pnid = await getUserByUsername(username);
+		pnid = await getPNIDByUsername(username);
 
 		if (!pnid) {
 			return response.status(400).json({
@@ -77,7 +77,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 			});
 		}
 	} else {
-		pnid = await getUserBearer(refreshToken);
+		pnid = await getPNIDByBearerAuth(refreshToken);
 
 		if (!pnid) {
 			return response.status(400).json({

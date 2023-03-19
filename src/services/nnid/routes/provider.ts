@@ -1,7 +1,7 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import fs from 'fs-extra';
-import { getServerByTitleId, getServer } from '@/database';
+import { getServerByTitleId, getServerByGameServerId } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { getServicePublicKey, getServiceSecretKey, getNEXPublicKey, getNEXSecretKey } from '@/cache';
 import { NEXAccount } from '@/models/nex-account';
@@ -148,7 +148,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	}
 
 	const serverAccessLevel: string = pnid.server_access_level;
-	const server: HydratedServerDocument | null = await getServer(gameServerID, serverAccessLevel);
+	const server: HydratedServerDocument | null = await getServerByGameServerId(gameServerID, serverAccessLevel);
 
 	if (!server) {
 		return response.send(xmlbuilder.create({
