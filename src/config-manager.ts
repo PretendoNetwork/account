@@ -21,6 +21,13 @@ if (process.env.PN_ACT_CONFIG_MONGOOSE_CONNECT_OPTIONS_PATH) {
 	mongooseConnectOptions = fs.readJSONSync(process.env.PN_ACT_CONFIG_MONGOOSE_CONNECT_OPTIONS_PATH);
 }
 
+if (process.env.PN_ACT_CONFIG_EMAIL_SECURE) {
+	if (process.env.PN_ACT_CONFIG_EMAIL_SECURE !== 'true' && process.env.PN_ACT_CONFIG_EMAIL_SECURE !== 'false') {
+		LOG_ERROR(`PN_ACT_CONFIG_EMAIL_SECURE must be either true or false, got ${process.env.PN_ACT_CONFIG_EMAIL_SECURE}`);
+		process.exit(0);
+	}
+}
+
 export const config: Config = {
 	http: {
 		port: Number(process.env.PN_ACT_CONFIG_HTTP_PORT || '')
@@ -37,7 +44,7 @@ export const config: Config = {
 	email: {
 		host: process.env.PN_ACT_CONFIG_EMAIL_HOST || '',
 		port: Number(process.env.PN_ACT_CONFIG_EMAIL_PORT || ''),
-		secure: Boolean(process.env.PN_ACT_CONFIG_EMAIL_SECURE || ''),
+		secure: (process.env.PN_ACT_CONFIG_EMAIL_SECURE || '') === 'true',
 		auth: {
 			user: process.env.PN_ACT_CONFIG_EMAIL_USERNAME || '',
 			pass: process.env.PN_ACT_CONFIG_EMAIL_PASSWORD || ''
