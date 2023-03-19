@@ -69,10 +69,9 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		}).end());
 	}
 
-	// * request.body is a Map, as is request.body.person
-	const person: Person = request.body.get('person');
+	const person: Person = request.body.person;
 
-	const userExists: boolean = await doesPNIDExist(person.get('user_id'));
+	const userExists: boolean = await doesPNIDExist(person.user_id);
 
 	if (userExists) {
 		response.status(400);
@@ -111,12 +110,12 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 		await nexAccount.save({ session });
 
-		const primaryPasswordHash: string = nintendoPasswordHash(person.get('password'), nexAccount.pid);
+		const primaryPasswordHash: string = nintendoPasswordHash(person.password, nexAccount.pid);
 		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
-		const countryCode: string = person.get('country');
-		const language: string = person.get('language');
-		const timezoneName: string = person.get('tz_name');
+		const countryCode: string = person.country;
+		const language: string = person.language;
+		const timezoneName: string = person.tz_name;
 
 		const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
@@ -137,30 +136,30 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 			pid: nexAccount.pid,
 			creation_date: creationDate,
 			updated: creationDate,
-			username: person.get('user_id'),
-			usernameLower: person.get('user_id').toLowerCase(),
+			username: person.user_id,
+			usernameLower: person.user_id.toLowerCase(),
 			password: passwordHash,
-			birthdate: person.get('birth_date'),
-			gender: person.get('gender'),
+			birthdate: person.birth_date,
+			gender: person.gender,
 			country: countryCode,
 			language: language,
 			email: {
-				address: person.get('email').get('address').toLowerCase(),
-				primary: person.get('email').get('primary') === 'Y',
-				parent: person.get('email').get('parent') === 'Y',
+				address: person.email.address.toLowerCase(),
+				primary: person.email.primary === 'Y',
+				parent: person.email.parent === 'Y',
 				reachable: false,
-				validated: person.get('email').get('validated') === 'Y',
+				validated: person.email.validated === 'Y',
 				id: crypto.randomBytes(4).readUInt32LE()
 			},
-			region: person.get('region'),
+			region: person.region,
 			timezone: {
 				name: timezoneName,
 				offset: Number(timezone.utc_offset)
 			},
 			mii: {
-				name: person.get('mii').get('name'),
-				primary: person.get('mii').get('name') === 'Y',
-				data: person.get('mii').get('data'),
+				name: person.mii.name,
+				primary: person.mii.name === 'Y',
+				data: person.mii.data,
 				id: crypto.randomBytes(4).readUInt32LE(),
 				hash: crypto.randomBytes(7).toString('hex'),
 				image_url: '', // deprecated, will be removed in the future
@@ -168,8 +167,8 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 			},
 			flags: {
 				active: true,
-				marketing: person.get('marketing_flag') === 'Y',
-				off_device: person.get('off_device_flag') === 'Y'
+				marketing: person.marketing_flag === 'Y',
+				off_device: person.off_device_flag === 'Y'
 			},
 			identification: {
 				email_code: 1, // will be overwritten before saving
@@ -456,14 +455,17 @@ router.put('/@me/miis/@primary', async (request: express.Request, response: expr
 		}).end());
 	}
 
-	// TODO - Make this more strictly typed?
-	const mii: Map<string, string> = request.body.get('mii');
+	const mii: {
+		name: string;
+		primary: string;
+		data: string;
+	} = request.body.mii;
 
 	// TODO - Better checks
 
-	const name: string | undefined = mii.get('name') || '';
-	const primary: string | undefined = mii.get('primary') || '';
-	const data: string | undefined = mii.get('data') || '';
+	const name: string = mii.name;
+	const primary: string = mii.primary;
+	const data: string = mii.data;
 
 	await pnid.updateMii({ name, primary, data });
 
@@ -531,7 +533,7 @@ router.put('/@me/deletion', async (request: express.Request, response: express.R
  */
 router.put('/@me', async (request: express.Request, response: express.Response) => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
-	const person: Person = request.body.get('person');
+	const person: Person = request.body.person;
 
 	if (!pnid) {
 		response.status(400);
@@ -547,13 +549,13 @@ router.put('/@me', async (request: express.Request, response: express.Response) 
 		}).end());
 	}
 
-	const gender: string = person.get('gender') ? person.get('gender') : pnid.gender;
-	const region: string = person.get('region') ? person.get('region') : pnid.region;
-	const countryCode: string = person.get('country') ? person.get('country') : pnid.country;
-	const language: string = person.get('language') ? person.get('language') : pnid.language;
-	const timezoneName: string = person.get('tz_name') ? person.get('tz_name') : pnid.timezone.name;
-	const marketingFlag: boolean = person.get('marketing_flag') ? person.get('marketing_flag') === 'Y' : pnid.flags.marketing;
-	const offDeviceFlag: boolean = person.get('off_device_flag') ? person.get('off_device_flag') === 'Y' : pnid.flags.off_device;
+	const gender: string = person.gender ? person.gender : pnid.gender;
+	const region: number = person.region ? person.region : pnid.region;
+	const countryCode: string = person.country ? person.country : pnid.country;
+	const language: string = person.language ? person.language : pnid.language;
+	const timezoneName: string = person.tz_name ? person.tz_name : pnid.timezone.name;
+	const marketingFlag: boolean = person.marketing_flag ? person.marketing_flag === 'Y' : pnid.flags.marketing;
+	const offDeviceFlag: boolean = person.off_device_flag ? person.off_device_flag === 'Y' : pnid.flags.off_device;
 
 	const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 	const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
@@ -570,15 +572,15 @@ router.put('/@me', async (request: express.Request, response: express.Response) 
 		};
 	}
 
-	if (person.get('password')) {
-		const primaryPasswordHash: string = nintendoPasswordHash(person.get('password'), pnid.pid);
+	if (person.password) {
+		const primaryPasswordHash: string = nintendoPasswordHash(person.password, pnid.pid);
 		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid.password = passwordHash;
 	}
 
 	pnid.gender = gender;
-	pnid.region = Number(region);
+	pnid.region = region;
 	pnid.timezone.name = timezoneName;
 	pnid.timezone.offset = Number(timezone.utc_offset);
 	pnid.timezone.marketing = marketingFlag;
@@ -638,10 +640,11 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 router.put('/@me/emails/@primary', async (request: express.Request, response: express.Response) => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
-	// TODO - Make this more strictly typed?
-	const email: Map<string, string> = request.body.get('email');
+	const email: {
+		address: string;
+	} = request.body.email;
 
-	if (!pnid || !email) {
+	if (!pnid || !email || !email.address) {
 		response.status(400);
 
 		return response.end(xmlbuilder.create({
@@ -656,7 +659,7 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 	}
 
 	// TODO - Better email check
-	pnid.email.address = (email.get('address') || '').toLowerCase();
+	pnid.email.address = email.address.toLowerCase();
 	pnid.email.reachable = false;
 	pnid.email.validated = false;
 	pnid.email.validated_date = '';

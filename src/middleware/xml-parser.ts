@@ -1,7 +1,7 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { document as xmlParser } from 'xmlbuilder2';
-import { getValueFromHeaders } from '@/util';
+import { getValueFromHeaders, mapToObject } from '@/util';
 
 function XMLMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	if (request.method == 'POST' || request.method == 'PUT') {
@@ -32,6 +32,7 @@ function XMLMiddleware(request: express.Request, response: express.Response, nex
 			try {
 				request.body = xmlParser(body);
 				request.body = request.body.toObject();
+				request.body = mapToObject(request.body);
 			} catch (error) {
 				response.status(401);
 

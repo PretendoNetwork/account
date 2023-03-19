@@ -121,8 +121,6 @@ router.get('/', async (request: express.Request, response: express.Response) => 
 		});
 	}
 
-	//console.log(results[0].mii.data.replace(/(\r\n|\n|\r)/gm, ''));
-
 	response.send(xmlbuilder.create({
 		miis: {
 			mii: miis

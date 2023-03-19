@@ -375,3 +375,7 @@ export function getValueFromHeaders(headers: IncomingHttpHeaders, key: string): 
 
 	return value;
 }
+
+export function mapToObject(map: Map<any, any>): object {
+	return Object.fromEntries(Array.from(map.entries(), ([ k, v ]) => v instanceof Map ? [ k, mapToObject(v) ] : [ k, v ]));
+}

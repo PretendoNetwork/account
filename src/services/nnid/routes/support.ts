@@ -14,7 +14,7 @@ const router: express.Router = express.Router();
  * Description: Verifies a provided email address is valid
  */
 router.post('/validate/email', async (request: express.Request, response: express.Response) => {
-	const email: string = request.body;
+	const email: string = request.body.email;
 
 	if (!email) {
 		return response.send(xmlbuilder.create({

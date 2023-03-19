@@ -2,7 +2,7 @@ import { YesNoBoolString } from '@/types/common/yes-no-bool-string';
 import { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 
 // TODO - Change this Map type to something more strongly typed
-export interface Person extends Map<string, any> {
+export interface Person {
 	birth_date: string;
 	user_id: string;
 	password: string;
@@ -35,7 +35,7 @@ export interface Person extends Map<string, any> {
 		approval_id: string;
 	};
 	gender: string;
-	region: string;
+	region: number;
 	marketing_flag: YesNoBoolString;
 	device_attributes: {
 		device_attribute: IDeviceAttribute[]
