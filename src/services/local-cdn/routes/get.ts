@@ -4,7 +4,7 @@ import { getLocalCDNFile } from '@/cache';
 const router: express.Router = express.Router();
 
 router.get('/*', async (request: express.Request, response: express.Response) => {
-	const filePath: string = request.params[0] as string;
+	const filePath: string = request.params[0];
 
 	const file: Buffer = await getLocalCDNFile(filePath);
 

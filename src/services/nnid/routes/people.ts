@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesUserExist, getUserProfileJSONByPID } from '@/database';
-import { nintendoPasswordHash, sendConfirmationEmail } from '@/util';
+import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail } from '@/util';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
@@ -292,12 +292,25 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
 	const pnid: HydratedPNIDDocument | null = request.pnid;
-	const deviceId: string = request.headers['x-nintendo-device-id'] as string;
-	const acceptLanguage: string = request.headers['accept-language'] as string;
-	const platformId: string = request.headers['x-nintendo-platform-id'] as string;
-	const region: string = request.headers['x-nintendo-region'] as string;
-	const serialNumber: string = request.headers['x-nintendo-serial-number'] as string;
-	const systemVersion: string = request.headers['x-nintendo-system-version'] as string;
+	const deviceId: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
+	const acceptLanguage: string | undefined = getValueFromHeaders(request.headers, 'accept-language');
+	const platformId: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-platform-id');
+	const region: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-region');
+	const serialNumber: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-serial-number');
+	const systemVersion: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-system-version');
+
+	if (!deviceId || !acceptLanguage || !platformId || !region || !serialNumber || !systemVersion) {
+		// TODO - Research these error more
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
+			}
+		}).end());
+	}
 
 	if (!pnid) {
 		// TODO - Research this error more

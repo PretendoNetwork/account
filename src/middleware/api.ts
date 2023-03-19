@@ -1,9 +1,10 @@
 import express from 'express';
+import { getValueFromHeaders } from '@/util';
 import { getUserBearer } from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function APIMiddleware(request: express.Request, _response: express.Response, next: express.NextFunction): Promise<void> {
-	const authHeader: string | undefined = request.headers.authorization;
+	const authHeader: string | undefined = getValueFromHeaders(request.headers, 'authorization');
 
 	if (!authHeader || !(authHeader.startsWith('Bearer'))) {
 		return next();

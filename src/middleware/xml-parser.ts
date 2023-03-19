@@ -1,11 +1,12 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { document as xmlParser } from 'xmlbuilder2';
+import { getValueFromHeaders } from '@/util';
 
 function XMLMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	if (request.method == 'POST' || request.method == 'PUT') {
-		const contentType: string | undefined = request.headers['content-type'];
-		const contentLength: string | undefined = request.headers['content-length'];
+		const contentType: string | undefined = getValueFromHeaders(request.headers, 'content-type');
+		const contentLength: string | undefined = getValueFromHeaders(request.headers, 'content-length');
 		let body: string = '';
 
 		if (

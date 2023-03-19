@@ -1,13 +1,13 @@
 import express from 'express';
 import moment from 'moment';
 import { PNID } from '@/models/pnid';
-import { sendEmailConfirmedEmail } from '@/util';
+import { getValueFromQueryString, sendEmailConfirmedEmail } from '@/util';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router: express.Router = express.Router();
 
 router.get('/verify', async (request: express.Request, response: express.Response) => {
-	const token: string = request.query.token as string;
+	const token: string | undefined = getValueFromQueryString(request.query, 'token');
 
 	if (!token || token.trim() == '') {
 		return response.status(400).json({

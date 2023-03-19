@@ -1,5 +1,6 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
+import { getValueFromQueryString } from '@/util';
 import { PNID } from '@/models/pnid';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -11,18 +12,25 @@ const router: express.Router = express.Router();
  * Description: Maps between NNID usernames and PIDs
  */
 router.get('/mapped_ids', async (request: express.Request, response: express.Response) => {
-	const inputType: string = request.query.input_type as string;
-	const outputType: string = request.query.output_type as string;
-	let inputList: string[];
+	const inputType: string | undefined = getValueFromQueryString(request.query, 'input_type');
+	const outputType: string | undefined = getValueFromQueryString(request.query, 'output_type');
+	const input: string | undefined = getValueFromQueryString(request.query, 'input');
+
+	if (!inputType || !outputType || !input) {
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
+			}
+		}).end());
+	}
+
+	let inputList: string[] = input.split(',');
 	let queryInput: string;
 	let queryOutput: string;
-
-	if (Array.isArray(request.query.input)) {
-		inputList = request.query.input as string[];
-	} else {
-		const input = request.query.input as string;
-		inputList = input.split(',');
-	}
 
 	inputList = inputList.filter(input => input); // * Remove null inputs
 

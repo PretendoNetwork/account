@@ -1,5 +1,6 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
+import { getValueFromQueryString } from '@/util';
 import { PNID } from '@/models/pnid';
 import { config } from '@/config-manager';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
@@ -13,14 +14,21 @@ const router: express.Router = express.Router();
  * Description: Returns a list of NNID miis
  */
 router.get('/', async (request: express.Request, response: express.Response) => {
-	let pids: number[];
+	const input: string | undefined = getValueFromQueryString(request.query, 'pids');
 
-	if (Array.isArray(request.query.pids)) {
-		pids = request.query.pids.map(pid => Number(pid));
-	} else {
-		const input = request.query.pids as string;
-		pids = input.split(',').map(pid => Number(pid));
+	if (!input) {
+		return response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
+			}
+		}).end());
 	}
+
+	const pids: number[] = input.split(',').map(pid => Number(pid));
 
 	const results: HydratedPNIDDocument[] = await PNID.where('pid', pids);
 	const miis: {

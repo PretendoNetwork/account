@@ -1,5 +1,6 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
+import { getValueFromHeaders } from '@/util';
 
 const VALID_CLIENT_ID_SECRET_PAIRS: { [key: string]: string } = {
 	// * 'Key' is the client ID, 'Value' is the client secret
@@ -14,8 +15,8 @@ function nintendoClientHeaderCheck(request: express.Request, response: express.R
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	const clientId: string = request.headers['x-nintendo-client-id'] as string;
-	const clientSecret: string = request.headers['x-nintendo-client-secret'] as string;
+	const clientId: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-client-id');
+	const clientSecret: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-client-secret');
 
 	if (
 		!clientId ||

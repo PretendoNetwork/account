@@ -1,10 +1,11 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
+import { getValueFromHeaders } from '@/util';
 import { getUserBasic, getUserBearer } from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
-	const authHeader: string | undefined = request.headers.authorization;
+	const authHeader: string | undefined = getValueFromHeaders(request.headers, 'authorization');
 
 	if (!authHeader || !(authHeader.startsWith('Bearer') || authHeader.startsWith('Basic'))) {
 		return next();

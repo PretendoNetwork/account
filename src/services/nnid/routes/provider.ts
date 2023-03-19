@@ -2,7 +2,7 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import fs from 'fs-extra';
 import { getServerByTitleId, getServer } from '@/database';
-import { generateToken } from '@/util';
+import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { getServicePublicKey, getServiceSecretKey, getNEXPublicKey, getNEXSecretKey } from '@/cache';
 import { NEXAccount } from '@/models/nex-account';
 import { CryptoOptions } from '@/types/common/crypto-options';
@@ -35,7 +35,20 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		}).end());
 	}
 
-	const titleId: string = request.headers['x-nintendo-title-id'] as string;
+	const titleId: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
+
+	if (!titleId) {
+		// TODO - Research this error more
+		return response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '1021',
+					message: 'The requested game server was not found'
+				}
+			}
+		}).end());
+	}
+
 	const serverAccessLevel: string = pnid.get('server_access_level');
 	const server: HydratedServerDocument | null = await getServerByTitleId(titleId, serverAccessLevel);
 
@@ -121,7 +134,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		}).end());
 	}
 
-	const gameServerID: string = request.query.game_server_id as string;
+	const gameServerID: string | undefined = getValueFromQueryString(request.query, 'game_server_id');
 
 	if (!gameServerID) {
 		return response.send(xmlbuilder.create({
@@ -152,7 +165,19 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	const ip: string = server.ip;
 	const port: number = server.port;
 	const device: number = server.device;
-	const titleId: string = request.headers['x-nintendo-title-id'] as string;
+	const titleId: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
+
+	if (!titleId) {
+		// TODO - Research this error more
+		return response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '1021',
+					message: 'The requested game server was not found'
+				}
+			}
+		}).end());
+	}
 
 	const cryptoPath: string = `${__dirname}/../../../../certs/nex/${serverName}`;
 

@@ -5,6 +5,7 @@ import aws from 'aws-sdk';
 import fs from 'fs-extra';
 import express from 'express';
 import mongoose from 'mongoose';
+import { ParsedQs } from 'qs';
 import { sendMail } from '@/mailer';
 import { getServiceAESKey, getServicePrivateKey, getServiceSecretKey, getServicePublicKey } from '@/cache';
 import { config, disabledFeatures } from '@/config-manager';
@@ -13,6 +14,8 @@ import { TokenOptions } from '@/types/common/token-options';
 import { Token } from '@/types/common/token';
 import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import { MailerOptions } from '@/types/common/mailer-options';
+import { SafeQs } from '@/types/common/safe-qs';
+import { IncomingHttpHeaders } from 'node:http';
 
 let s3: aws.S3;
 
@@ -320,4 +323,55 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 	};
 
 	await sendMail(mailerOptions);
+}
+
+export function makeSafeQs(query: ParsedQs): SafeQs {
+	const entries = Object.entries(query);
+	const output: SafeQs = {};
+
+	for (const [key, value] of entries) {
+		if (typeof value !== 'string') {
+			// * ignore non-strings
+			continue;
+		}
+
+		output[key] = value;
+	}
+
+	return output;
+}
+
+export function getValueFromQueryString(qs: ParsedQs, key: string): string | undefined {
+	let property: string | ParsedQs | string[] | ParsedQs[] | SafeQs | undefined = qs[key];
+	let value: string | undefined;
+
+	if (property) {
+		if (Array.isArray(property)) {
+			property = property[0];
+		}
+
+		if (typeof property !== 'string') {
+			property = makeSafeQs(<ParsedQs>property);
+			value = (<SafeQs>property)[key];
+		} else {
+			value = <string>property;
+		}
+	}
+
+	return value;
+}
+
+export function getValueFromHeaders(headers: IncomingHttpHeaders, key: string): string | undefined {
+	let header: string | string[] | undefined = headers[key];
+	let value: string | undefined;
+
+	if (header) {
+		if (Array.isArray(header)) {
+			header = header[0];
+		}
+
+		value = header;
+	}
+
+	return value;
 }
