@@ -6,6 +6,7 @@ process.on('uncaughtException', (err, origin) => {
 
 import express from 'express';
 import morgan from 'morgan';
+import xmlbuilder from 'xmlbuilder';
 import xmlparser from '@/middleware/xml-parser';
 import { connect as connectCache } from '@/cache';
 import { connect as connectDatabase } from '@/database';
@@ -61,8 +62,15 @@ app.use((request: express.Request, response: express.Response) => {
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	response.status(404);
-	response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+	response.status(404).send(xmlbuilder.create({
+		errors: {
+			error: {
+				cause: '',
+				code: '0008',
+				message: 'Not Found'
+			}
+		}
+	}).end());
 });
 
 // non-404 error handler

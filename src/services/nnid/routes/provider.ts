@@ -215,8 +215,15 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	});
 
 	if (!nexUser) {
-		response.status(404);
-		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+		return response.status(404).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: '',
+					code: '0008',
+					message: 'Not Found'
+				}
+			}
+		}).end());
 	}
 
 	let nexToken: string | null = await generateToken(cryptoOptions, tokenOptions);

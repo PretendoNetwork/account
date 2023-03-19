@@ -227,16 +227,30 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404);
-		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+		return response.status(404).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: '',
+					code: '0008',
+					message: 'Not Found'
+				}
+			}
+		}).end());
 	}
 
 	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.get('pid'));
 
 	if (!person) {
 		// TODO - Research this error more
-		response.status(404);
-		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+		return response.status(404).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: '',
+					code: '0008',
+					message: 'Not Found'
+				}
+			}
+		}).end());
 	}
 
 	response.send(xmlbuilder.create({
@@ -264,16 +278,30 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404);
-		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+		return response.status(404).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: '',
+					code: '0008',
+					message: 'Not Found'
+				}
+			}
+		}).end());
 	}
 
 	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.get('pid'));
 
 	if (!person) {
 		// TODO - Research this error more
-		response.status(404);
-		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+		return response.status(404).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: '',
+					code: '0008',
+					message: 'Not Found'
+				}
+			}
+		}).end());
 	}
 
 	response.send(xmlbuilder.create({
@@ -314,8 +342,15 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404);
-		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+		return response.status(404).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: '',
+					code: '0008',
+					message: 'Not Found'
+				}
+			}
+		}).end());
 	}
 
 	response.send(xmlbuilder.create({
@@ -353,16 +388,30 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404);
-		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+		return response.status(404).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: '',
+					code: '0008',
+					message: 'Not Found'
+				}
+			}
+		}).end());
 	}
 
 	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.get('pid'));
 
 	if (!person) {
 		// TODO - Research this error more
-		response.status(404);
-		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+		return response.status(404).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: '',
+					code: '0008',
+					message: 'Not Found'
+				}
+			}
+		}).end());
 	}
 
 	response.send(xmlbuilder.create({
@@ -396,8 +445,15 @@ router.put('/@me/miis/@primary', async (request: express.Request, response: expr
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404);
-		return response.send('<errors><error><cause/><code>0008</code><message>Not Found</message></error></errors>');
+		return response.status(404).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: '',
+					code: '0008',
+					message: 'Not Found'
+				}
+			}
+		}).end());
 	}
 
 	// TODO - Make this more strictly typed?
