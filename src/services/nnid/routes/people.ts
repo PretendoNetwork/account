@@ -107,11 +107,11 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		// NN with a NNID will always use the NNID PID
 		// even if the provided NEX PID is different
 		// To fix this we make them the same PID
-		nexAccount.owning_pid = nexAccount.get('pid');
+		nexAccount.owning_pid = nexAccount.pid;
 
 		await nexAccount.save({ session });
 
-		const primaryPasswordHash: string = nintendoPasswordHash(person.get('password'), nexAccount.get('pid'));
+		const primaryPasswordHash: string = nintendoPasswordHash(person.get('password'), nexAccount.pid);
 		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 		const countryCode: string = person.get('country');
@@ -134,7 +134,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		}
 
 		pnid = new PNID({
-			pid: nexAccount.get('pid'),
+			pid: nexAccount.pid,
 			creation_date: creationDate,
 			updated: creationDate,
 			username: person.get('user_id'),
@@ -208,7 +208,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 	response.send(xmlbuilder.create({
 		person: {
-			pid: pnid.get('pid')
+			pid: pnid.pid
 		}
 	}).end());
 });
@@ -238,7 +238,7 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 		}).end());
 	}
 
-	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.get('pid'));
+	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
@@ -289,7 +289,7 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 		}).end());
 	}
 
-	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.get('pid'));
+	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
@@ -360,7 +360,7 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 					device_id: deviceId,
 					language: acceptLanguage,
 					updated: moment().format('YYYY-MM-DDTHH:MM:SS'),
-					pid: pnid.get('pid'),
+					pid: pnid.pid,
 					platform_id: platformId,
 					region: region,
 					serial_number: serialNumber,
@@ -399,7 +399,7 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 		}).end());
 	}
 
-	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.get('pid'));
+	const person: PNIDProfile | null = await getUserProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
@@ -547,13 +547,13 @@ router.put('/@me', async (request: express.Request, response: express.Response) 
 		}).end());
 	}
 
-	const gender: string = person.get('gender') ? person.get('gender') : pnid.get('gender');
-	const region: string = person.get('region') ? person.get('region') : pnid.get('region');
-	const countryCode: string = person.get('country') ? person.get('country') : pnid.get('country');
-	const language: string = person.get('language') ? person.get('language') : pnid.get('language');
-	const timezoneName: string = person.get('tz_name') ? person.get('tz_name') : pnid.get('timezone.name');
-	const marketingFlag: boolean = person.get('marketing_flag') ? person.get('marketing_flag') === 'Y' : pnid.get('flags.marketing');
-	const offDeviceFlag: boolean = person.get('off_device_flag') ? person.get('off_device_flag') === 'Y' : pnid.get('flags.off_device');
+	const gender: string = person.get('gender') ? person.get('gender') : pnid.gender;
+	const region: string = person.get('region') ? person.get('region') : pnid.region;
+	const countryCode: string = person.get('country') ? person.get('country') : pnid.country;
+	const language: string = person.get('language') ? person.get('language') : pnid.language;
+	const timezoneName: string = person.get('tz_name') ? person.get('tz_name') : pnid.timezone.name;
+	const marketingFlag: boolean = person.get('marketing_flag') ? person.get('marketing_flag') === 'Y' : pnid.flags.marketing;
+	const offDeviceFlag: boolean = person.get('off_device_flag') ? person.get('off_device_flag') === 'Y' : pnid.flags.off_device;
 
 	const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 	const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
@@ -571,7 +571,7 @@ router.put('/@me', async (request: express.Request, response: express.Response) 
 	}
 
 	if (person.get('password')) {
-		const primaryPasswordHash: string = nintendoPasswordHash(person.get('password'), pnid.get('pid'));
+		const primaryPasswordHash: string = nintendoPasswordHash(person.get('password'), pnid.pid);
 		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid.password = passwordHash;
@@ -615,15 +615,15 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 		emails: [
 			{
 				email: {
-					address: pnid.get('email.address'),
-					id: pnid.get('email.id'),
-					parent: pnid.get('email.parent') ? 'Y' : 'N',
-					primary: pnid.get('email.primary') ? 'Y' : 'N',
-					reachable: pnid.get('email.reachable') ? 'Y' : 'N',
+					address: pnid.email.address,
+					id: pnid.email.id,
+					parent: pnid.email.parent ? 'Y' : 'N',
+					primary: pnid.email.primary ? 'Y' : 'N',
+					reachable: pnid.email.reachable ? 'Y' : 'N',
 					type: 'DEFAULT', // what is this?
 					updated_by: 'USER', // need to actually update this
-					validated: pnid.get('email.validated') ? 'Y' : 'N',
-					validated_date: pnid.get('email.validated_date'),
+					validated: pnid.email.validated ? 'Y' : 'N',
+					validated_date: pnid.email.validated_date,
 				}
 			}
 		]

@@ -250,15 +250,15 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		// NN with a NNID will always use the NNID PID
 		// even if the provided NEX PID is different
 		// To fix this we make them the same PID
-		nexAccount.owning_pid = nexAccount.get('pid');
+		nexAccount.owning_pid = nexAccount.pid;
 
 		await nexAccount.save({ session });
 
-		const primaryPasswordHash: string = nintendoPasswordHash(password, nexAccount.get('pid'));
+		const primaryPasswordHash: string = nintendoPasswordHash(password, nexAccount.pid);
 		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid = new PNID({
-			pid: nexAccount.get('pid'),
+			pid: nexAccount.pid,
 			creation_date: creationDate,
 			updated: creationDate,
 			username: username,
@@ -348,7 +348,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	const accessTokenOptions: TokenOptions = {
 		system_type: 0xF, // API
 		token_type: 0x1, // OAuth Access,
-		pid: pnid.get('pid'),
+		pid: pnid.pid,
 		access_level: 0,
 		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
@@ -357,7 +357,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	const refreshTokenOptions: TokenOptions = {
 		system_type: 0xF, // API
 		token_type: 0x2, // OAuth Refresh,
-		pid: pnid.get('pid'),
+		pid: pnid.pid,
 		access_level: 0,
 		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))

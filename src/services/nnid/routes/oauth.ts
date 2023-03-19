@@ -64,7 +64,7 @@ router.post('/access_token/generate', async (request: express.Request, response:
 		}).end({ pretty: true }));
 	}
 
-	if (pnid.get('access_level') < 0) {
+	if (pnid.access_level < 0) {
 		return response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
@@ -92,14 +92,14 @@ router.post('/access_token/generate', async (request: express.Request, response:
 	const accessTokenOptions: TokenOptions = {
 		system_type: 0x1, // WiiU
 		token_type: 0x1, // OAuth Access,
-		pid: pnid.get('pid'),
+		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const refreshTokenOptions: TokenOptions = {
 		system_type: 0x1, // WiiU
 		token_type: 0x2, // OAuth Refresh,
-		pid: pnid.get('pid'),
+		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 

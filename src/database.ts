@@ -7,7 +7,8 @@ import { Server } from '@/models/server';
 import { LOG_ERROR } from '@/logger';
 import { config } from '@/config-manager';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import { HydratedDeviceDocument } from '@/types/mongoose/device';
+import { IDevice } from '@/types/mongoose/device';
+import { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 import { HydratedServerDocument } from '@/types/mongoose/server';
 import { Token } from '@/types/common/token';
 import { PNIDProfile } from '@/types/services/nnid/pnid-profile';
@@ -133,7 +134,7 @@ export async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile 
 		return null;
 	}
 
-	const device: HydratedDeviceDocument = user.get('devices')[0]; // * Just grab the first device
+	const device: IDevice = user.devices[0]; // * Just grab the first device
 	let device_attributes: {
 		device_attribute: {
 			name: string;
@@ -143,10 +144,10 @@ export async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile 
 	}[] = [];
 
 	if (device) {
-		device_attributes = device.get('device_attributes').map((attribute: { name: string; value: string; created_date: string; }) => {
+		device_attributes = device.device_attributes.map((attribute: IDeviceAttribute) => {
 			const name: string = attribute.name;
 			const value: string = attribute.value;
-			const created_date: string = attribute.created_date;
+			const created_date: string | undefined = attribute.created_date;
 
 			return {
 				device_attribute: {
@@ -160,50 +161,50 @@ export async function getUserProfileJSONByPID(pid: number): Promise<PNIDProfile 
 
 	return {
 		//accounts: {}, // * We need to figure this out, no idea what these values mean or what they do
-		active_flag: user.get('flags.active') ? 'Y' : 'N',
-		birth_date: user.get('birthdate'),
-		country: user.get('country'),
-		create_date: user.get('creation_date'),
+		active_flag: user.flags.active ? 'Y' : 'N',
+		birth_date: user.birthdate,
+		country: user.country,
+		create_date: user.creation_date,
 		device_attributes: device_attributes,
-		gender: user.get('gender'),
-		language: user.get('language'),
-		updated: user.get('updated'),
-		marketing_flag: user.get('flags.marketing') ? 'Y' : 'N',
-		off_device_flag: user.get('flags.off_device') ? 'Y' : 'N',
-		pid: user.get('pid'),
+		gender: user.gender,
+		language: user.language,
+		updated: user.updated,
+		marketing_flag: user.flags.marketing ? 'Y' : 'N',
+		off_device_flag: user.flags.off_device ? 'Y' : 'N',
+		pid: user.pid,
 		email: {
-			address: user.get('email.address'),
-			id: user.get('email.id'),
-			parent: user.get('email.parent') ? 'Y' : 'N',
-			primary: user.get('email.primary') ? 'Y' : 'N',
-			reachable: user.get('email.reachable') ? 'Y' : 'N',
+			address: user.email.address,
+			id: user.email.id,
+			parent: user.email.parent ? 'Y' : 'N',
+			primary: user.email.primary ? 'Y' : 'N',
+			reachable: user.email.reachable ? 'Y' : 'N',
 			type: 'DEFAULT',
 			updated_by: 'USER', // * Can also be INTERNAL WS, don't know the difference
-			validated: user.get('email.validated') ? 'Y' : 'N',
-			validated_date: user.get('email.validated') ? user.get('email.validated_date') : ''
+			validated: user.email.validated ? 'Y' : 'N',
+			validated_date: user.email.validated ? user.email.validated_date : ''
 		},
 		mii: {
 			status: 'COMPLETED',
-			data: user.get('mii.data').replace(/(\r\n|\n|\r)/gm, ''),
-			id: user.get('mii.id'),
-			mii_hash: user.get('mii.hash'),
+			data: user.mii.data.replace(/(\r\n|\n|\r)/gm, ''),
+			id: user.mii.id,
+			mii_hash: user.mii.hash,
 			mii_images: {
 				mii_image: {
 					// * Images MUST be loaded over HTTPS or console ignores them
 					// * Bunny CDN is the only CDN which seems to support TLS 1.0/1.1 (required)
 					cached_url: `${config.cdn.base_url}/mii/${user.pid}/standard.tga`,
-					id: user.get('mii.image_id'),
+					id: user.mii.image_id,
 					url: `${config.cdn.base_url}/mii/${user.pid}/standard.tga`,
 					type: 'standard'
 				}
 			},
-			name: user.get('mii.name'),
-			primary: user.get('mii.primary') ? 'Y' : 'N',
+			name: user.mii.name,
+			primary: user.mii.primary ? 'Y' : 'N',
 		},
-		region: user.get('region'),
-		tz_name: user.get('timezone.name'),
-		user_id: user.get('username'),
-		utc_offset: user.get('timezone.offset')
+		region: user.region,
+		tz_name: user.timezone.name,
+		user_id: user.username,
+		utc_offset: user.timezone.offset
 	};
 }
 
@@ -238,7 +239,7 @@ export async function addUserConnectionDiscord(pnid: HydratedPNIDDocument, data:
 		};
 	}
 
-	await PNID.updateOne({ pid: pnid.get('pid') }, {
+	await PNID.updateOne({ pid: pnid.pid }, {
 		$set: {
 			'connections.discord.id': data.id
 		}
@@ -258,7 +259,7 @@ export async function removeUserConnection(pnid: HydratedPNIDDocument, type: str
 }
 
 export async function removeUserConnectionDiscord(pnid: HydratedPNIDDocument): Promise<ConnectionResponse> {
-	await PNID.updateOne({ pid: pnid.get('pid') }, {
+	await PNID.updateOne({ pid: pnid.pid }, {
 		$set: {
 			'connections.discord.id': ''
 		}

@@ -67,7 +67,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 			});
 		}
 
-		const hashedPassword: string = nintendoPasswordHash(password, pnid.get('pid'));
+		const hashedPassword: string = nintendoPasswordHash(password, pnid.pid);
 
 		if (!pnid || !bcrypt.compareSync(hashedPassword, pnid.password)) {
 			return response.status(400).json({
@@ -110,8 +110,8 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	const accessTokenOptions: TokenOptions = {
 		system_type: 0xF, // API
 		token_type: 0x1, // OAuth Access,
-		pid: pnid.get('pid'),
-		access_level: pnid.get('access_level'),
+		pid: pnid.pid,
+		access_level: pnid.access_level,
 		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
@@ -119,8 +119,8 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	const refreshTokenOptions: TokenOptions = {
 		system_type: 0xF, // API
 		token_type: 0x2, // OAuth Refresh,
-		pid: pnid.get('pid'),
-		access_level: pnid.get('access_level'),
+		pid: pnid.pid,
+		access_level: pnid.access_level,
 		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};

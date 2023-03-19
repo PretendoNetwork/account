@@ -47,7 +47,7 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 	// THAT WAY EVERYONE CAN GET AN ASSIGNED PID
 	let serverAccessLevel: string = 'test';
 	if (titleID !== '0004013000003202') {
-		serverAccessLevel = nexUser.get('server_access_level');
+		serverAccessLevel = nexUser.server_access_level;
 	}
 
 	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
@@ -71,7 +71,7 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 	const tokenOptions: TokenOptions = {
 		system_type: 0x2, // 3DS
 		token_type: 0x3, // nex token,
-		pid: nexUser.get('pid'),
+		pid: nexUser.pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))

@@ -21,7 +21,7 @@ export interface PNIDProfile {
 	pid: number;
 	email: {
 		address: string;
-		id: string;
+		id: number;
 		parent: YesNoBoolString;
 		primary: YesNoBoolString;
 		reachable: YesNoBoolString;
@@ -38,7 +38,7 @@ export interface PNIDProfile {
 		mii_images: {
 			mii_image: {
 				cached_url: string;
-				id: string;
+				id: number;
 				url: string;
 				type: 'standard';
 			}

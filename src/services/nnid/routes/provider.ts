@@ -49,7 +49,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		}).end());
 	}
 
-	const serverAccessLevel: string = pnid.get('server_access_level');
+	const serverAccessLevel: string = pnid.server_access_level;
 	const server: HydratedServerDocument | null = await getServerByTitleId(titleId, serverAccessLevel);
 
 	if (!server) {
@@ -91,8 +91,8 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 	const tokenOptions: TokenOptions = {
 		system_type: device,
 		token_type: 0x4, // service token,
-		pid: pnid.get('pid'),
-		access_level: pnid.get('access_level'),
+		pid: pnid.pid,
+		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleId, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
@@ -147,7 +147,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		}).end());
 	}
 
-	const serverAccessLevel: string = pnid.get('server_access_level');
+	const serverAccessLevel: string = pnid.server_access_level;
 	const server: HydratedServerDocument | null = await getServer(gameServerID, serverAccessLevel);
 
 	if (!server) {
@@ -204,14 +204,14 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	const tokenOptions: TokenOptions = {
 		system_type: device,
 		token_type: 0x3, // nex token,
-		pid: pnid.get('pid'),
-		access_level: pnid.get('access_level'),
+		pid: pnid.pid,
+		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleId, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const nexUser: HydratedNEXAccountDocument | null = await NEXAccount.findOne({
-		owning_pid: pnid.get('pid')
+		owning_pid: pnid.pid
 	});
 
 	if (!nexUser) {
@@ -237,8 +237,8 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	response.send(xmlbuilder.create({
 		nex_token: {
 			host: ip,
-			nex_password: nexUser.get('password'),
-			pid: nexUser.get('pid'),
+			nex_password: nexUser.password,
+			pid: nexUser.pid,
 			port: port,
 			token: nexToken
 		}

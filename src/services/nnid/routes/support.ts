@@ -69,7 +69,7 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 		}).end());
 	}
 
-	if (pnid.get('identification.email_code') !== code) {
+	if (pnid.identification.email_code !== code) {
 		return response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
