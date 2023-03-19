@@ -6,7 +6,7 @@ declare global {
 	namespace Express {
 		interface Request {
 			pnid: HydratedPNIDDocument | null;
-			nexUser: HydratedNEXAccountDocument | null;
+			nexAccount: HydratedNEXAccountDocument | null;
 			isCemu?: boolean;
 			files?: Record<string, any>;
 			certificate?: NintendoCertificate;

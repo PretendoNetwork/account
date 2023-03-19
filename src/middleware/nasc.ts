@@ -174,14 +174,14 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		}
 	}
 
-	const nexUser: HydratedNEXAccountDocument | null = await NEXAccount.findOne({ pid });
+	const nexAccount: HydratedNEXAccountDocument | null = await NEXAccount.findOne({ pid });
 
-	if (!nexUser || nexUser.access_level < 0) {
+	if (!nexAccount || nexAccount.access_level < 0) {
 		response.status(200).send(nascError('102'));
 		return;
 	}
 
-	request.nexUser = nexUser;
+	request.nexAccount = nexAccount;
 
 	return next();
 }

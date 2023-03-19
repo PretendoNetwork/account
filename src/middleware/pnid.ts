@@ -14,19 +14,19 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	const parts: string[] = authHeader.split(' ');
 	const type: string = parts[0];
 	let token: string = parts[1];
-	let user: HydratedPNIDDocument | null;
+	let pnid: HydratedPNIDDocument | null;
 
 	if (request.isCemu) {
 		token = Buffer.from(token, 'hex').toString('base64');
 	}
 
 	if (type === 'Basic') {
-		user = await getUserBasic(token);
+		pnid = await getUserBasic(token);
 	} else {
-		user = await getUserBearer(token);
+		pnid = await getUserBearer(token);
 	}
 
-	if (!user) {
+	if (!pnid) {
 		response.status(401);
 
 		if (type === 'Bearer') {
@@ -55,7 +55,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
-	if (user.access_level < 0) {
+	if (pnid.access_level < 0) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
@@ -68,7 +68,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
-	request.pnid = user;
+	request.pnid = pnid;
 
 	return next();
 }

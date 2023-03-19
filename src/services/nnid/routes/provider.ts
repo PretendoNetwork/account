@@ -210,11 +210,11 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const nexUser: HydratedNEXAccountDocument | null = await NEXAccount.findOne({
+	const nexAccount: HydratedNEXAccountDocument | null = await NEXAccount.findOne({
 		owning_pid: pnid.pid
 	});
 
-	if (!nexUser) {
+	if (!nexAccount) {
 		return response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
@@ -237,8 +237,8 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	response.send(xmlbuilder.create({
 		nex_token: {
 			host: ip,
-			nex_password: nexUser.password,
-			pid: nexUser.pid,
+			nex_password: nexAccount.password,
+			pid: nexAccount.pid,
 			port: port,
 			token: nexToken
 		}

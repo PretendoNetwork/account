@@ -11,9 +11,9 @@ async function APIMiddleware(request: express.Request, _response: express.Respon
 	}
 
 	const token: string = authHeader.split(' ')[1];
-	const user: HydratedPNIDDocument | null = await getUserBearer(token);
+	const pnid: HydratedPNIDDocument | null = await getUserBearer(token);
 
-	request.pnid = user;
+	request.pnid = pnid;
 
 	return next();
 }
