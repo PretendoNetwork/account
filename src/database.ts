@@ -254,11 +254,11 @@ export async function addPNIDConnectionDiscord(pnid: HydratedPNIDDocument, data:
 export async function removePNIDConnection(pnid: HydratedPNIDDocument, type: string): Promise<ConnectionResponse | undefined> {
 	// * Add more connections later?
 	if (type === 'discord') {
-		return await removeUserConnectionDiscord(pnid);
+		return await removePNIDConnectionDiscord(pnid);
 	}
 }
 
-export async function removeUserConnectionDiscord(pnid: HydratedPNIDDocument): Promise<ConnectionResponse> {
+export async function removePNIDConnectionDiscord(pnid: HydratedPNIDDocument): Promise<ConnectionResponse> {
 	await PNID.updateOne({ pid: pnid.pid }, {
 		$set: {
 			'connections.discord.id': ''

@@ -70,7 +70,7 @@ export async function generateToken(cryptoOptions: CryptoOptions | null, tokenOp
 		encryptedBody = Buffer.concat([encryptedBody, cipher.final()]);
 
 		return encryptedBody.toString('base64');
-	} else if (!tokenOptions.access_level || !tokenOptions.title_id) {
+	} else if (tokenOptions.access_level === undefined || tokenOptions.title_id === undefined) {
 		return null;
 	}
 
