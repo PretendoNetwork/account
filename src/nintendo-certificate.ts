@@ -103,7 +103,6 @@ class NintendoCertificate {
 			}
 
 			this._parseCertificateData();
-			this._verifySignature();
 		}
 	}
 
@@ -128,6 +127,8 @@ class NintendoCertificate {
 			this.certificateName = this._certificate.subarray(0xC4, 0x104).toString().split('\0')[0];
 			this.ngKeyId = this._certificate.readUInt32BE(0x104);
 			this.publicKeyData = this._certificate.subarray(0x108);
+
+			this._verifySignature();
 		}
 	}
 
