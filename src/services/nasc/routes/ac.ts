@@ -52,7 +52,13 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 
 	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
 
-	if (!server || !server.service_name || !server.ip || !server.port) {
+	if (!server || !server.service_name || !server.ip) {
+		return nascError('110');
+	}
+
+	if (server.port <= 0 && server.ip !== '0.0.0.0') {
+		// * Addresses of 0.0.0.0:0 are allowed
+		// * They are expected for titles with no NEX server
 		return nascError('110');
 	}
 
