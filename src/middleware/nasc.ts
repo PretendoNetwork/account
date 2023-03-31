@@ -21,7 +21,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		!requestParams.titleid ||
 		!requestParams.servertype
 	) {
-		response.status(200).send(nascError('null')); // This is what Nintendo sends
+		response.status(200).send(nascError('null').toString()); // This is what Nintendo sends
 		return;
 	}
 
@@ -52,19 +52,19 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	}
 
 	if (action !== 'LOGIN' && action !== 'SVCLOC') {
-		response.status(200).send(nascError('null')); // This is what Nintendo sends
+		response.status(200).send(nascError('null').toString()); // This is what Nintendo sends
 		return;
 	}
 
 	const cert: NintendoCertificate = new NintendoCertificate(fcdcert);
 
 	if (!cert.valid) {
-		response.status(200).send(nascError('121'));
+		response.status(200).send(nascError('121').toString());
 		return;
 	}
 
 	if (!validNintendoMACAddress(macAddress)) {
-		response.status(200).send(nascError('null'));
+		response.status(200).send(nascError('null').toString());
 		return;
 	}
 
@@ -91,7 +91,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	}
 
 	if (!model) {
-		response.status(200).send(nascError('null'));
+		response.status(200).send(nascError('null').toString());
 		return;
 	}
 
@@ -105,7 +105,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 	if (device) {
 		if (device.get('access_level') < 0) {
-			response.status(200).send(nascError('102'));
+			response.status(200).send(nascError('102').toString());
 			return;
 		}
 
@@ -113,7 +113,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 			const linkedPIDs = device.get('linked_pids');
 
 			if (!linkedPIDs.includes(pid)) {
-				response.status(200).send(nascError('102'));
+				response.status(200).send(nascError('102').toString());
 				return;
 			}
 		}
@@ -164,7 +164,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 				await session.abortTransaction();
 
 				// 3DS expects 200 even on error
-				response.status(200).send(nascError('102'));
+				response.status(200).send(nascError('102').toString());
 				return;
 			} finally {
 				// * This runs regardless of failure
@@ -177,7 +177,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	const nexAccount: HydratedNEXAccountDocument | null = await NEXAccount.findOne({ pid });
 
 	if (!nexAccount || nexAccount.access_level < 0) {
-		response.status(200).send(nascError('102'));
+		response.status(200).send(nascError('102').toString());
 		return;
 	}
 
