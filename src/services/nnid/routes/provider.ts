@@ -1,11 +1,8 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
-import fs from 'fs-extra';
 import { getServerByTitleId, getServerByGameServerId } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
-import { getServicePublicKey, getServiceSecretKey, getNEXPublicKey, getNEXSecretKey } from '@/cache';
 import { NEXAccount } from '@/models/nex-account';
-import { CryptoOptions } from '@/types/common/crypto-options';
 import { TokenOptions } from '@/types/common/token-options';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { HydratedServerDocument } from '@/types/mongoose/server';
@@ -35,9 +32,9 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		}).end());
 	}
 
-	const titleId: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
+	const titleID: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
 
-	if (!titleId) {
+	if (!titleID) {
 		// TODO - Research this error more
 		return response.send(xmlbuilder.create({
 			errors: {
@@ -50,9 +47,9 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 	}
 
 	const serverAccessLevel: string = pnid.server_access_level;
-	const server: HydratedServerDocument | null = await getServerByTitleId(titleId, serverAccessLevel);
+	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
 
-	if (!server) {
+	if (!server || !server.aes_key) {
 		return response.send(xmlbuilder.create({
 			errors: {
 				error: {
@@ -62,47 +59,21 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 			}
 		}).end());
 	}
-
-	const serverName: string = server.service_name;
-	const device: number = server.device;
-
-	const cryptoPath: string = `${__dirname}/../../../../certs/service/${serverName}`;
-
-	if (!await fs.pathExists(cryptoPath)) {
-		// Need to generate keys
-		return response.send(xmlbuilder.create({
-			errors: {
-				error: {
-					code: '1021',
-					message: 'The requested game server was not found'
-				}
-			}
-		}).end());
-	}
-
-	const publicKey: Buffer = await getServicePublicKey(serverName);
-	const secretKey: Buffer = await getServiceSecretKey(serverName);
-
-	const cryptoOptions: CryptoOptions = {
-		public_key: publicKey,
-		hmac_secret: secretKey
-	};
 
 	const tokenOptions: TokenOptions = {
-		system_type: device,
-		token_type: 0x4, // service token,
+		system_type: server.device,
+		token_type: 0x4, // * Service token
 		pid: pnid.pid,
 		access_level: pnid.access_level,
-		title_id: BigInt(parseInt(titleId, 16)),
+		title_id: BigInt(parseInt(titleID, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let serviceToken: string | null = await generateToken(cryptoOptions, tokenOptions);
-
-	// TODO - Handle null tokens
+	const serviceTokenBuffer: Buffer | null = await generateToken(server.aes_key, tokenOptions);
+	let serviceToken: string = serviceTokenBuffer ? serviceTokenBuffer.toString('base64') : '';
 
 	if (request.isCemu) {
-		serviceToken = Buffer.from(serviceToken || '', 'base64').toString('hex');
+		serviceToken = Buffer.from(serviceToken, 'base64').toString('hex');
 	}
 
 	response.send(xmlbuilder.create({
@@ -134,82 +105,6 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		}).end());
 	}
 
-	const gameServerID: string | undefined = getValueFromQueryString(request.query, 'game_server_id');
-
-	if (!gameServerID) {
-		return response.send(xmlbuilder.create({
-			errors: {
-				error: {
-					code: '0118',
-					message: 'Unique ID and Game Server ID are not linked'
-				}
-			}
-		}).end());
-	}
-
-	const serverAccessLevel: string = pnid.server_access_level;
-	const server: HydratedServerDocument | null = await getServerByGameServerId(gameServerID, serverAccessLevel);
-
-	if (!server) {
-		return response.send(xmlbuilder.create({
-			errors: {
-				error: {
-					code: '1021',
-					message: 'The requested game server was not found'
-				}
-			}
-		}).end());
-	}
-
-	const serverName: string = server.service_name;
-	const ip: string = server.ip;
-	const port: number = server.port;
-	const device: number = server.device;
-	const titleId: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
-
-	if (!titleId) {
-		// TODO - Research this error more
-		return response.send(xmlbuilder.create({
-			errors: {
-				error: {
-					code: '1021',
-					message: 'The requested game server was not found'
-				}
-			}
-		}).end());
-	}
-
-	const cryptoPath: string = `${__dirname}/../../../../certs/nex/${serverName}`;
-
-	if (!await fs.pathExists(cryptoPath)) {
-		// Need to generate keys
-		return response.send(xmlbuilder.create({
-			errors: {
-				error: {
-					code: '1021',
-					message: 'The requested game server was not found'
-				}
-			}
-		}).end());
-	}
-
-	const publicKey: Buffer = await getNEXPublicKey(serverName);
-	const secretKey: Buffer = await getNEXSecretKey(serverName);
-
-	const cryptoOptions: CryptoOptions = {
-		public_key: publicKey,
-		hmac_secret: secretKey
-	};
-
-	const tokenOptions: TokenOptions = {
-		system_type: device,
-		token_type: 0x3, // nex token,
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(parseInt(titleId, 16)),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
 	const nexAccount: HydratedNEXAccountDocument | null = await NEXAccount.findOne({
 		owning_pid: pnid.pid
 	});
@@ -226,9 +121,58 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		}).end());
 	}
 
-	let nexToken: string | null = await generateToken(cryptoOptions, tokenOptions);
+	const gameServerID: string | undefined = getValueFromQueryString(request.query, 'game_server_id');
 
-	// TODO = Handle null tokens
+	if (!gameServerID) {
+		return response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0118',
+					message: 'Unique ID and Game Server ID are not linked'
+				}
+			}
+		}).end());
+	}
+
+	const serverAccessLevel: string = pnid.server_access_level;
+	const server: HydratedServerDocument | null = await getServerByGameServerId(gameServerID, serverAccessLevel);
+
+	if (!server || !server.aes_key) {
+		return response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '1021',
+					message: 'The requested game server was not found'
+				}
+			}
+		}).end());
+	}
+
+	const titleID: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
+
+	if (!titleID) {
+		// TODO - Research this error more
+		return response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '1021',
+					message: 'The requested game server was not found'
+				}
+			}
+		}).end());
+	}
+
+	const tokenOptions: TokenOptions = {
+		system_type: server.device,
+		token_type: 0x3, // nex token,
+		pid: pnid.pid,
+		access_level: pnid.access_level,
+		title_id: BigInt(parseInt(titleID, 16)),
+		expire_time: BigInt(Date.now() + (3600 * 1000))
+	};
+
+	const nexTokenBuffer: Buffer | null = await generateToken(server.aes_key, tokenOptions);
+	let nexToken: string = nexTokenBuffer ? nexTokenBuffer.toString('base64') : '';
 
 	if (request.isCemu) {
 		nexToken = Buffer.from(nexToken || '', 'base64').toString('hex');
@@ -236,10 +180,10 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 
 	response.send(xmlbuilder.create({
 		nex_token: {
-			host: ip,
+			host: server.ip,
 			nex_password: nexAccount.password,
 			pid: nexAccount.pid,
-			port: port,
+			port: server.port,
 			token: nexToken
 		}
 	}).end());

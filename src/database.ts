@@ -104,7 +104,7 @@ export async function getPNIDByBearerAuth(token: string): Promise<HydratedPNIDDo
 	verifyConnected();
 
 	try {
-		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'base64'));
+		const decryptedToken: Buffer = await decryptToken(config.aes_key, Buffer.from(token, 'hex'));
 		const unpackedToken: Token = unpackToken(decryptedToken);
 
 		const pnid: HydratedPNIDDocument | null = await getPNIDByPID(unpackedToken.pid);

@@ -1,9 +1,9 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
-import fs from 'fs-extra';
 import { getPNIDByUsername } from '@/database';
 import { generateToken } from '@/util';
+import { config } from '@/config-manager';
 import { TokenOptions } from '@/types/common/token-options';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -75,43 +75,27 @@ router.post('/access_token/generate', async (request: express.Request, response:
 		}).end());
 	}
 
-	const cryptoPath: string = `${__dirname}/../../../../certs/service/account`;
-
-	if (!await fs.pathExists(cryptoPath)) {
-		// Need to generate keys
-		return response.send(xmlbuilder.create({
-			errors: {
-				error: {
-					code: '0000',
-					message: 'Could not find account access key crypto path'
-				}
-			}
-		}).end());
-	}
-
 	const accessTokenOptions: TokenOptions = {
-		system_type: 0x1, // WiiU
-		token_type: 0x1, // OAuth Access,
+		system_type: 0x1, // * WiiU
+		token_type: 0x1, // * OAuth Access
 		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const refreshTokenOptions: TokenOptions = {
-		system_type: 0x1, // WiiU
-		token_type: 0x2, // OAuth Refresh,
+		system_type: 0x1, // * WiiU
+		token_type: 0x2, // * OAuth Refresh
 		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	let accessToken: string | null = await generateToken(null, accessTokenOptions);
-	let refreshToken: string | null = await generateToken(null, refreshTokenOptions);
+	const accessTokenBuffer: Buffer | null = await generateToken(config.aes_key, accessTokenOptions);
+	const refreshTokenBuffer: Buffer | null = await generateToken(config.aes_key, refreshTokenOptions);
+
+	const accessToken: string = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
+	const refreshToken: string = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
 
 	// TODO - Handle null tokens
-
-	if (request.isCemu) {
-		accessToken = Buffer.from(accessToken || '', 'base64').toString('hex');
-		refreshToken = Buffer.from(refreshToken || '', 'base64').toString('hex');
-	}
 
 	response.send(xmlbuilder.create({
 		OAuth20: {

@@ -1,8 +1,6 @@
 import express from 'express';
 import { nintendoBase64Encode, nintendoBase64Decode, nascError, generateToken } from '@/util';
 import { getServerByTitleId } from '@/database';
-import { getNEXPublicKey, getNEXSecretKey } from '@/cache';
-import { CryptoOptions } from '@/types/common/crypto-options';
 import { TokenOptions } from '@/types/common/token-options';
 import { NASCRequestParams } from '@/types/services/nasc/request-params';
 import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
@@ -18,33 +16,17 @@ const router: express.Router = express.Router();
 router.post('/', async (request: express.Request, response: express.Response) => {
 	const requestParams: NASCRequestParams = request.body;
 	const action: string = nintendoBase64Decode(requestParams.action).toString();
-	let responseData: URLSearchParams = nascError('null');
-
-	switch (action) {
-		case 'LOGIN':
-			responseData = await processLoginRequest(request);
-			break;
-		case 'SVCLOC':
-			responseData = await processServiceTokenRequest(request);
-			break;
-	}
-
-	response.status(200).send(responseData.toString());
-});
-
-async function processLoginRequest(request: express.Request): Promise<URLSearchParams> {
-	const requestParams: NASCRequestParams = request.body;
 	const titleID: string = nintendoBase64Decode(requestParams.titleid).toString();
 	const nexAccount: HydratedNEXAccountDocument | null = request.nexAccount;
+	let responseData: URLSearchParams = nascError('null');
 
 	if (!nexAccount) {
-		// TODO - Research this error more
-		return nascError('null');
+		return response.status(200).send(responseData.toString());
 	}
 
 	// TODO: REMOVE AFTER PUBLIC LAUNCH
-	// LET EVERYONE IN THE `test` FRIENDS SERVER
-	// THAT WAY EVERYONE CAN GET AN ASSIGNED PID
+	// * LET EVERYONE IN THE `test` FRIENDS SERVER
+	// * THAT WAY EVERYONE CAN GET AN ASSIGNED PID
 	let serverAccessLevel: string = 'test';
 	if (titleID !== '0004013000003202') {
 		serverAccessLevel = nexAccount.server_access_level;
@@ -52,32 +34,33 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 
 	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
 
-	if (!server || !server.service_name || !server.ip) {
-		return nascError('110');
+	if (!server || !server.aes_key) {
+		return response.status(200).send( nascError('110').toString());
 	}
 
-	if (server.port <= 0 && server.ip !== '0.0.0.0') {
+	if (action === 'LOGIN' && server.port <= 0 && server.ip !== '0.0.0.0') {
 		// * Addresses of 0.0.0.0:0 are allowed
 		// * They are expected for titles with no NEX server
-		return nascError('110');
+		return response.status(200).send( nascError('110').toString());
 	}
 
-	const serverName: string = server.service_name;
-	const ip: string = server.ip;
-	const port: number = server.port;
+	switch (action) {
+		case 'LOGIN':
+			responseData = await processLoginRequest(server, nexAccount.pid, titleID);
+			break;
+		case 'SVCLOC':
+			responseData = await processServiceTokenRequest(server, nexAccount.pid, titleID);
+			break;
+	}
 
-	const publicKey: Buffer = await getNEXPublicKey(serverName);
-	const secretKey: Buffer = await getNEXSecretKey(serverName);
+	response.status(200).send(responseData.toString());
+});
 
-	const cryptoOptions: CryptoOptions = {
-		public_key: publicKey,
-		hmac_secret: secretKey
-	};
-
+async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
 	const tokenOptions: TokenOptions = {
-		system_type: 0x2, // 3DS
-		token_type: 0x3, // nex token,
-		pid: nexAccount.pid,
+		system_type: 0x2, // * 3DS
+		token_type: 0x3, // * NEX token
+		pid: pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
@@ -85,11 +68,11 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 
 	// TODO - Handle null tokens
 
-	let nexToken: string | null = await generateToken(cryptoOptions, tokenOptions);
-	nexToken = nintendoBase64Encode(Buffer.from(nexToken || '', 'base64'));
+	const nexTokenBuffer: Buffer | null = await generateToken(server.aes_key, tokenOptions);
+	const nexToken: string = nintendoBase64Encode(nexTokenBuffer || '');
 
 	return new URLSearchParams({
-		locator: nintendoBase64Encode(`${ip}:${port}`),
+		locator: nintendoBase64Encode(`${server.ip}:${server.port}`),
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('001'),
 		token: nexToken,
@@ -97,11 +80,25 @@ async function processLoginRequest(request: express.Request): Promise<URLSearchP
 	});
 }
 
-async function processServiceTokenRequest(_request: express.Request): Promise<URLSearchParams> {
+async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
+	const tokenOptions: TokenOptions = {
+		system_type: 0x2, // * 3DS
+		token_type: 0x4, // * Service token
+		pid: pid,
+		access_level: 0,
+		title_id: BigInt(parseInt(titleID, 16)),
+		expire_time: BigInt(Date.now() + (3600 * 1000))
+	};
+
+	// TODO - Handle null tokens
+
+	const serviceTokenBuffer: Buffer | null = await generateToken(server.aes_key, tokenOptions);
+	const serviceToken: string = nintendoBase64Encode(serviceTokenBuffer || '');
+
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('007'),
-		servicetoken: nintendoBase64Encode(Buffer.alloc(64).toString()), // hard coded for now
+		servicetoken: serviceToken,
 		statusdata: nintendoBase64Encode('Y'),
 		svchost: nintendoBase64Encode('n/a'),
 		datetime: nintendoBase64Encode(Date.now().toString()),

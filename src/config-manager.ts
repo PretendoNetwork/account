@@ -64,7 +64,8 @@ export const config: Config = {
 		disk_path: process.env.PN_ACT_CONFIG_CDN_DISK_PATH || '',
 		base_url: process.env.PN_ACT_CONFIG_CDN_BASE_URL || ''
 	},
-	website_base: process.env.PN_ACT_CONFIG_WEBSITE_BASE || ''
+	website_base: process.env.PN_ACT_CONFIG_WEBSITE_BASE || '',
+	aes_key: process.env.PN_ACT_CONFIG_AES_KEY || ''
 };
 
 LOG_INFO('Config loaded, checking integrity');
@@ -162,4 +163,9 @@ if (disabledFeatures.s3) {
 	if (disabledFeatures.redis) {
 		LOG_WARN('Both s3 and Redis are disabled. Large CDN files will use the in-memory cache, which may result in high memory use. Please enable s3 if you\'re running a production server.');
 	}
+}
+
+if (!config.aes_key) {
+	LOG_ERROR('Token AES key is not set. Set the PN_ACT_CONFIG_AES_KEY environment variable to your AES-256-CBC key');
+	process.exit(0);
 }

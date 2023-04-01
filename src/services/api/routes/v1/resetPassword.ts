@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { PNID } from '@/models/pnid';
 import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
+import { config } from '@/config-manager';
 import { Token } from '@/types/common/token';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -28,7 +29,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
 	let unpackedToken: Token;
 	try {
-		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'base64'));
+		const decryptedToken: Buffer = await decryptToken(config.aes_key, Buffer.from(token, 'base64'));
 		unpackedToken = unpackToken(decryptedToken);
 	} catch (error) {
 		console.log(error);

@@ -3,19 +3,16 @@ import crypto from 'node:crypto';
 import express from 'express';
 import emailvalidator from 'email-validator';
 import bcrypt from 'bcrypt';
-import fs from 'fs-extra';
 import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import mongoose from 'mongoose';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { getServicePublicKey, getServiceSecretKey } from '@/cache';
 import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
-import { CryptoOptions } from '@/types/common/crypto-options';
 import { TokenOptions } from '@/types/common/token-options';
 import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
@@ -326,45 +323,25 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
 	await sendConfirmationEmail(pnid);
 
-	const cryptoPath: string = `${__dirname}/../../../../../certs/service/account`;
-
-	if (!await fs.pathExists(cryptoPath)) {
-		// Need to generate keys
-		return response.status(500).json({
-			app: 'api',
-			status: 500,
-			error: 'Failed to locate crypto keys. Please contact an administrator'
-		});
-	}
-
-	const publicKey: Buffer = await getServicePublicKey('account');
-	const secretKey: Buffer = await getServiceSecretKey('account');
-
-	const cryptoOptions: CryptoOptions = {
-		public_key: publicKey,
-		hmac_secret: secretKey
-	};
-
 	const accessTokenOptions: TokenOptions = {
-		system_type: 0xF, // API
-		token_type: 0x1, // OAuth Access,
+		system_type: 0x1, // * WiiU
+		token_type: 0x1, // * OAuth Access
 		pid: pnid.pid,
-		access_level: 0,
-		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const refreshTokenOptions: TokenOptions = {
-		system_type: 0xF, // API
-		token_type: 0x2, // OAuth Refresh,
+		system_type: 0x1, // * WiiU
+		token_type: 0x2, // * OAuth Refresh
 		pid: pnid.pid,
-		access_level: 0,
-		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessToken: string | null = await generateToken(cryptoOptions, accessTokenOptions);
-	const refreshToken: string | null = await generateToken(cryptoOptions, refreshTokenOptions);
+	const accessTokenBuffer: Buffer | null = await generateToken(config.aes_key, accessTokenOptions);
+	const refreshTokenBuffer: Buffer | null = await generateToken(config.aes_key, refreshTokenOptions);
+
+	const accessToken: string = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
+	const refreshToken: string = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
 
 	// TODO - Handle null tokens
 

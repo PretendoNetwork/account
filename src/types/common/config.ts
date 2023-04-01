@@ -37,6 +37,7 @@ export interface Config {
 		base_url: string;
 	};
 	website_base: string;
+	aes_key: string;
 }
 
 export interface DisabledFeatures {
