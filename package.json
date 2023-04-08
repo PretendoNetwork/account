@@ -1,30 +1,35 @@
 {
   "name": "account",
   "version": "1.0.0",
-  "description": "",
-  "main": "./src/server.js",
+  "description": "Backend API for user account management",
+  "main": "src/server.js",
   "scripts": {
-    "lint": "./node_modules/.bin/eslint .",
-    "start": "node .",
-    "start:dev": "NODE_ENV=development node ."
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PretendoNetwork/account.git"
+    "url": "https://github.com/PretendoNetwork/account.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "account",
+    "user",
+    "management",
+    "API",
+    "backend"
+  ],
+  "author": "Your Name Here",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/PretendoNetwork/account/issues"
   },
-  "homepage": "https://github.com/PretendoNetwork/account#readme",
+  "homepage": "https://github.com/PretendoNetwork/account",
   "dependencies": {
     "aws-sdk": "^2.978.0",
     "bcrypt": "^5.0.0",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
-    "dicer": "^0.2.5",
     "dotenv": "^16.0.3",
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
@@ -55,8 +60,7 @@
     "xmlbuilder2": "0.0.4"
   },
   "devDependencies": {
-    "node-rsa": "^1.0.7",
-    "prompt": "^1.0.0",
-    "yesno": "^0.4.0"
+    "eslint": "^8.1.0",
+    "nodemon": "^2.0.15"
   }
 }
