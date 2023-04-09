@@ -1,52 +1,31 @@
 const fs = require('fs-extra');
-require('colors');
+const { createWriteStream } = require('fs');
+const { join } = require('path');
+const colors = require('colors');
 
-const root = __dirname;
-fs.ensureDirSync(`${root}/logs`);
+const LOG_DIRECTORY = join(__dirname, 'logs');
+
+fs.ensureDirSync(LOG_DIRECTORY);
 
 const streams = {
-	latest: fs.createWriteStream(`${root}/logs/latest.log`),
-	success: fs.createWriteStream(`${root}/logs/success.log`),
-	error: fs.createWriteStream(`${root}/logs/error.log`),
-	warn: fs.createWriteStream(`${root}/logs/warn.log`),
-	info: fs.createWriteStream(`${root}/logs/info.log`)
+  latest: createWriteStream(join(LOG_DIRECTORY, 'latest.log'), { flags: 'a' }),
+  success: createWriteStream(join(LOG_DIRECTORY, 'success.log'), { flags: 'a' }),
+  error: createWriteStream(join(LOG_DIRECTORY, 'error.log'), { flags: 'a' }),
+  warn: createWriteStream(join(LOG_DIRECTORY, 'warn.log'), { flags: 'a' }),
+  info: createWriteStream(join(LOG_DIRECTORY, 'info.log'), { flags: 'a' }),
 };
 
-function success(input) {
-	const time = new Date();
-	input = `[${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}] [SUCCESS]: ${input}`;
-	streams.success.write(`${input}\n`);
-
-	console.log(`${input}`.green.bold);
-}
-
-function error(input) {
-	const time = new Date();
-	input = `[${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}] [ERROR]: ${input}`;
-	streams.error.write(`${input}\n`);
-
-	console.log(`${input}`.red.bold);
-}
-
-function warn(input) {
-	const time = new Date();
-	input = `[${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}] [WARN]: ${input}`;
-	streams.warn.write(`${input}\n`);
-
-	console.log(`${input}`.yellow.bold);
-}
-
-function info(input) {
-	const time = new Date();
-	input = `[${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}] [INFO]: ${input}`;
-	streams.info.write(`${input}\n`);
-
-	console.log(`${input}`.cyan.bold);
+function log(type, message) {
+  const timestamp = new Date().toISOString();
+  const logMessage = `[${timestamp}] [${type.toUpperCase()}]: ${message}`;
+  
+  streams[type].write(`${logMessage}\n`);
+  console.log(colors[type](logMessage));
 }
 
 module.exports = {
-	success,
-	error,
-	warn,
-	info
+  success: (message) => log('success', message),
+  error: (message) => log('error', message),
+  warn: (message) => log('warn', message),
+  info: (message) => log('info', message),
 };
