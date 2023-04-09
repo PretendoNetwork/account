@@ -5,7 +5,8 @@
     "mongoose": {
         "connection_string": "mongodb://localhost:27017/database_name",
         "options": {
-            "useNewUrlParser": true
+            "useNewUrlParser": true,
+            "useUnifiedTopology": true
         }
     },
     "redis": {
@@ -21,7 +22,10 @@
             "user": "username",
             "pass": "password"
         },
-        "from": "Company Name <user@company.net>"
+        "from": "Company Name <user@company.net>",
+        "tls": {
+            "secureProtocol": "TLSv1_2_method"
+        }
     },
     "s3": {
         "endpoint": "nyc3.digitaloceanspaces.com",
