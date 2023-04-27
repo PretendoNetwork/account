@@ -4,8 +4,8 @@
   "description": "",
   "main": "./dist/server.js",
   "scripts": {
-    "lint": "./node_modules/.bin/eslint .",
-    "build": "npm run clean && tsc && tsc-alias && npm run copy-static",
+    "lint": "npx eslint .",
+    "build": "npm run lint && npm run clean && tsc && tsc-alias && npm run copy-static",
     "clean": "rm -rf ./dist",
     "copy-static": "npm run copy-assets && npm run copy-timezones",
     "copy-assets": "cp -r ./src/assets ./dist/assets",
