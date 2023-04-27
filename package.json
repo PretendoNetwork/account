@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "npx eslint .",
     "build": "npm run lint && npm run clean && tsc && tsc-alias && npm run copy-static",
-    "clean": "rm -rf ./dist",
+    "clean": "rimraf ./dist",
     "copy-static": "npm run copy-assets && npm run copy-timezones",
     "copy-assets": "cp -r ./src/assets ./dist/assets",
     "copy-timezones": "cp ./src/services/nnid/timezones.json ./dist/services/nnid/timezones.json",
