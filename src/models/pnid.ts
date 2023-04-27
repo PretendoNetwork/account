@@ -176,12 +176,8 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 		instanceCount: 1,
 	});
 	const miiStudioNormalFaceImageData: Buffer = await got(miiStudioUrl).buffer();
-	const pngData: {
-		width: number;
-		height: number;
-		data: Buffer;
-	} = await imagePixels(miiStudioNormalFaceImageData);
-	const tga: Buffer = TGA.createTgaBuffer(pngData.width, pngData.height, pngData.data);
+	const pngData: ImageData = await imagePixels(miiStudioNormalFaceImageData);
+	const tga: Buffer = TGA.createTgaBuffer(pngData.width, pngData.height, Uint8Array.from(pngData.data), false);
 
 	const userMiiKey: string = `mii/${this.get('pid')}`;
 
