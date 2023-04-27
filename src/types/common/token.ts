@@ -5,4 +5,4 @@ export interface Token {
 	access_level?: number;
 	title_id?: bigint;
 	expire_time: bigint;
-};
+}

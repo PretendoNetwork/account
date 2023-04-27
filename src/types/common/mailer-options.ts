@@ -13,4 +13,4 @@ export interface MailerOptions {
 		href: string;
 		code: string;
 	};
-};
+}

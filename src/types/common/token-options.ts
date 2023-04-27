@@ -5,4 +5,4 @@ export interface TokenOptions {
 	access_level?: number;
 	title_id?: bigint;
 	expire_time: bigint;
-};
+}
