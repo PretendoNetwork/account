@@ -5,7 +5,7 @@
   "main": "./dist/server.js",
   "scripts": {
     "lint": "npx eslint .",
-    "build": "npm run lint && npm run clean && tsc && tsc-alias && npm run copy-static",
+    "build": "npm run lint && npm run clean && npx tsc && npx tsc-alias && npm run copy-static",
     "clean": "rimraf ./dist",
     "copy-static": "npm run copy-assets && npm run copy-timezones",
     "copy-assets": "cp -r ./src/assets ./dist/assets",
