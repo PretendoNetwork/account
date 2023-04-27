@@ -4,13 +4,17 @@
 		"commonjs": true,
 		"es6": true
 	},
-	"parserOptions": {
-		"ecmaVersion": 2020
-	},
+	"parser": "@typescript-eslint/parser",
 	"globals": {
 		"BigInt": true
 	},
-	"extends": "eslint:recommended",
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/recommended"
+	],
+	"plugins": [
+		"@typescript-eslint"
+	],
 	"rules": {
 		"require-atomic-updates": "warn",
 		"no-case-declarations": "off",
@@ -20,6 +24,13 @@
 		"no-global-assign": "off",
 		"prefer-const": "error",
 		"no-var": "error",
+		"no-unused-vars": "off",
+		"@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+		"no-extra-semi": "off",
+		"@typescript-eslint/no-extra-semi": "error",
+		"@typescript-eslint/no-empty-interface": "warn",
+		"@typescript-eslint/no-inferrable-types": "off",
+		"@typescript-eslint/explicit-function-return-type": "error",
 		"one-var": [
 			"error",
 			"never"

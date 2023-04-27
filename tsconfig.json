@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"resolveJsonModule": true,
+		"module": "commonjs",
+		"esModuleInterop": true,
+		"moduleResolution": "node",
+		"baseUrl": "src",
+		"outDir": "dist",
+		"allowJs": true,
+		"target": "es2022",
+		"noEmitOnError": true,
+		"paths": {
+			"@/*": ["./*"]
+		},
+		"typeRoots": [
+			"node_modules/@types",
+			"node_modules/@hcaptcha"
+		]
+	},
+	"include": ["src"]
+}
