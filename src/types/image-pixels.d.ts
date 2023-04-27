@@ -18,11 +18,9 @@ declare module 'image-pixels' {
 	}
 
 	export type ImageSource = string |
-		HTMLImageElement | SVGImageElement | HTMLVideoElement | CSSImageValue |
+		HTMLImageElement | SVGImageElement | HTMLVideoElement |
 		typeof Image | ImageData | ImageBitmap |
 		File | Blob |
-		//Canvas | Context2D |
-		//WebGLContext |
 		Buffer | ArrayBuffer | Uint8Array | Uint8ClampedArray |
 		Float32Array | Float64Array | Array<number> | Array<Array<number>> |
 		NdArray |
