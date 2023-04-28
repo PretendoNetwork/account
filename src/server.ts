@@ -10,6 +10,7 @@ import xmlbuilder from 'xmlbuilder';
 import xmlparser from '@/middleware/xml-parser';
 import { connect as connectCache } from '@/cache';
 import { connect as connectDatabase } from '@/database';
+import { startGRPCServer } from '@/services/grpc/server';
 import { fullUrl, getValueFromHeaders } from '@/util';
 import { LOG_INFO, LOG_SUCCESS, LOG_WARN } from '@/logger';
 
@@ -100,6 +101,7 @@ async function main(): Promise<void> {
 
 	await connectDatabase();
 	await connectCache();
+	await startGRPCServer();
 
 	app.listen(port, () => {
 		LOG_SUCCESS(`Server started on port ${port}`);

@@ -65,7 +65,8 @@ export const config: Config = {
 		base_url: process.env.PN_ACT_CONFIG_CDN_BASE_URL || ''
 	},
 	website_base: process.env.PN_ACT_CONFIG_WEBSITE_BASE || '',
-	aes_key: process.env.PN_ACT_CONFIG_AES_KEY || ''
+	aes_key: process.env.PN_ACT_CONFIG_AES_KEY || '',
+	grpc_api_key: process.env.PN_ACT_CONFIG_GRPC_API_KEY || '',
 };
 
 LOG_INFO('Config loaded, checking integrity');
@@ -167,5 +168,10 @@ if (disabledFeatures.s3) {
 
 if (!config.aes_key) {
 	LOG_ERROR('Token AES key is not set. Set the PN_ACT_CONFIG_AES_KEY environment variable to your AES-256-CBC key');
+	process.exit(0);
+}
+
+if (!config.grpc_api_key) {
+	LOG_ERROR('gRPC API key is not set. Set the PN_ACT_CONFIG_GRPC_API_KEY environment variable');
 	process.exit(0);
 }
