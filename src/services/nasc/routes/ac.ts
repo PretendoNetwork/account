@@ -35,13 +35,18 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
-		return response.status(200).send( nascError('110').toString());
+		return response.status(200).send(nascError('110').toString());
+	}
+
+	if (server.maintenance_mode) {
+		// TODO - FIND THE REAL UNDER MAINTENANCE ERROR CODE. 110 IS NOT IT
+		return response.status(200).send(nascError('110').toString());
 	}
 
 	if (action === 'LOGIN' && server.port <= 0 && server.ip !== '0.0.0.0') {
 		// * Addresses of 0.0.0.0:0 are allowed
 		// * They are expected for titles with no NEX server
-		return response.status(200).send( nascError('110').toString());
+		return response.status(200).send(nascError('110').toString());
 	}
 
 	switch (action) {

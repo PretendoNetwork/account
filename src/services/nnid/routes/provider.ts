@@ -60,6 +60,17 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		}).end());
 	}
 
+	if (server.maintenance_mode) {
+		return response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '2002',
+					message: 'The requested game server is under maintenance'
+				}
+			}
+		}).end());
+	}
+
 	const tokenOptions: TokenOptions = {
 		system_type: server.device,
 		token_type: 0x4, // * Service token
@@ -143,6 +154,17 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 				error: {
 					code: '1021',
 					message: 'The requested game server was not found'
+				}
+			}
+		}).end());
+	}
+
+	if (server.maintenance_mode) {
+		return response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '2002',
+					message: 'The requested game server is under maintenance'
 				}
 			}
 		}).end());

@@ -31,7 +31,6 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'base64'));
 		unpackedToken = unpackToken(decryptedToken);
 	} catch (error) {
-		console.log(error);
 		return response.status(400).json({
 			app: 'api',
 			status: 400,
