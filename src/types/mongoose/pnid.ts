@@ -61,15 +61,13 @@ export interface IPNID {
 		discord: {
 			id: string;
 		};
-		connections: {
-			stripe: {
-				customer_id: string;
-				subscription_id: string;
-				price_id: string;
-				tier_level: number;
-				tier_name: string;
-				latest_webhook_timestamp: number;
-			};
+		stripe: {
+			customer_id: string;
+			subscription_id: string;
+			price_id: string;
+			tier_level: number;
+			tier_name: string;
+			latest_webhook_timestamp: number;
 		};
 	};
 }
