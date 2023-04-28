@@ -76,3 +76,4 @@ Configurations are loaded through environment variables. `.env` files are suppor
 | `PN_ACT_CONFIG_WEBSITE_BASE`                  | Website URL                                                      | Yes      |
 | `PN_ACT_CONFIG_AES_KEY`                       | AES-256 key used for encrypting tokens                           | No       |
 | `PN_ACT_CONFIG_GRPC_API_KEY`                  | gRPC API key that other clients use to interact with this server | No       |
+| `PN_ACT_CONFIG_GRPC_PORT`                     | gRPC server port                                                 | No       |

@@ -66,7 +66,10 @@ export const config: Config = {
 	},
 	website_base: process.env.PN_ACT_CONFIG_WEBSITE_BASE || '',
 	aes_key: process.env.PN_ACT_CONFIG_AES_KEY || '',
-	grpc_api_key: process.env.PN_ACT_CONFIG_GRPC_API_KEY || '',
+	grpc: {
+		api_key: process.env.PN_ACT_CONFIG_GRPC_API_KEY || '',
+		port: Number(process.env.PN_ACT_CONFIG_GRPC_PORT || ''),
+	}
 };
 
 LOG_INFO('Config loaded, checking integrity');
@@ -171,7 +174,12 @@ if (!config.aes_key) {
 	process.exit(0);
 }
 
-if (!config.grpc_api_key) {
+if (!config.grpc.api_key) {
 	LOG_ERROR('gRPC API key is not set. Set the PN_ACT_CONFIG_GRPC_API_KEY environment variable');
+	process.exit(0);
+}
+
+if (!config.grpc.port) {
+	LOG_ERROR('Failed to find gRPC port. Set the PN_ACT_CONFIG_GRPC_PORT environment variable');
 	process.exit(0);
 }

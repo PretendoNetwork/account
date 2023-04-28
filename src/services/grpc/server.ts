@@ -1,5 +1,6 @@
 import { createServer } from 'nice-grpc';
 import { AccountServiceImplementation, AccountDefinition } from 'pretendo-grpc-ts/dist/account/account_service';
+import { config } from '@/config-manager';
 
 import { apiKeyMiddleware } from '@/services/grpc/api-key-middleware';
 import { getUserData } from '@/services/grpc/get-user-data';
@@ -17,5 +18,5 @@ export async function startGRPCServer(): Promise<void> {
 
 	server.add(AccountDefinition, accountServiceImplementation);
 
-	await server.listen('0.0.0.0:50051');
+	await server.listen(`0.0.0.0:${config.grpc.port}`);
 }

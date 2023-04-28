@@ -38,7 +38,10 @@ export interface Config {
 	};
 	website_base: string;
 	aes_key: string;
-	grpc_api_key: string;
+	grpc: {
+		api_key: string;
+		port: number;
+	};
 }
 
 export interface DisabledFeatures {

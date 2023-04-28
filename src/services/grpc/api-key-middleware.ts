@@ -7,7 +7,7 @@ export async function* apiKeyMiddleware<Request, Response>(
 ): AsyncGenerator<Response, Response | void, undefined> {
 	const apiKey = context.metadata.get('X-API-Key');
 
-	if (!apiKey || apiKey !== config.grpc_api_key) {
+	if (!apiKey || apiKey !== config.grpc.api_key) {
 		throw new ServerError(
 			Status.UNAUTHENTICATED,
 			'Missing or invalid API key',
