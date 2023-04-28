@@ -78,9 +78,9 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 	]);
 }
 
-export function decryptToken(key: string, token: Buffer): Buffer {
+export function decryptToken(token: Buffer): Buffer {
 	const iv: Buffer = Buffer.alloc(16);
-	const decipher: crypto.Decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
+	const decipher: crypto.Decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(config.aes_key, 'hex'), iv);
 
 	return Buffer.concat([
 		decipher.update(token),
