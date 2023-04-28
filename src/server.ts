@@ -24,7 +24,6 @@ import assets from '@/services/assets';
 
 import { config } from '@/config-manager';
 
-const { http: { port } } = config;
 const app = express();
 
 // START APPLICATION
@@ -100,11 +99,14 @@ async function main(): Promise<void> {
 	LOG_INFO('Starting server');
 
 	await connectDatabase();
+	LOG_SUCCESS('Database connected');
 	await connectCache();
+	LOG_SUCCESS('Cache enabled');
 	await startGRPCServer();
+	LOG_SUCCESS(`gRPC server started on port ${config.grpc.port}`);
 
-	app.listen(port, () => {
-		LOG_SUCCESS(`Server started on port ${port}`);
+	app.listen(config.http.port, () => {
+		LOG_SUCCESS(`HTTP server started on port ${config.http.port}`);
 	});
 }
 
