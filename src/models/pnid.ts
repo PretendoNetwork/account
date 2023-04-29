@@ -5,9 +5,21 @@ import imagePixels from 'image-pixels';
 import TGA from 'tga';
 import got from 'got';
 import Mii from 'mii-js';
+import Stripe from 'stripe';
 import { DeviceSchema } from '@/models/device';
 import { uploadCDNAsset } from '@/util';
+import { LOG_WARN } from '@/logger';
 import { HydratedPNIDDocument, IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
+import { config } from '@/config-manager';
+
+let stripe: Stripe;
+
+if (config.stripe?.secret_key) {
+	stripe = new Stripe(config.stripe.secret_key, {
+		apiVersion: '2022-11-15',
+		typescript: true,
+	});
+}
 
 const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	access_level: {
@@ -217,9 +229,16 @@ PNIDSchema.method('getServerMode', function getServerMode(): string {
 	return this.get('server_mode') || 'prod';
 });
 
-PNIDSchema.method('scrub', function scrub() {
+PNIDSchema.method('scrub', async function scrub() {
 	// * Remove all personal info from a PNID
 	// * Username and PID remain so thye do not get assigned again
+
+	if (this.connections?.stripe?.subscription_id && stripe) {
+		await stripe.subscriptions.del(this.connections.stripe.subscription_id);
+	} else {
+		LOG_WARN(`SCRUBBING USER DATA FOR USER ${this.username}. HAS STRIPE SUBSCRIPTION ${this.connections.stripe.subscription_id}, BUT STRIPE CLIENT NOT ENABLED. SUBSCRIPTION NOT CANCELED`);
+	}
+
 	this.creation_date = '';
 	this.password = '';
 	this.birthdate = '';

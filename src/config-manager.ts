@@ -72,6 +72,12 @@ export const config: Config = {
 	}
 };
 
+if (process.env.PN_ACT_CONFIG_STRIPE_SECRET_KEY) {
+	config.stripe = {
+		secret_key: process.env.PN_ACT_CONFIG_STRIPE_SECRET_KEY
+	};
+}
+
 LOG_INFO('Config loaded, checking integrity');
 
 if (!config.http.port) {
@@ -182,4 +188,8 @@ if (!config.grpc.api_key) {
 if (!config.grpc.port) {
 	LOG_ERROR('Failed to find gRPC port. Set the PN_ACT_CONFIG_GRPC_PORT environment variable');
 	process.exit(0);
+}
+
+if (!config.stripe?.secret_key) {
+	LOG_WARN('Failed to find Stripe api key! If a PNID is deleted with an active subscription, the subscription will *NOT* be canceled! Set the PN_ACT_CONFIG_STRIPE_SECRET_KEY environment variable to enable');
 }

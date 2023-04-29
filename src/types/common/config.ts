@@ -42,6 +42,9 @@ export interface Config {
 		api_key: string;
 		port: number;
 	};
+	stripe?: {
+		secret_key: string;
+	};
 }
 
 export interface DisabledFeatures {

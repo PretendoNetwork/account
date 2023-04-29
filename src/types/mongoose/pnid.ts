@@ -79,7 +79,7 @@ export interface IPNIDMethods {
 	updateMii(mii: { name: string, primary: string, data: string}): Promise<void>;
 	generateMiiImages(): Promise<void>;
 	getServerMode(): string;
-	scrub(): void;
+	scrub(): Promise<void>;
 }
 
 interface IPNIDQueryHelpers {}
