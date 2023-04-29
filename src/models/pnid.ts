@@ -178,7 +178,7 @@ PNIDSchema.method('generateEmailValidationToken', async function generateEmailVa
 	}
 });
 
-PNIDSchema.method('updateMii', async function updateMii({name, primary, data}): Promise<void> {
+PNIDSchema.method('updateMii', async function updateMii({ name, primary, data }: { name: string; primary: string; data: string; }): Promise<void> {
 	this.mii.name = name;
 	this.mii.primary = primary === 'Y';
 	this.mii.data = data;
@@ -245,7 +245,7 @@ PNIDSchema.method('scrub', async function scrub() {
 
 	await this.updateMii({
 		name: 'Default',
-		primary: false,
+		primary: 'N',
 		data: 'AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9'
 	});
 
