@@ -96,10 +96,6 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	}
 
 	let device: HydratedDeviceDocument | null = await Device.findOne({
-		model,
-		serial: serialNumber,
-		environment,
-		mac_hash: macAddressHash,
 		fcdcert_hash: fcdcertHash,
 	});
 

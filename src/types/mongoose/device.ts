@@ -16,7 +16,6 @@ export interface IDevice {
 		token: string;
 		account_id: number;
 	};
-	// * 3DS-specific stuff
 	environment: string;
 	mac_hash: string;
 	fcdcert_hash: string;
