@@ -2,6 +2,7 @@ import { Model, Types, HydratedDocument } from 'mongoose';
 import { IDevice } from '@/types/mongoose/device';
 
 export interface IPNID {
+	deleted: boolean;
 	access_level: number;
 	server_access_level: string;
 	pid: number;

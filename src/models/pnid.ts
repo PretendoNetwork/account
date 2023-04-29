@@ -22,6 +22,10 @@ if (config.stripe?.secret_key) {
 }
 
 const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
+	deleted: {
+		type: Boolean,
+		default: false
+	},
 	access_level: {
 		type: Number,
 		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
@@ -239,6 +243,7 @@ PNIDSchema.method('scrub', async function scrub() {
 		LOG_WARN(`SCRUBBING USER DATA FOR USER ${this.username}. HAS STRIPE SUBSCRIPTION ${this.connections.stripe.subscription_id}, BUT STRIPE CLIENT NOT ENABLED. SUBSCRIPTION NOT CANCELED`);
 	}
 
+	this.deleted = true;
 	this.creation_date = '';
 	this.password = '';
 	this.birthdate = '';
