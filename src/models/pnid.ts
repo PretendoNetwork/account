@@ -243,6 +243,12 @@ PNIDSchema.method('scrub', async function scrub() {
 		LOG_WARN(`SCRUBBING USER DATA FOR USER ${this.username}. HAS STRIPE SUBSCRIPTION ${this.connections.stripe.subscription_id}, BUT STRIPE CLIENT NOT ENABLED. SUBSCRIPTION NOT CANCELED`);
 	}
 
+	await this.updateMii({
+		name: 'Default',
+		primary: false,
+		data: 'AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9'
+	});
+
 	this.deleted = true;
 	this.creation_date = '';
 	this.password = '';
@@ -265,9 +271,6 @@ PNIDSchema.method('scrub', async function scrub() {
 		offset: 0
 	};
 	this.mii = {
-		name: 'Default',
-		primary: false,
-		data: 'AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9',
 		id: 0,
 		hash: '',
 		image_url: '',
