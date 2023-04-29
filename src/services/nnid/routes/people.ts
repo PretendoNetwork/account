@@ -36,7 +36,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
 	if (userExists) {
 		response.status(400);
 
-		response.end(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0100',
@@ -49,7 +49,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
 	}
 
 	response.status(200);
-	response.end();
+	response.send();
 });
 
 /**
@@ -80,7 +80,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	if (userExists) {
 		response.status(400);
 
-		response.end(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0100',
@@ -512,7 +512,7 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 	if (!pnid) {
 		response.status(400);
 
-		response.end(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -526,7 +526,7 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 	}
 
 	response.status(200);
-	response.end();
+	response.send();
 });
 
 /**
@@ -540,7 +540,7 @@ router.put('/@me/deletion', async (request: express.Request, response: express.R
 	if (!pnid) {
 		response.status(400);
 
-		response.end(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -571,7 +571,7 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 	if (!pnid) {
 		response.status(400);
 
-		response.end(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -637,7 +637,7 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 	if (!pnid) {
 		response.status(400);
 
-		response.end(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -684,7 +684,7 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 	if (!pnid || !email || !email.address) {
 		response.status(400);
 
-		response.end(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',

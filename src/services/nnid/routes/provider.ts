@@ -21,7 +21,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 	if (!pnid) {
 		response.status(400);
 
-		response.end(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -113,7 +113,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	if (!pnid) {
 		response.status(400);
 
-		response.end(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',

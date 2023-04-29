@@ -45,7 +45,7 @@ router.post('/validate/email', async (request: express.Request, response: expres
 		}
 
 		response.status(200);
-		response.end();
+		response.send();
 	});
 });
 
