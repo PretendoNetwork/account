@@ -100,13 +100,13 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	});
 
 	if (device) {
-		if (device.get('access_level') < 0) {
+		if (device.access_level < 0) {
 			response.status(200).send(nascError('102').toString());
 			return;
 		}
 
 		if (pid) {
-			const linkedPIDs = device.get('linked_pids');
+			const linkedPIDs: number[] = device.linked_pids;
 
 			if (!linkedPIDs.includes(pid)) {
 				response.status(200).send(nascError('102').toString());

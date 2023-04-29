@@ -192,7 +192,7 @@ PNIDSchema.method('updateMii', async function updateMii({ name, primary, data }:
 });
 
 PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promise<void> {
-	const miiData: string = this.get('mii.data');
+	const miiData: string = this.mii.data;
 	const mii: Mii = new Mii(Buffer.from(miiData, 'base64'));
 	const miiStudioUrl: string = mii.studioUrl({
 		type: 'face',
@@ -203,7 +203,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	const pngData: ImageData = await imagePixels(miiStudioNormalFaceImageData);
 	const tga: Buffer = TGA.createTgaBuffer(pngData.width, pngData.height, Uint8Array.from(pngData.data), false);
 
-	const userMiiKey: string = `mii/${this.get('pid')}`;
+	const userMiiKey: string = `mii/${this.pid}`;
 
 	await uploadCDNAsset('pn-cdn', `${userMiiKey}/standard.tga`, tga, 'public-read');
 	await uploadCDNAsset('pn-cdn', `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
