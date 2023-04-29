@@ -15,6 +15,7 @@ export async function getUserData(request: GetUserDataRequest): Promise<DeepPart
 	}
 
 	return {
+		deleted: pnid.deleted,
 		pid: pnid.pid,
 		username: pnid.username,
 		accessLevel: pnid.access_level,
