@@ -229,10 +229,6 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	await uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 });
 
-PNIDSchema.method('getServerMode', function getServerMode(): string {
-	return this.get('server_mode') || 'prod';
-});
-
 PNIDSchema.method('scrub', async function scrub() {
 	// * Remove all personal info from a PNID
 	// * Username and PID remain so thye do not get assigned again

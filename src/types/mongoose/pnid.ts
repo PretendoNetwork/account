@@ -79,7 +79,6 @@ export interface IPNIDMethods {
 	generateEmailValidationToken(): Promise<void>;
 	updateMii(mii: { name: string, primary: string, data: string}): Promise<void>;
 	generateMiiImages(): Promise<void>;
-	getServerMode(): string;
 	scrub(): Promise<void>;
 }
 
