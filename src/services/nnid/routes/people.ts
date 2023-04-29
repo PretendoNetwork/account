@@ -46,7 +46,6 @@ router.get('/:username', async (request: express.Request, response: express.Resp
 		return;
 	}
 
-	response.status(200);
 	response.send();
 });
 
@@ -515,7 +514,6 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 		return;
 	}
 
-	response.status(200);
 	response.send();
 });
 
