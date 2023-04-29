@@ -14,42 +14,50 @@ const router: express.Router = express.Router();
  * Description: Generates an access token for an API user
  * TODO: Replace this with a more robust OAuth2 implementation
  */
-router.post('/', async (request: express.Request, response: express.Response) => {
+router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const grantType: string = request.body?.grantType;
 	const username: string = request.body?.username;
 	const password: string = request.body?.password;
 	const refreshToken: string = request.body?.refresh_token;
 
 	if (!['password', 'refresh_token'].includes(grantType)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid grant type'
 		});
+
+		return;
 	}
 
 	if (grantType === 'password' && (!username || username.trim() === '')) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing username'
 		});
+
+		return;
 	}
 
 	if (grantType === 'password' && (!password || password.trim() === '')) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing password'
 		});
+
+		return;
 	}
 
 	if (grantType === 'refresh_token' && (!refreshToken || refreshToken.trim() === '')) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing refresh token'
 		});
+
+		return;
 	}
 
 	let pnid: HydratedPNIDDocument | null;
@@ -58,31 +66,37 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		pnid = await getPNIDByUsername(username);
 
 		if (!pnid) {
-			return response.status(400).json({
+			response.status(400).json({
 				app: 'api',
 				status: 400,
 				error: 'User not found'
 			});
+
+			return;
 		}
 
 		const hashedPassword: string = nintendoPasswordHash(password, pnid.pid);
 
 		if (!pnid || !bcrypt.compareSync(hashedPassword, pnid.password)) {
-			return response.status(400).json({
+			response.status(400).json({
 				app: 'api',
 				status: 400,
 				error: 'Invalid or missing password'
 			});
+
+			return;
 		}
 	} else {
 		pnid = await getPNIDByBearerAuth(refreshToken);
 
 		if (!pnid) {
-			return response.status(400).json({
+			response.status(400).json({
 				app: 'api',
 				status: 400,
 				error: 'Invalid or missing refresh token'
 			});
+
+			return;
 		}
 	}
 

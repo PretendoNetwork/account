@@ -6,15 +6,17 @@ import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router: express.Router = express.Router();
 
-router.post('/', async (request: express.Request, response: express.Response) => {
+router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const input: string = request.body?.input;
 
 	if (!input || input.trim() === '') {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing input'
 		});
+
+		return;
 	}
 
 	let pnid: HydratedPNIDDocument | null;

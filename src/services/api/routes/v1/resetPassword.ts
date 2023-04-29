@@ -13,17 +13,19 @@ const PASSWORD_WORD_OR_PUNCTUATION_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*[_\-.]).*
 const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX: RegExp = /(?=.*\d)(?=.*[_\-.]).*/;
 const PASSWORD_REPEATED_CHARACTER_REGEX: RegExp = /(.)\1\1/;
 
-router.post('/', async (request: express.Request, response: express.Response) => {
+router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const password: string = request.body.password?.trim();
 	const passwordConfirm: string = request.body.password_confirm?.trim();
 	const token: string = request.body.token?.trim();
 
 	if (!token || token === '') {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Missing token'
 		});
+
+		return;
 	}
 
 	let unpackedToken: Token;
@@ -31,86 +33,106 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'base64'));
 		unpackedToken = unpackToken(decryptedToken);
 	} catch (error) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid token'
 		});
+
+		return;
 	}
 
 	if (unpackedToken.expire_time < Date.now()) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Token expired'
 		});
+
+		return;
 	}
 
 	const pnid: HydratedPNIDDocument | null = await PNID.findOne({ pid: unpackedToken.pid });
 
 	if (!pnid) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid token. No user found'
 		});
+
+		return;
 	}
 
 
 	if (!password || password === '') {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Must enter a password'
 		});
+
+		return;
 	}
 
 	if (password.length < 6) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password is too short'
 		});
+
+		return;
 	}
 
 	if (password.length > 16) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password is too long'
 		});
+
+		return;
 	}
 
 	if (password.toLowerCase() === pnid.usernameLower) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password cannot be the same as username'
 		});
+
+		return;
 	}
 
 	if (!PASSWORD_WORD_OR_NUMBER_REGEX.test(password) && !PASSWORD_WORD_OR_PUNCTUATION_REGEX.test(password) && !PASSWORD_NUMBER_OR_PUNCTUATION_REGEX.test(password)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password must have combination of letters, numbers, and/or punctuation characters'
 		});
+
+		return;
 	}
 
 	if (PASSWORD_REPEATED_CHARACTER_REGEX.test(password)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password may not have 3 repeating characters'
 		});
+
+		return;
 	}
 
 	if (password !== passwordConfirm) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Passwords do not match'
 		});
+
+		return;
 	}
 
 	const primaryPasswordHash: string = nintendoPasswordHash(password, pnid.pid);

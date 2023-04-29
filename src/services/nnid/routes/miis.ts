@@ -13,11 +13,11 @@ const router: express.Router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/miis
  * Description: Returns a list of NNID miis
  */
-router.get('/', async (request: express.Request, response: express.Response) => {
+router.get('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const input: string | undefined = getValueFromQueryString(request.query, 'pids');
 
 	if (!input) {
-		return response.status(400).send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'Bad Request',
@@ -26,6 +26,8 @@ router.get('/', async (request: express.Request, response: express.Response) => 
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const pids: number[] = input.split(',').map(pid => Number(pid));

@@ -14,58 +14,66 @@ const router: express.Router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
  * Description: Generates an access token for a user
  */
-router.post('/access_token/generate', async (request: express.Request, response: express.Response) => {
+router.post('/access_token/generate', async (request: express.Request, response: express.Response): Promise<void> => {
 	const grantType: string = request.body?.grant_type;
 	const username: string = request.body?.user_id;
 	const password: string = request.body?.password;
 
 	if (!['password', 'refresh_token'].includes(grantType)) {
 		response.status(400);
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			error: {
 				cause: 'grant_type',
 				code: '0004',
 				message: 'Invalid Grant Type'
 			}
 		}).end());
+
+		return;
 	}
 
 	if (!username || username.trim() === '') {
 		response.status(400);
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			error: {
 				cause: 'user_id',
 				code: '0002',
 				message: 'user_id format is invalid'
 			}
 		}).end());
+
+		return;
 	}
 
 	if (!password || password.trim() === '') {
 		response.status(400);
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			error: {
 				cause: 'password',
 				code: '0002',
 				message: 'password format is invalid'
 			}
 		}).end());
+
+		return;
 	}
 
 	const pnid: HydratedPNIDDocument | null = await getPNIDByUsername(username);
 
 	if (!pnid || !await bcrypt.compare(password, pnid.password)) {
 		response.status(400);
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			error: {
 				code: '0106',
 				message: 'Invalid account ID or password'
 			}
 		}).end({ pretty: true }));
+
+		return;
 	}
 
 	if (pnid.access_level < 0) {
-		return response.status(400).send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0122',
@@ -73,6 +81,8 @@ router.post('/access_token/generate', async (request: express.Request, response:
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const accessTokenOptions: TokenOptions = {

@@ -9,7 +9,7 @@ const conntest: express.Router = express.Router();
 
 // Setup route
 LOG_INFO('[conntest] Applying imported routes');
-conntest.get('/', async (request: express.Request, response: express.Response) => {
+conntest.get('/', (request: express.Request, response: express.Response): void => {
 	response.set('Content-Type', 'text/html');
 	response.set('X-Organization', 'Nintendo');
 

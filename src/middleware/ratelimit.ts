@@ -6,7 +6,7 @@ import { getValueFromHeaders } from '@/util';
 export default ratelimit({
 	windowMs: 60 * 1000,
 	max: 1,
-	keyGenerator: (request: express.Request) => {
+	keyGenerator: (request: express.Request): string => {
 		let data: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-device-cert');
 
 		if (!data) {

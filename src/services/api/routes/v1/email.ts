@@ -6,15 +6,17 @@ import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router: express.Router = express.Router();
 
-router.get('/verify', async (request: express.Request, response: express.Response) => {
+router.get('/verify', async (request: express.Request, response: express.Response): Promise<void> => {
 	const token: string | undefined = getValueFromQueryString(request.query, 'token');
 
 	if (!token || token.trim() == '') {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Missing email token'
 		});
+
+		return;
 	}
 
 	const pnid: HydratedPNIDDocument | null = await PNID.findOne({
@@ -22,11 +24,13 @@ router.get('/verify', async (request: express.Request, response: express.Respons
 	});
 
 	if (!pnid) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid email token'
 		});
+
+		return;
 	}
 
 	const validatedDate: string = moment().format('YYYY-MM-DDTHH:MM:SS');

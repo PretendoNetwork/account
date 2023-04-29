@@ -21,18 +21,20 @@ const userSchema: joi.ObjectSchema = joi.object({
  * Implementation of for: https://api.pretendo.cc/v1/user
  * Description: Gets PNID details about the current user
  */
-router.get('/', async (request: express.Request, response: express.Response) => {
+router.get('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing access token'
 		});
+
+		return;
 	}
 
-	return response.json({
+	response.json({
 		access_level: pnid.access_level,
 		server_access_level: pnid.server_access_level,
 		pid: pnid.pid,
@@ -69,26 +71,30 @@ router.get('/', async (request: express.Request, response: express.Response) => 
  * Implementation of for: https://api.pretendo.cc/v1/user
  * Description: Updates PNID certain details about the current user
  */
-router.post('/', async (request: express.Request, response: express.Response) => {
+router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 	const updateUserRequest: UpdateUserRequest = request.body;
 
 	if (!pnid) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing access token'
 		});
+
+		return;
 	}
 
 	const valid: joi.ValidationResult = userSchema.validate(updateUserRequest);
 
 	if (valid.error) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: valid.error
 		});
+
+		return;
 	}
 
 	// TODO - Make this do something
@@ -99,7 +105,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
 	//await PNID.updateOne({ pid }, { $set: updateData }).exec();
 
-	return response.json({
+	response.json({
 		access_level: pnid.access_level,
 		server_access_level: pnid.server_access_level,
 		pid: pnid.pid,

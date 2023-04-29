@@ -1,4 +1,4 @@
-import { createServer } from 'nice-grpc';
+import { createServer, Server } from 'nice-grpc';
 import { AccountServiceImplementation, AccountDefinition } from 'pretendo-grpc-ts/dist/account/account_service';
 import { config } from '@/config-manager';
 
@@ -14,7 +14,7 @@ const accountServiceImplementation: AccountServiceImplementation = {
 };
 
 export async function startGRPCServer(): Promise<void> {
-	const server = createServer().use(apiKeyMiddleware);
+	const server: Server = createServer().use(apiKeyMiddleware);
 
 	server.add(AccountDefinition, accountServiceImplementation);
 

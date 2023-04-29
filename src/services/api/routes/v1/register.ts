@@ -37,7 +37,7 @@ const DEFAULT_MII_DATA: Buffer = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAE
  * Implementation of: https://api.pretendo.cc/v1/register
  * Description: Creates a new user PNID
  */
-router.post('/', async (request: express.Request, response: express.Response) => {
+router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const email: string = request.body.email?.trim();
 	const username: string = request.body.username?.trim();
 	const miiName: string = request.body.mii_name?.trim();
@@ -47,179 +47,221 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
 	if (!disabledFeatures.captcha) {
 		if (!hCaptchaResponse || hCaptchaResponse === '') {
-			return response.status(400).json({
+			response.status(400).json({
 				app: 'api',
 				status: 400,
 				error: 'Must fill in captcha'
 			});
+
+			return;
 		}
 
 		const captchaVerify: VerifyResponse = await hcaptcha.verify(config.hcaptcha.secret, hCaptchaResponse);
 
 		if (!captchaVerify.success) {
-			return response.status(400).json({
+			response.status(400).json({
 				app: 'api',
 				status: 400,
 				error: 'Captcha verification failed'
 			});
+
+			return;
 		}
 	}
 
 	if (!email || email === '') {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Must enter an email address'
 		});
+
+		return;
 	}
 
 	if (!emailvalidator.validate(email)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid email address'
 		});
+
+		return;
 	}
 
 	if (!username || username === '') {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Must enter a username'
 		});
+
+		return;
 	}
 
 	if (username.length < 6) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Username is too short'
 		});
+
+		return;
 	}
 
 	if (username.length > 16) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Username is too long'
 		});
+
+		return;
 	}
 
 	if (!PNID_VALID_CHARACTERS_REGEX.test(username)) {
 		console.log(Buffer.from(username));
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Username contains invalid characters'
 		});
+
+		return;
 	}
 
 	if (PNID_PUNCTUATION_START_REGEX.test(username)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Username cannot begin with punctuation characters'
 		});
+
+		return;
 	}
 
 	if (PNID_PUNCTUATION_END_REGEX.test(username)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Username cannot end with punctuation characters'
 		});
+
+		return;
 	}
 
 	if (PNID_PUNCTUATION_DUPLICATE_REGEX.test(username)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Two or more punctuation characters cannot be used in a row'
 		});
+
+		return;
 	}
 
 	const userExists: boolean = await doesPNIDExist(username);
 
 	if (userExists) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'PNID already in use'
 		});
+
+		return;
 	}
 
 	if (!miiName || miiName === '') {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Must enter a Mii name'
 		});
+
+		return;
 	}
 
 	if (!password || password === '') {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Must enter a password'
 		});
+
+		return;
 	}
 
 	if (password.length < 6) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password is too short'
 		});
+
+		return;
 	}
 
 	if (password.length > 16) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password is too long'
 		});
+
+		return;
 	}
 
 	if (password.toLowerCase() === username.toLowerCase()) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password cannot be the same as username'
 		});
+
+		return;
 	}
 
 	if (!PASSWORD_WORD_OR_NUMBER_REGEX.test(password) && !PASSWORD_WORD_OR_PUNCTUATION_REGEX.test(password) && !PASSWORD_NUMBER_OR_PUNCTUATION_REGEX.test(password)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password must have combination of letters, numbers, and/or punctuation characters'
 		});
+
+		return;
 	}
 
 	if (PASSWORD_REPEATED_CHARACTER_REGEX.test(password)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password may not have 3 repeating characters'
 		});
+
+		return;
 	}
 
 	if (password !== passwordConfirm) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Passwords do not match'
 		});
+
+		return;
 	}
 
 	const miiNameBuffer: Buffer = Buffer.from(miiName, 'utf16le'); // UTF8 to UTF16
 
 	if (miiNameBuffer.length > 0x14) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Mii name too long'
 		});
+
+		return;
 	}
 
 	const mii: Mii = new Mii(DEFAULT_MII_DATA);
@@ -310,11 +352,13 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
 		await session.abortTransaction();
 
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Password must have combination of letters, numbers, and/or punctuation characters'
 		});
+
+		return;
 	} finally {
 		// * This runs regardless of failure
 		// * Returning on catch will not prevent this from running

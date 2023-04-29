@@ -13,11 +13,11 @@ const router: express.Router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/support/validate/email
  * Description: Verifies a provided email address is valid
  */
-router.post('/validate/email', async (request: express.Request, response: express.Response) => {
+router.post('/validate/email', async (request: express.Request, response: express.Response): Promise<void> => {
 	const email: string = request.body.email;
 
 	if (!email) {
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'email',
@@ -26,6 +26,8 @@ router.post('/validate/email', async (request: express.Request, response: expres
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const domain: string = email.split('@')[1];
@@ -52,14 +54,14 @@ router.post('/validate/email', async (request: express.Request, response: expres
  * Replacement for: https://account.nintendo.net/v1/api/support/email_confirmation/:pid/:code
  * Description: Verifies a users email via 6 digit code
  */
-router.put('/email_confirmation/:pid/:code', async (request: express.Request, response: express.Response) => {
+router.put('/email_confirmation/:pid/:code', async (request: express.Request, response: express.Response): Promise<void> => {
 	const code: string = request.params.code;
 	const pid: number = Number(request.params.pid);
 
 	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
 
 	if (!pnid) {
-		return response.status(400).send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0130',
@@ -67,10 +69,12 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	if (pnid.identification.email_code !== code) {
-		return response.status(400).send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0116',
@@ -78,6 +82,7 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 				}
 			}
 		}).end());
+		return;
 	}
 
 	const validatedDate: string = moment().format('YYYY-MM-DDTHH:MM:SS');
@@ -98,14 +103,14 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
  * Replacement for: https://account.nintendo.net/v1/api/support/resend_confirmation
  * Description: Resends a users confirmation email
  */
-router.get('/resend_confirmation', async (request: express.Request, response: express.Response) => {
+router.get('/resend_confirmation', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pid: number = Number(request.headers['x-nintendo-pid']);
 
 	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
 
 	if (!pnid) {
 		// TODO - Unsure if this is the right error
-		return response.status(400).send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0130',
@@ -113,6 +118,8 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	await sendConfirmationEmail(pnid);
@@ -126,14 +133,14 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
  * Description: Sends the user a password reset email
  * NOTE: On NN this was a temp password that expired after 24 hours. We do not do that
  */
-router.get('/forgotten_password/:pid', async (request: express.Request, response: express.Response) => {
+router.get('/forgotten_password/:pid', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pid: number = Number(request.params.pid);
 
 	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
 
 	if (!pnid) {
 		// TODO - Better errors
-		return response.status(400).send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'device_id',
@@ -142,6 +149,8 @@ router.get('/forgotten_password/:pid', async (request: express.Request, response
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	await sendForgotPasswordEmail(pnid);

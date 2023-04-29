@@ -11,7 +11,7 @@ const router: express.Router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/content/agreements/TYPE/REGION/VERSION
  * Description: Sends the client requested agreement
  */
-router.get('/agreements/:type/:region/:version', (request: express.Request, response: express.Response) => {
+router.get('/agreements/:type/:region/:version', (request: express.Request, response: express.Response): void => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
@@ -128,7 +128,7 @@ router.get('/agreements/:type/:region/:version', (request: express.Request, resp
  * Replacement for: https://account.nintendo.net/v1/api/content/time_zones/COUNTRY/LANGUAGE
  * Description: Sends the client the requested timezones
  */
-router.get('/time_zones/:countryCode/:language', (request: express.Request, response: express.Response) => {
+router.get('/time_zones/:countryCode/:language', (request: express.Request, response: express.Response): void => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());

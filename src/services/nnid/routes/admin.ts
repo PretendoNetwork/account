@@ -11,13 +11,13 @@ const router: express.Router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/admin/mapped_ids
  * Description: Maps between NNID usernames and PIDs
  */
-router.get('/mapped_ids', async (request: express.Request, response: express.Response) => {
+router.get('/mapped_ids', async (request: express.Request, response: express.Response): Promise<void> => {
 	const inputType: string | undefined = getValueFromQueryString(request.query, 'input_type');
 	const outputType: string | undefined = getValueFromQueryString(request.query, 'output_type');
 	const input: string | undefined = getValueFromQueryString(request.query, 'input');
 
 	if (!inputType || !outputType || !input) {
-		return response.status(400).send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'Bad Request',
@@ -26,6 +26,8 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	let inputList: string[] = input.split(',');

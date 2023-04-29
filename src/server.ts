@@ -48,7 +48,7 @@ app.use(assets);
 
 // 404 handler
 LOG_INFO('Creating 404 status handler');
-app.use((request: express.Request, response: express.Response) => {
+app.use((request: express.Request, response: express.Response): void => {
 	const url: string = fullUrl(request);
 	let deviceId: string | undefined = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
 
@@ -75,7 +75,7 @@ app.use((request: express.Request, response: express.Response) => {
 
 // non-404 error handler
 LOG_INFO('Creating non-404 status handler');
-app.use((error: any, request: express.Request, response: express.Response, _next: express.NextFunction) => {
+app.use((error: any, request: express.Request, response: express.Response, _next: express.NextFunction): void => {
 	const status: number = error.status || 500;
 	const url: string = fullUrl(request);
 	let deviceId: string | undefined = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');

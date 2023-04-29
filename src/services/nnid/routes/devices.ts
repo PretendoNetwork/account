@@ -8,7 +8,7 @@ const router: express.Router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/devices/@current/status
  * Description: Unknown use
  */
-router.get('/@current/status', async (request: express.Request, response: express.Response) => {
+router.get('/@current/status', async (request: express.Request, response: express.Response): Promise<void> => {
 	// TODO - Finish this
 	response.send(xmlbuilder.create({
 		device: ''

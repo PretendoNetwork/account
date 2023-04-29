@@ -61,9 +61,10 @@ function multipartParser(request: express.Request, response: express.Response, n
 	request.pipe(dicer);
 }
 
-router.post('/upload', multipartParser, async (request: express.Request, response: express.Response) => {
+router.post('/upload', multipartParser, async (request: express.Request, response: express.Response): Promise<void> => {
 	if (!request.files) {
-		return response.sendStatus(500);
+		response.sendStatus(500);
+		return;
 	}
 
 	const bucket: string = request.files.bucket.toString();
@@ -79,7 +80,8 @@ router.post('/upload', multipartParser, async (request: express.Request, respons
 	const minuteAgo: number = Date.now() - minute;
 
 	if (Number(date) < Math.floor(minuteAgo / 1000)) {
-		return response.sendStatus(400);
+		response.sendStatus(400);
+		return;
 	}
 
 	const data: string = `${pid}${bucket}${key}${date}`;
@@ -89,7 +91,8 @@ router.post('/upload', multipartParser, async (request: express.Request, respons
 	console.log(hmac, signature);
 
 	if (hmac !== signature) {
-		return response.sendStatus(400);
+		response.sendStatus(400);
+		return;
 	}
 
 	await uploadCDNAsset(bucket, key, file, acl);

@@ -13,7 +13,7 @@ const router: express.Router = express.Router();
  * Replacement for: https://nasc.nintendowifi.net/ac
  * Description: Gets a NEX server address and token
  */
-router.post('/', async (request: express.Request, response: express.Response) => {
+router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const requestParams: NASCRequestParams = request.body;
 	const action: string = nintendoBase64Decode(requestParams.action).toString();
 	const titleID: string = nintendoBase64Decode(requestParams.titleid).toString();
@@ -21,7 +21,8 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	let responseData: URLSearchParams = nascError('null');
 
 	if (!nexAccount) {
-		return response.status(200).send(responseData.toString());
+		response.status(200).send(responseData.toString());
+		return;
 	}
 
 	// TODO: REMOVE AFTER PUBLIC LAUNCH
@@ -35,18 +36,21 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
-		return response.status(200).send(nascError('110').toString());
+		response.status(200).send(nascError('110').toString());
+		return;
 	}
 
 	if (server.maintenance_mode) {
 		// TODO - FIND THE REAL UNDER MAINTENANCE ERROR CODE. 110 IS NOT IT
-		return response.status(200).send(nascError('110').toString());
+		response.status(200).send(nascError('110').toString());
+		return;
 	}
 
 	if (action === 'LOGIN' && server.port <= 0 && server.ip !== '0.0.0.0') {
 		// * Addresses of 0.0.0.0:0 are allowed
 		// * They are expected for titles with no NEX server
-		return response.status(200).send(nascError('110').toString());
+		response.status(200).send(nascError('110').toString());
+		return;
 	}
 
 	switch (action) {

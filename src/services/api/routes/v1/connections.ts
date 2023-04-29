@@ -15,33 +15,39 @@ const VALID_CONNECTION_TYPES: string[] = [
  * Implementation of for: https://api.pretendo.cc/v1/connections/add/TYPE
  * Description: Adds an account connection to the users PNID
  */
-router.post('/add/:type', async (request: express.Request, response: express.Response) => {
+router.post('/add/:type', async (request: express.Request, response: express.Response): Promise<void> => {
 	const data: ConnectionData = request.body?.data;
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 	const type: string = request.params.type;
 
 	if (!pnid) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing access token'
 		});
+
+		return;
 	}
 
 	if (!data) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing connection data'
 		});
+
+		return;
 	}
 
 	if (!VALID_CONNECTION_TYPES.includes(type)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing connection type'
 		});
+
+		return;
 	}
 
 	let result: ConnectionResponse | undefined = await addPNIDConnection(pnid, data, type);
@@ -62,24 +68,28 @@ router.post('/add/:type', async (request: express.Request, response: express.Res
  * Implementation of for: https://api.pretendo.cc/v1/connections/remove/TYPE
  * Description: Removes an account connection from the users PNID
  */
-router.delete('/remove/:type', async (request: express.Request, response: express.Response) => {
+router.delete('/remove/:type', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 	const type: string = request.params.type;
 
 	if (!pnid) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing access token'
 		});
+
+		return;
 	}
 
 	if (!VALID_CONNECTION_TYPES.includes(type)) {
-		return response.status(400).json({
+		response.status(400).json({
 			app: 'api',
 			status: 400,
 			error: 'Invalid or missing connection type'
 		});
+
+		return;
 	}
 
 	let result: ConnectionResponse | undefined = await removePNIDConnection(pnid, type);

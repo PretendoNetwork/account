@@ -28,7 +28,7 @@ const router: express.Router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/people/:USERNAME
  * Description: Checks if a username is in use
  */
-router.get('/:username', async (request: express.Request, response: express.Response) => {
+router.get('/:username', async (request: express.Request, response: express.Response): Promise<void> => {
 	const username: string = request.params.username;
 
 	const userExists: boolean = await doesPNIDExist(username);
@@ -36,7 +36,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
 	if (userExists) {
 		response.status(400);
 
-		return response.end(xmlbuilder.create({
+		response.end(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0100',
@@ -44,6 +44,8 @@ router.get('/:username', async (request: express.Request, response: express.Resp
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	response.status(200);
@@ -55,18 +57,20 @@ router.get('/:username', async (request: express.Request, response: express.Resp
  * Replacement for: https://account.nintendo.net/v1/api/people
  * Description: Registers a new NNID
  */
-router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response) => {
+router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	if (!request.certificate || !request.certificate.valid) {
 		// TODO: Change this to a different error
 		response.status(400);
 
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			error: {
 				cause: 'Bad Request',
 				code: '1600',
 				message: 'Unable to process request'
 			}
 		}).end());
+
+		return;
 	}
 
 	const person: Person = request.body.person;
@@ -76,7 +80,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	if (userExists) {
 		response.status(400);
 
-		return response.end(xmlbuilder.create({
+		response.end(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0100',
@@ -84,6 +88,8 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const creationDate: string = moment().format('YYYY-MM-DDTHH:MM:SS');
@@ -190,13 +196,15 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 		response.status(400);
 
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			error: {
 				cause: 'Bad Request',
 				code: '1600',
 				message: 'Unable to process request'
 			}
 		}).end());
+
+		return;
 	} finally {
 		// * This runs regardless of failure
 		// * Returning on catch will not prevent this from running
@@ -217,7 +225,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/profile
  * Description: Gets a users profile
  */
-router.get('/@me/profile', async (request: express.Request, response: express.Response) => {
+router.get('/@me/profile', async (request: express.Request, response: express.Response): Promise<void> => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
@@ -226,7 +234,7 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 
 	if (!pnid) {
 		// TODO - Research this error more
-		return response.status(404).send(xmlbuilder.create({
+		response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: '',
@@ -235,13 +243,15 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const person: PNIDProfile | null = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
-		return response.status(404).send(xmlbuilder.create({
+		response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: '',
@@ -250,6 +260,8 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	response.send(xmlbuilder.create({
@@ -262,7 +274,7 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices
  * Description: Gets user profile, seems to be the same as https://account.nintendo.net/v1/api/people/@me/profile
  */
-router.post('/@me/devices', async (request: express.Request, response: express.Response) => {
+router.post('/@me/devices', async (request: express.Request, response: express.Response): Promise<void> => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
@@ -277,7 +289,7 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 
 	if (!pnid) {
 		// TODO - Research this error more
-		return response.status(404).send(xmlbuilder.create({
+		response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: '',
@@ -286,13 +298,15 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const person: PNIDProfile | null = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
-		return response.status(404).send(xmlbuilder.create({
+		response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: '',
@@ -301,6 +315,8 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	response.send(xmlbuilder.create({
@@ -313,7 +329,7 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices
  * Description: Returns only user devices
  */
-router.get('/@me/devices', async (request: express.Request, response: express.Response) => {
+router.get('/@me/devices', async (request: express.Request, response: express.Response): Promise<void> => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
@@ -328,7 +344,7 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 
 	if (!deviceId || !acceptLanguage || !platformId || !region || !serialNumber || !systemVersion) {
 		// TODO - Research these error more
-		return response.status(400).send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'Bad Request',
@@ -337,11 +353,13 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	if (!pnid) {
 		// TODO - Research this error more
-		return response.status(404).send(xmlbuilder.create({
+		response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: '',
@@ -350,6 +368,8 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	response.send(xmlbuilder.create({
@@ -378,7 +398,7 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices/owner
  * Description: Gets user profile, seems to be the same as https://account.nintendo.net/v1/api/people/@me/profile
  */
-router.get('/@me/devices/owner', async (request: express.Request, response: express.Response) => {
+router.get('/@me/devices/owner', async (request: express.Request, response: express.Response): Promise<void> => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', moment().add(5, 'h').toString());
@@ -387,7 +407,7 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 
 	if (!pnid) {
 		// TODO - Research this error more
-		return response.status(404).send(xmlbuilder.create({
+		response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: '',
@@ -396,13 +416,15 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const person: PNIDProfile | null = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
-		return response.status(404).send(xmlbuilder.create({
+		response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: '',
@@ -411,6 +433,8 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	response.send(xmlbuilder.create({
@@ -423,7 +447,7 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices/status
  * Description: Unknown use
  */
-router.get('/@me/devices/status', async (_request: express.Request, response: express.Response) => {
+router.get('/@me/devices/status', async (_request: express.Request, response: express.Response): Promise<void> => {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', moment().add(5, 'h').toString());
@@ -439,12 +463,12 @@ router.get('/@me/devices/status', async (_request: express.Request, response: ex
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/miis/@primary
  * Description: Updates a users Mii
  */
-router.put('/@me/miis/@primary', async (request: express.Request, response: express.Response) => {
+router.put('/@me/miis/@primary', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
 		// TODO - Research this error more
-		return response.status(404).send(xmlbuilder.create({
+		response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: '',
@@ -453,6 +477,8 @@ router.put('/@me/miis/@primary', async (request: express.Request, response: expr
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const mii: {
@@ -477,7 +503,7 @@ router.put('/@me/miis/@primary', async (request: express.Request, response: expr
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/devices/@current/inactivate
  * Description: Deactivates a user from a console
  */
-router.put('/@me/devices/@current/inactivate', async (request: express.Request, response: express.Response) => {
+router.put('/@me/devices/@current/inactivate', async (request: express.Request, response: express.Response): Promise<void> => {
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
@@ -486,7 +512,7 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 	if (!pnid) {
 		response.status(400);
 
-		return response.end(xmlbuilder.create({
+		response.end(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -495,6 +521,8 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	response.status(200);
@@ -506,13 +534,13 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/deletion
  * Description: Deletes a NNID
  */
-router.put('/@me/deletion', async (request: express.Request, response: express.Response) => {
+router.put('/@me/deletion', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
 		response.status(400);
 
-		return response.end(xmlbuilder.create({
+		response.end(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -521,6 +549,8 @@ router.put('/@me/deletion', async (request: express.Request, response: express.R
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	await pnid.scrub();
@@ -534,14 +564,14 @@ router.put('/@me/deletion', async (request: express.Request, response: express.R
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/
  * Description: Updates a PNIDs account details
  */
-router.put('/@me', async (request: express.Request, response: express.Response) => {
+router.put('/@me', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 	const person: Person = request.body.person;
 
 	if (!pnid) {
 		response.status(400);
 
-		return response.end(xmlbuilder.create({
+		response.end(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -550,6 +580,8 @@ router.put('/@me', async (request: express.Request, response: express.Response) 
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const gender: string = person.gender ? person.gender : pnid.gender;
@@ -599,13 +631,13 @@ router.put('/@me', async (request: express.Request, response: express.Response) 
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/emails/
  * Description: Gets a list (why?) of PNID emails
  */
-router.get('/@me/emails', async (request: express.Request, response: express.Response) => {
+router.get('/@me/emails', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
 		response.status(400);
 
-		return response.end(xmlbuilder.create({
+		response.end(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -614,6 +646,8 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	response.send(xmlbuilder.create({
@@ -640,7 +674,7 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/emails/@primary
  * Description: Updates a users email address
  */
-router.put('/@me/emails/@primary', async (request: express.Request, response: express.Response) => {
+router.put('/@me/emails/@primary', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	const email: {
@@ -650,7 +684,7 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 	if (!pnid || !email || !email.address) {
 		response.status(400);
 
-		return response.end(xmlbuilder.create({
+		response.end(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -659,6 +693,8 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	// TODO - Better email check

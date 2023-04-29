@@ -15,13 +15,13 @@ const router: express.Router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/provider/service_token/@me
  * Description: Gets a service token
  */
-router.get('/service_token/@me', async (request: express.Request, response: express.Response) => {
+router.get('/service_token/@me', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
 		response.status(400);
 
-		return response.end(xmlbuilder.create({
+		response.end(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -30,13 +30,15 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const titleID: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
 
 	if (!titleID) {
 		// TODO - Research this error more
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '1021',
@@ -44,13 +46,15 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const serverAccessLevel: string = pnid.server_access_level;
 	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '1021',
@@ -58,10 +62,12 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	if (server.maintenance_mode) {
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '2002',
@@ -69,6 +75,8 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const tokenOptions: TokenOptions = {
@@ -99,13 +107,13 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
  * Replacement for: https://account.nintendo.net/v1/api/provider/nex_token/@me
  * Description: Gets a NEX server address and token
  */
-router.get('/nex_token/@me', async (request: express.Request, response: express.Response) => {
+router.get('/nex_token/@me', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
 		response.status(400);
 
-		return response.end(xmlbuilder.create({
+		response.end(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -114,6 +122,8 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const nexAccount: HydratedNEXAccountDocument | null = await NEXAccount.findOne({
@@ -121,7 +131,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	});
 
 	if (!nexAccount) {
-		return response.status(404).send(xmlbuilder.create({
+		response.status(404).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: '',
@@ -130,12 +140,14 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const gameServerID: string | undefined = getValueFromQueryString(request.query, 'game_server_id');
 
 	if (!gameServerID) {
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0118',
@@ -143,13 +155,15 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const serverAccessLevel: string = pnid.server_access_level;
 	const server: HydratedServerDocument | null = await getServerByGameServerId(gameServerID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '1021',
@@ -157,10 +171,12 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	if (server.maintenance_mode) {
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '2002',
@@ -168,13 +184,15 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const titleID: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
 
 	if (!titleID) {
 		// TODO - Research this error more
-		return response.send(xmlbuilder.create({
+		response.send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '1021',
@@ -182,6 +200,8 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const tokenOptions: TokenOptions = {
