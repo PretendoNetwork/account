@@ -217,4 +217,56 @@ PNIDSchema.method('getServerMode', function getServerMode(): string {
 	return this.get('server_mode') || 'prod';
 });
 
+PNIDSchema.method('scrub', function scrub() {
+	// * Remove all personal info from a PNID
+	// * Username and PID remain so thye do not get assigned again
+	this.creation_date = '';
+	this.password = '';
+	this.birthdate = '';
+	this.gender = '';
+	this.country = '';
+	this.language = '';
+	this.email = {
+		address: '',
+		primary: false,
+		parent: false,
+		reachable: false,
+		validated: false,
+		validated_date: '',
+		id: 0
+	};
+	this.region = 0;
+	this.timezone = {
+		name: '',
+		offset: 0
+	};
+	this.mii = {
+		name: 'Default',
+		primary: false,
+		data: 'AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9',
+		id: 0,
+		hash: '',
+		image_url: '',
+		image_id: 0
+	};
+	this.flags = {
+		active: false,
+		marketing: false,
+		off_device: false
+	};
+	this.connections = {
+		discord: {
+			id: ''
+		},
+		stripe: {
+			customer_id: '',
+			subscription_id: '',
+			price_id: '',
+			tier_level: 0,
+			tier_name: '',
+			latest_webhook_timestamp: 0
+		}
+	};
+});
+
 export const PNID: PNIDModel = model<IPNID, PNIDModel>('PNID', PNIDSchema);

@@ -523,6 +523,10 @@ router.put('/@me/deletion', async (request: express.Request, response: express.R
 		}).end());
 	}
 
+	pnid.scrub();
+
+	await pnid.save();
+
 	response.send('');
 });
 
