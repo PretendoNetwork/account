@@ -20,8 +20,7 @@ router.post('/access_token/generate', async (request: express.Request, response:
 	const password: string = request.body?.password;
 
 	if (!['password', 'refresh_token'].includes(grantType)) {
-		response.status(400);
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			error: {
 				cause: 'grant_type',
 				code: '0004',
@@ -33,8 +32,7 @@ router.post('/access_token/generate', async (request: express.Request, response:
 	}
 
 	if (!username || username.trim() === '') {
-		response.status(400);
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			error: {
 				cause: 'user_id',
 				code: '0002',
@@ -46,8 +44,7 @@ router.post('/access_token/generate', async (request: express.Request, response:
 	}
 
 	if (!password || password.trim() === '') {
-		response.status(400);
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			error: {
 				cause: 'password',
 				code: '0002',
@@ -61,8 +58,7 @@ router.post('/access_token/generate', async (request: express.Request, response:
 	const pnid: HydratedPNIDDocument | null = await getPNIDByUsername(username);
 
 	if (!pnid || !await bcrypt.compare(password, pnid.password)) {
-		response.status(400);
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			error: {
 				code: '0106',
 				message: 'Invalid account ID or password'

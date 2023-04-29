@@ -27,10 +27,8 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	}
 
 	if (!pnid) {
-		response.status(401);
-
 		if (type === 'Bearer') {
-			response.send(xmlbuilder.create({
+			response.status(401).send(xmlbuilder.create({
 				errors: {
 					error: {
 						cause: 'access_token',
@@ -43,7 +41,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 			return;
 		}
 
-		response.send(xmlbuilder.create({
+		response.status(401).send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '1105',

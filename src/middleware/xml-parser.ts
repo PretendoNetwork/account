@@ -34,10 +34,8 @@ function XMLMiddleware(request: express.Request, response: express.Response, nex
 				request.body = request.body.toObject();
 				request.body = mapToObject(request.body);
 			} catch (error) {
-				response.status(401);
-
 				// TODO: This is not a real error code, check to see if better one exists
-				return response.send(xmlbuilder.create({
+				return response.status(401).send(xmlbuilder.create({
 					errors: {
 						error: {
 							code: '0004',

@@ -34,9 +34,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
 	const userExists: boolean = await doesPNIDExist(username);
 
 	if (userExists) {
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0100',
@@ -60,9 +58,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
 router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	if (!request.certificate || !request.certificate.valid) {
 		// TODO: Change this to a different error
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			error: {
 				cause: 'Bad Request',
 				code: '1600',
@@ -78,9 +74,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	const userExists: boolean = await doesPNIDExist(person.user_id);
 
 	if (userExists) {
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					code: '0100',
@@ -194,9 +188,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 		await session.abortTransaction();
 
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			error: {
 				cause: 'Bad Request',
 				code: '1600',
@@ -510,9 +502,7 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -538,9 +528,7 @@ router.put('/@me/deletion', async (request: express.Request, response: express.R
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -569,9 +557,7 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 	const person: Person = request.body.person;
 
 	if (!pnid) {
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -635,9 +621,7 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -682,9 +666,7 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 	} = request.body.email;
 
 	if (!pnid || !email || !email.address) {
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',

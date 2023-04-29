@@ -19,9 +19,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',
@@ -111,9 +109,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
-		response.status(400);
-
-		response.send(xmlbuilder.create({
+		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
 					cause: 'access_token',

@@ -86,8 +86,7 @@ app.use((error: any, request: express.Request, response: express.Response, _next
 
 	LOG_WARN(`HTTP ${status} at ${url} from ${deviceId}: ${error.message}`);
 
-	response.status(status);
-	response.json({
+	response.status(status).json({
 		app: 'api',
 		status,
 		error: error.message
