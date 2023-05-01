@@ -5,6 +5,8 @@ import fs from 'fs-extra';
 import express from 'express';
 import mongoose from 'mongoose';
 import { ParsedQs } from 'qs';
+import crc32 from 'buffer-crc32';
+import crc from 'crc';
 import { sendMail } from '@/mailer';
 import { config, disabledFeatures } from '@/config-manager';
 import { TokenOptions } from '@/types/common/token-options';
@@ -56,6 +58,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 	dataBuffer.writeBigUInt64LE(options.expire_time, 0x6);
 
 	if (options.token_type !== 0x1 && options.token_type !== 0x2) {
+		// * Access and refresh tokens have smaller bodies due to size constraints
 		if (options.access_level === undefined || options.title_id === undefined) {
 			return null;
 		}
@@ -72,20 +75,51 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 	const iv: Buffer = Buffer.alloc(16);
 	const cipher: crypto.Cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
 
-	return Buffer.concat([
+	const encrypted = Buffer.concat([
 		cipher.update(dataBuffer),
 		cipher.final()
 	]);
+
+	let final: Buffer = encrypted;
+
+	if (options.token_type !== 0x1 && options.token_type !== 0x2) {
+		// * Access and refresh tokens don't get a checksum due to size constraints
+		const checksum: Buffer = crc32(dataBuffer);
+
+		final = Buffer.concat([
+			checksum,
+			final
+		]);
+	}
+
+	return final;
 }
 
 export function decryptToken(token: Buffer): Buffer {
+	let encryptedBody: Buffer;
+	let expectedChecksum: number = 0;
+
+	if (token.length === 16) {
+		// * Token is an access/refresh token, no checksum
+		encryptedBody = token;
+	} else {
+		expectedChecksum = token.readUint32BE();
+		encryptedBody = token.subarray(4);
+	}
+
 	const iv: Buffer = Buffer.alloc(16);
 	const decipher: crypto.Decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(config.aes_key, 'hex'), iv);
 
-	return Buffer.concat([
-		decipher.update(token),
+	const decrypted: Buffer = Buffer.concat([
+		decipher.update(encryptedBody),
 		decipher.final()
 	]);
+
+	if (expectedChecksum && (expectedChecksum !== crc.crc32(decrypted))) {
+		throw new Error('Checksum did not match. Failed decrypt. Are you using the right key?');
+	}
+
+	return decrypted;
 }
 
 export function unpackToken(token: Buffer): Token {
