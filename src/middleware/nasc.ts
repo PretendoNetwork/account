@@ -135,6 +135,20 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 				pid = nexAccount.pid;
 
+				const pidBuffer: Buffer = Buffer.alloc(4);
+				pidBuffer.writeUInt32LE(pid);
+
+				const hash: crypto.Hash = crypto.createHash('sha1').update(pidBuffer);
+				const pidHash: Buffer = hash.digest();
+				const checksum: number = pidHash[0] >> 1;
+				const hex: string = checksum.toString(16) + pid.toString(16);
+				const int: number = parseInt(hex, 16);
+				const friendCode: string = int.toString().padStart(12, '0').match(/.{1,4}/g)!.join('-');
+
+				nexAccount.friend_code = friendCode;
+
+				await nexAccount.save({ session });
+
 				// Set password
 
 				if (!device) {

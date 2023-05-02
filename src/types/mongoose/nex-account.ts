@@ -15,6 +15,7 @@ export interface INEXAccount {
 	owning_pid: number;
 	access_level: ACCESS_LEVEL;
 	server_access_level: string;
+	friend_code: string;
 }
 
 export interface INEXAccountMethods {

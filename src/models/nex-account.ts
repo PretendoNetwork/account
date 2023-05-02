@@ -24,7 +24,8 @@ const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMet
 	server_access_level: {
 		type: String,
 		default: 'prod' // everyone is in production by default
-	}
+	},
+	friend_code: String
 });
 
 NEXAccountSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
