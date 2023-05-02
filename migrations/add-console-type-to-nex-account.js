@@ -1,5 +1,5 @@
-const database = require('../../src/database');
-const { NEXAccount } = require('../../src/models/nex-account');
+const database = require('../dist/database');
+const { NEXAccount } = require('../dist/models/nex-account');
 
 database.connect().then(async function () {
 	const nexAccounts = await NEXAccount.find({});
