@@ -104,6 +104,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		system_type: 0x3, // * API
 		token_type: 0x1, // * OAuth Access
 		pid: pnid.pid,
+		access_level: pnid.access_level,
+		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
@@ -111,6 +113,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		system_type: 0x3, // * API
 		token_type: 0x2, // * OAuth Refresh
 		pid: pnid.pid,
+		access_level: pnid.access_level,
+		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
