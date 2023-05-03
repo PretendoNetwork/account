@@ -3,14 +3,14 @@ const database = require('../dist/database');
 const { NEXAccount } = require('../dist/models/nex-account');
 
 database.connect().then(async function () {
-	const nexAccounts3DS = await NEXAccount.find({
+	const nexAccountsToBeChanged = await NEXAccount.find({
 		device_type: '3ds',
 		friend_code: {
 			$exists: false
 		}
 	});
 
-	for (const nexAccount of nexAccounts3DS) {
+	for (const nexAccount of nexAccountsToBeChanged) {
 
 		if (!nexAccount.friend_code) {
 			const pid = nexAccount.pid;
