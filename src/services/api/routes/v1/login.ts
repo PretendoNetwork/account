@@ -15,7 +15,7 @@ const router: express.Router = express.Router();
  * TODO: Replace this with a more robust OAuth2 implementation
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
-	const grantType: string = request.body?.grantType;
+	const grantType: string = request.body?.grant_type;
 	const username: string = request.body?.username;
 	const password: string = request.body?.password;
 	const refreshToken: string = request.body?.refresh_token;
