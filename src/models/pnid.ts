@@ -247,7 +247,6 @@ PNIDSchema.method('scrub', async function scrub() {
 
 	this.deleted = true;
 	this.creation_date = '';
-	this.password = '';
 	this.birthdate = '';
 	this.gender = '';
 	this.country = '';

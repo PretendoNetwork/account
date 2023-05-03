@@ -53,6 +53,19 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
+	if (pnid.deleted) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0112',
+					message: pnid.username
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	if (pnid.access_level < 0) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
