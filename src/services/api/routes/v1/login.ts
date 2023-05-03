@@ -101,14 +101,14 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	}
 
 	const accessTokenOptions: TokenOptions = {
-		system_type: 0x1, // * WiiU
+		system_type: 0x3, // * API
 		token_type: 0x1, // * OAuth Access
 		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const refreshTokenOptions: TokenOptions = {
-		system_type: 0x1, // * WiiU
+		system_type: 0x3, // * API
 		token_type: 0x2, // * OAuth Refresh
 		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))

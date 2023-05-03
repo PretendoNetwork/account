@@ -57,9 +57,10 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 	dataBuffer.writeUInt32LE(options.pid, 0x2);
 	dataBuffer.writeBigUInt64LE(options.expire_time, 0x6);
 
-	if (options.token_type !== 0x1 && options.token_type !== 0x2) {
+	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
 		// * Access and refresh tokens have smaller bodies due to size constraints
-		if (options.access_level === undefined || options.title_id === undefined) {
+		// * The API does not have this restraint, however
+		if (options.title_id === undefined || options.access_level === undefined) {
 			return null;
 		}
 
