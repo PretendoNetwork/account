@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
+import { IncomingHttpHeaders } from 'node:http';
 import aws from 'aws-sdk';
 import fs from 'fs-extra';
 import express from 'express';
@@ -14,7 +15,6 @@ import { Token } from '@/types/common/token';
 import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import { MailerOptions } from '@/types/common/mailer-options';
 import { SafeQs } from '@/types/common/safe-qs';
-import { IncomingHttpHeaders } from 'node:http';
 
 let s3: aws.S3;
 
@@ -83,7 +83,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 
 	let final: Buffer = encrypted;
 
-	if (options.token_type !== 0x1 && options.token_type !== 0x2) {
+	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
 		// * Access and refresh tokens don't get a checksum due to size constraints
 		const checksum: Buffer = crc32(dataBuffer);
 
