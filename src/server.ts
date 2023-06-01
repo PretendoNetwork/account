@@ -24,7 +24,7 @@ import assets from '@/services/assets';
 
 import { config } from '@/config-manager';
 
-const app = express();
+const app: express.Express = express();
 
 // START APPLICATION
 

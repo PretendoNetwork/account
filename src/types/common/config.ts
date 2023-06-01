@@ -39,7 +39,10 @@ export interface Config {
 	website_base: string;
 	aes_key: string;
 	grpc: {
-		api_key: string;
+		master_api_keys: {
+			account: string;
+			api: string;
+		};
 		port: number;
 	};
 	stripe?: {

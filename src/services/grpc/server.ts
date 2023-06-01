@@ -1,22 +1,21 @@
 import { createServer, Server } from 'nice-grpc';
-import { AccountServiceImplementation, AccountDefinition } from 'pretendo-grpc-ts/dist/account/account_service';
+import { AccountDefinition } from 'pretendo-grpc-ts/dist/account/account_service';
+import { APIDefinition } from 'pretendo-grpc-ts/dist/api/api_service';
+
+import { apiKeyMiddleware as accountApiKeyMiddleware } from '@/services/grpc/account/api-key-middleware';
+import { apiKeyMiddleware as apiApiKeyMiddleware } from '@/services/grpc/api/api-key-middleware';
+import { authenticationMiddleware as apiAuthenticationMiddleware } from '@/services/grpc/api/authentication-middleware';
+
+import { accountServiceImplementation } from '@/services/grpc/account/implementation';
+import { apiServiceImplementation } from '@/services/grpc/api/implementation';
+
 import { config } from '@/config-manager';
 
-import { apiKeyMiddleware } from '@/services/grpc/api-key-middleware';
-import { getUserData } from '@/services/grpc/get-user-data';
-import { login } from '@/services/grpc/login';
-import { registerPNID } from '@/services/grpc/register-pnid';
-
-const accountServiceImplementation: AccountServiceImplementation = {
-	getUserData,
-	login,
-	registerPNID,
-};
-
 export async function startGRPCServer(): Promise<void> {
-	const server: Server = createServer().use(apiKeyMiddleware);
+	const server: Server = createServer();
 
-	server.add(AccountDefinition, accountServiceImplementation);
+	server.with(accountApiKeyMiddleware).add(AccountDefinition, accountServiceImplementation);
+	server.with(apiApiKeyMiddleware).with(apiAuthenticationMiddleware).add(APIDefinition, apiServiceImplementation);
 
 	await server.listen(`0.0.0.0:${config.grpc.port}`);
 }
