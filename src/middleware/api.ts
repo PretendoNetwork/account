@@ -1,6 +1,6 @@
 import express from 'express';
 import { getValueFromHeaders } from '@/util';
-import { getPNIDByBearerAuth } from '@/database';
+import { getPNIDByTokenAuth } from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function APIMiddleware(request: express.Request, _response: express.Response, next: express.NextFunction): Promise<void> {
@@ -12,7 +12,7 @@ async function APIMiddleware(request: express.Request, _response: express.Respon
 
 	try {
 		const token: string = authHeader.split(' ')[1];
-		const pnid: HydratedPNIDDocument | null = await getPNIDByBearerAuth(token);
+		const pnid: HydratedPNIDDocument | null = await getPNIDByTokenAuth(token);
 
 		request.pnid = pnid;
 	} catch (error) {

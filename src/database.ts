@@ -100,7 +100,7 @@ export async function getPNIDByBasicAuth(token: string): Promise<HydratedPNIDDoc
 	return pnid;
 }
 
-export async function getPNIDByBearerAuth(token: string): Promise<HydratedPNIDDocument | null> {
+export async function getPNIDByTokenAuth(token: string): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	try {

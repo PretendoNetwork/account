@@ -1,7 +1,7 @@
 import { Status, ServerError } from 'nice-grpc';
 import { LoginRequest, LoginResponse, DeepPartial } from 'pretendo-grpc-ts/dist/api/login_rpc';
 import bcrypt from 'bcrypt';
-import { getPNIDByUsername, getPNIDByBearerAuth } from '@/database';
+import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
 import { nintendoPasswordHash, generateToken} from '@/util';
 import { config } from '@/config-manager';
 import type { TokenOptions } from '@/types/common/token-options';
@@ -44,7 +44,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Password is incorrect');
 		}
 	} else {
-		pnid = await getPNIDByBearerAuth(refreshToken!); // * We know refreshToken will never be null here
+		pnid = await getPNIDByTokenAuth(refreshToken!); // * We know refreshToken will never be null here
 
 		if (!pnid) {
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');

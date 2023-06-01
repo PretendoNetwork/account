@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { getPNIDByUsername, getPNIDByBearerAuth } from '@/database';
+import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
 import { nintendoPasswordHash, generateToken} from '@/util';
 import { config } from '@/config-manager';
 import { TokenOptions } from '@/types/common/token-options';
@@ -87,7 +87,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			return;
 		}
 	} else {
-		pnid = await getPNIDByBearerAuth(refreshToken);
+		pnid = await getPNIDByTokenAuth(refreshToken);
 
 		if (!pnid) {
 			response.status(400).json({

@@ -1,5 +1,5 @@
 import { Status, ServerMiddlewareCall, CallContext, ServerError } from 'nice-grpc';
-import { getPNIDByBearerAuth } from '@/database';
+import { getPNIDByTokenAuth } from '@/database';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 // * These paths require that a token be present
@@ -30,7 +30,7 @@ export async function* authenticationMiddleware<Request, Response>(
 		let pnid: HydratedPNIDDocument | null = null;
 
 		if (token) {
-			pnid = await getPNIDByBearerAuth(token);
+			pnid = await getPNIDByTokenAuth(token);
 		}
 
 		if (!pnid && TOKEN_REQUIRED_PATHS.includes(call.method.path)) {
