@@ -8,6 +8,7 @@ import { generateToken } from '@/util';
 import { config } from '@/config-manager';
 import { TokenOptions } from '@/types/common/token-options';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { Device } from '@/models/device';
 
 const router: express.Router = express.Router();
 
@@ -70,13 +71,16 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		return;
 	}
 
-	// * These are set/validated in consoleStatusVerificationMiddleware
-	// * They are always set, despite what Express might think
-	if (request.certificate?.consoleType === 'wiiu') {
-		if (!request.device?.linked_pids.includes(pnid.pid)) {
-			request.device?.linked_pids.push(pnid.pid);
-			await request.device?.save();
-		}
+	// * This are set/validated in consoleStatusVerificationMiddleware
+	// * It is always set, despite what Express might think
+	if (request.device?.model === 'wup') {
+		await Device.updateOne({
+			_id: request.device?._id
+		}, {
+			$addToSet: {
+				linked_pids: pnid.pid
+			}
+		});
 	}
 
 	if (pnid.access_level < 0) {
