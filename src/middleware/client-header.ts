@@ -9,7 +9,6 @@ const VALID_CLIENT_ID_SECRET_PAIRS: { [key: string]: string } = {
 	'ea25c66c26b403376b4c5ed94ab9cdea': 'd137be62cb6a2b831cad8c013b92fb55', // * Possibly 3DS exclusive?
 };
 
-
 function nintendoClientHeaderCheck(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');

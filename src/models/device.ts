@@ -16,13 +16,13 @@ export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 	model: {
 		type: String,
 		enum: [
-			'wup', // Nintendo Wii U
-			'ctr', // Nintendo 3DS
-			'spr', // Nintendo 3DS XL
-			'ftr', // Nintendo 2DS
-			'ktr', // New Nintendo 3DS
-			'red', // New Nintendo 3DS XL
-			'jan'  // New Nintendo 2DS XL
+			'wup', // * Nintendo Wii U
+			'ctr', // * Nintendo 3DS
+			'spr', // * Nintendo 3DS XL
+			'ftr', // * Nintendo 2DS
+			'ktr', // * New Nintendo 3DS
+			'red', // * New Nintendo 3DS XL
+			'jan'  // * New Nintendo 2DS XL
 		]
 	},
 	device_id: Number,
@@ -33,10 +33,9 @@ export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 		token: String,
 		account_id: Number,
 	},
-	// 3DS-specific stuff
 	environment: String,
-	mac_hash: String,
-	fcdcert_hash: String,
+	mac_hash: String,     // * 3DS-specific
+	fcdcert_hash: String, // * 3DS-specific
 	linked_pids: [Number],
 	access_level: {
 		type: Number,
@@ -45,7 +44,8 @@ export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 	server_access_level: {
 		type: String,
 		default: 'prod' // everyone is in production by default
-	}
+	},
+	certificate_hash: String
 });
 
 export const Device: DeviceModel = model<IDevice, DeviceModel>('Device', DeviceSchema);

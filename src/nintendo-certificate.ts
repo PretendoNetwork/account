@@ -81,6 +81,7 @@ class NintendoCertificate {
 	publicKey: Buffer;
 	valid: boolean;
 	publicKeyData: Buffer;
+	consoleType: string;
 
 	constructor(certificate: string | Buffer) {
 		this._certificate = Buffer.alloc(0);
@@ -94,6 +95,7 @@ class NintendoCertificate {
 		this.publicKey = Buffer.alloc(0);
 		this.valid = false;
 		this.publicKeyData = Buffer.alloc(0);
+		this.consoleType = '';
 
 		if (certificate) {
 			if (certificate instanceof Buffer) {
@@ -108,13 +110,14 @@ class NintendoCertificate {
 
 	_parseCertificateData(): void {
 		if (this._certificate.length === 0x110) {
-			// Assume fcdcert (3DS LFCS)
+			// * Assume fcdcert (3DS LFCS)
+			this.consoleType = '3ds';
 			this.signature = this._certificate.subarray(0x0, 0x100);
 			this._certificateBody = this._certificate.subarray(0x100);
 
 			this._verifySignatureLFCS();
 		} else {
-			// Assume regular certificate
+			// * Assume regular certificate
 			this.signatureType = this._certificate.readUInt32BE(0x00);
 
 			const signatureTypeSizes: SignatureSize = this._signatureTypeSizes(this.signatureType);
@@ -127,6 +130,12 @@ class NintendoCertificate {
 			this.certificateName = this._certificate.subarray(0xC4, 0x104).toString().split('\0')[0];
 			this.ngKeyId = this._certificate.readUInt32BE(0x104);
 			this.publicKeyData = this._certificate.subarray(0x108);
+
+			if (this.issuer === 'Root-CA00000003-MS00000012') {
+				this.consoleType = 'wiiu';
+			} else {
+				this.consoleType = '3ds';
+			}
 
 			this._verifySignature();
 		}
@@ -197,7 +206,7 @@ class NintendoCertificate {
 	// from bytes to PEM!
 	// https://github.com/Myriachan
 	_verifySignatureECDSA(): void {
-		const pem: string = this.issuer == 'Root-CA00000003-MS00000012' ? WIIU_DEVICE_PUB_PEM : CTR_DEVICE_PUB_PEM;
+		const pem: string = this.consoleType === 'wiiu' ? WIIU_DEVICE_PUB_PEM : CTR_DEVICE_PUB_PEM;
 		const key: crypto.VerifyPublicKeyInput = {
 			key: pem,
 			dsaEncoding: 'ieee-p1363' as crypto.DSAEncoding

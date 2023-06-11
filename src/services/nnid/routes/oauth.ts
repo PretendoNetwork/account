@@ -1,6 +1,8 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
+import deviceCertificateMiddleware from '@/middleware/device-certificate';
+import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
 import { getPNIDByUsername } from '@/database';
 import { generateToken } from '@/util';
 import { config } from '@/config-manager';
@@ -14,7 +16,7 @@ const router: express.Router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
  * Description: Generates an access token for a user
  */
-router.post('/access_token/generate', async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatusVerificationMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	const grantType: string = request.body?.grant_type;
 	const username: string = request.body?.user_id;
 	const password: string = request.body?.password;
@@ -66,6 +68,15 @@ router.post('/access_token/generate', async (request: express.Request, response:
 		}).end({ pretty: true }));
 
 		return;
+	}
+
+	// * These are set/validated in consoleStatusVerificationMiddleware
+	// * They are always set, despite what Express might think
+	if (request.certificate?.consoleType === 'wiiu') {
+		if (!request.device?.linked_pids.includes(pnid.pid)) {
+			request.device?.linked_pids.push(pnid.pid);
+			await request.device?.save();
+		}
 	}
 
 	if (pnid.access_level < 0) {
