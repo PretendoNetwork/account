@@ -17,7 +17,7 @@ import provider from '@/services/nnid/routes/provider';
 import support from '@/services/nnid/routes/support';
 
 // Router to handle the subdomain restriction
-const nnid = express.Router();
+const nnid: express.Router = express.Router();
 
 LOG_INFO('[NNID] Importing middleware');
 nnid.use(clientHeaderCheck);

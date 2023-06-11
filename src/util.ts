@@ -70,7 +70,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 		]);
 
 		dataBuffer.writeBigUInt64LE(options.title_id, 0xE);
-		dataBuffer.writeUInt8(options.access_level, 0x16);
+		dataBuffer.writeInt8(options.access_level, 0x16);
 	}
 
 	const iv: Buffer = Buffer.alloc(16);
@@ -133,7 +133,7 @@ export function unpackToken(token: Buffer): Token {
 
 	if (unpacked.token_type !== 0x1 && unpacked.token_type !== 0x2) {
 		unpacked.title_id = token.readBigUInt64LE(0xE);
-		unpacked.access_level = token.readUInt8(0x16);
+		unpacked.access_level = token.readInt8(0x16);
 	}
 
 	return unpacked;

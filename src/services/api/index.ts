@@ -1,5 +1,3 @@
-// handles "api.nintendo.cc" endpoints
-
 import express from 'express';
 import subdomain from 'express-subdomain';
 import cors from 'cors';
