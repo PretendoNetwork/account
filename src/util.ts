@@ -274,11 +274,11 @@ export function getValueFromHeaders(headers: IncomingHttpHeaders, key: string): 
 	let value: string | undefined;
 
 	if (header) {
-		if (Array.isArray(header)) {
-			header = header[0];
+		if (!Array.isArray(header)) {
+			header = header.split(', ');
 		}
 
-		value = header;
+		value = header[0];
 	}
 
 	return value;
