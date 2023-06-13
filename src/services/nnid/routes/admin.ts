@@ -105,4 +105,18 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 	}).end());
 });
 
+/**
+ * [GET]
+ * Replacement for: https://account.nintendo.net/v1/api/admin/time
+ * Description: Gets the current server time
+ */
+router.get('/time', async (request: express.Request, response: express.Response): Promise<void> => {
+	response.set('X-Nintendo-Date', Date.now().toString());
+	response.set('Server', 'Nintendo 3DS (http)');
+	response.set('Date', new Date().toUTCString());
+
+	response.send('');
+});
+
+
 export default router;
