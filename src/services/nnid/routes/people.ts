@@ -522,7 +522,7 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/deletion
  * Description: Deletes a NNID
  */
-router.put('/@me/deletion', async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/@me/deletion', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pnid: HydratedPNIDDocument | null = request.pnid;
 
 	if (!pnid) {
