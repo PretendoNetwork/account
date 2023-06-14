@@ -1,6 +1,6 @@
 import express from 'express';
 import { nintendoBase64Encode, nintendoBase64Decode, nascError, generateToken } from '@/util';
-import { getServerByTitleId } from '@/database';
+import { getServerByTitleID } from '@/database';
 import { TokenOptions } from '@/types/common/token-options';
 import { NASCRequestParams } from '@/types/services/nasc/request-params';
 import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
@@ -33,7 +33,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		serverAccessLevel = nexAccount.server_access_level;
 	}
 
-	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
+	const server: HydratedServerDocument | null = await getServerByTitleID(titleID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
 		response.status(200).send(nascError('110').toString());
