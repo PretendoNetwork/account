@@ -62,9 +62,11 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 
 	if (!pnid || !await bcrypt.compare(password, pnid.password)) {
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				code: '0106',
-				message: 'Invalid account ID or password'
+			errors: {
+				error: {
+					code: '0106',
+					message: 'Invalid account ID or password'
+				}
 			}
 		}).end({ pretty: true }));
 
