@@ -91,7 +91,6 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 
 		if (!device) {
 			device = await Device.create({
-				is_emulator: false,
 				model: 'wup',
 				device_id: deviceID,
 				serial: serialNumber,

@@ -153,7 +153,6 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 				if (!device) {
 					device = new Device({
-						is_emulator: false,
 						model,
 						serial: serialNumber,
 						environment,

@@ -9,10 +9,6 @@ const DeviceAttributeSchema = new Schema<IDeviceAttribute, DeviceAttributeModel,
 });
 
 export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
-	is_emulator: {
-		type: Boolean,
-		default: false
-	},
 	model: {
 		type: String,
 		enum: [

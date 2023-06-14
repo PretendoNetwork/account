@@ -6,7 +6,6 @@ type ACCESS_LEVEL = -1 | 0 | 1 | 2 | 3;
 type SERVER_ACCESS_LEVEL = 'prod' | 'test' | 'dev';
 
 export interface IDevice {
-	is_emulator: boolean;
 	model: MODEL;
 	device_id: number;
 	device_type: number;
