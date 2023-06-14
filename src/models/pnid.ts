@@ -241,7 +241,7 @@ PNIDSchema.method('scrub', async function scrub() {
 
 	await this.updateMii({
 		name: 'Default',
-		primary: 'N',
+		primary: 'Y',
 		data: 'AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9'
 	});
 
@@ -251,44 +251,30 @@ PNIDSchema.method('scrub', async function scrub() {
 	this.gender = '';
 	this.country = '';
 	this.language = '';
-	this.email = {
-		address: '',
-		primary: false,
-		parent: false,
-		reachable: false,
-		validated: false,
-		validated_date: '',
-		id: 0
-	};
+	this.email.address = '';
+	this.email.primary = false;
+	this.email.parent = false;
+	this.email.reachable = false;
+	this.email.validated = false;
+	this.email.validated_date = '';
+	this.email.id = 0;
 	this.region = 0;
-	this.timezone = {
-		name: '',
-		offset: 0
-	};
-	this.mii = {
-		id: 0,
-		hash: '',
-		image_url: '',
-		image_id: 0
-	};
-	this.flags = {
-		active: false,
-		marketing: false,
-		off_device: false
-	};
-	this.connections = {
-		discord: {
-			id: ''
-		},
-		stripe: {
-			customer_id: '',
-			subscription_id: '',
-			price_id: '',
-			tier_level: 0,
-			tier_name: '',
-			latest_webhook_timestamp: 0
-		}
-	};
+	this.timezone.name = '';
+	this.timezone.offset = 0;
+	this.mii.id = 0;
+	this.mii.hash = '';
+	this.mii.image_url = '';
+	this.mii.image_id = 0;
+	this.flags.active = false;
+	this.flags.marketing = false;
+	this.flags.off_device = false;
+	this.connections.discord.id = '';
+	this.connections.stripe.customer_id = '';
+	this.connections.stripe.subscription_id = '';
+	this.connections.stripe.price_id = '';
+	this.connections.stripe.tier_level = '';
+	this.connections.stripe.tier_name = '';
+	this.connections.stripe.latest_webhook_timestamp = '';
 });
 
 export const PNID: PNIDModel = model<IPNID, PNIDModel>('PNID', PNIDSchema);
