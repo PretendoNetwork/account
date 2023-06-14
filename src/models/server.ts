@@ -3,6 +3,7 @@ import uniqueValidator from 'mongoose-unique-validator';
 import { IServer, IServerMethods, ServerModel } from '@/types/mongoose/server';
 
 const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
+	client_id: String,
 	ip: String,
 	port: Number,
 	service_name: String,

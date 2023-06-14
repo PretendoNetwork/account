@@ -208,19 +208,27 @@ export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile 
 	};
 }
 
-export async function getServerByGameServerId(gameServerId: string, accessMode: string): Promise<HydratedServerDocument | null> {
+export async function getServerByGameServerID(gameServerID: string, accessMode: string): Promise<HydratedServerDocument | null> {
 	return await Server.findOne({
-		game_server_id: gameServerId,
+		game_server_id: gameServerID,
 		access_mode: accessMode
 	});
 }
 
-export async function getServerByTitleId(titleId: string, accessMode: string): Promise<HydratedServerDocument | null> {
+export async function getServerByTitleID(titleID: string, accessMode: string): Promise<HydratedServerDocument | null> {
 	return await Server.findOne({
-		title_ids: titleId,
+		title_ids: titleID,
 		access_mode: accessMode
 	});
 }
+
+export async function getServerByClientID(clientID: string, accessMode: string): Promise<HydratedServerDocument | null> {
+	return await Server.findOne({
+		client_id: clientID,
+		access_mode: accessMode
+	});
+}
+
 
 export async function addPNIDConnection(pnid: HydratedPNIDDocument, data: ConnectionData, type: string): Promise<ConnectionResponse | undefined> {
 	if (type === 'discord') {

@@ -1,6 +1,7 @@
 import { Model, HydratedDocument } from 'mongoose';
 
 export interface IServer {
+	client_id: string;
 	ip: string;
 	port: number;
 	service_name: string;

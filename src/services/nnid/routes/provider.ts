@@ -1,6 +1,6 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
-import { getServerByTitleId, getServerByGameServerId } from '@/database';
+import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { NEXAccount } from '@/models/nex-account';
 import { TokenOptions } from '@/types/common/token-options';
@@ -32,6 +32,22 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
+	const clientID: string | undefined = getValueFromQueryString(request.query, 'client_id');
+
+	if (!clientID) {
+		// TODO - Research this error more
+		response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '1021',
+					message: 'The requested game server was not found'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const titleID: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
 
 	if (!titleID) {
@@ -49,7 +65,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 	}
 
 	const serverAccessLevel: string = pnid.server_access_level;
-	const server: HydratedServerDocument | null = await getServerByTitleId(titleID, serverAccessLevel);
+	const server: HydratedServerDocument | null = await getServerByClientID(clientID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
 		response.send(xmlbuilder.create({
@@ -156,7 +172,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	}
 
 	const serverAccessLevel: string = pnid.server_access_level;
-	const server: HydratedServerDocument | null = await getServerByGameServerId(gameServerID, serverAccessLevel);
+	const server: HydratedServerDocument | null = await getServerByGameServerID(gameServerID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
 		response.send(xmlbuilder.create({
