@@ -62,10 +62,7 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		reachable: Boolean,
 		validated: Boolean,
 		validated_date: String,
-		id: {
-			type: Number,
-			unique: true
-		}
+		id: Number
 	},
 	region: Number,
 	timezone: {
@@ -76,19 +73,10 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		name: String,
 		primary: Boolean,
 		data: String,
-		id: {
-			type: Number,
-			unique: true
-		},
-		hash: {
-			type: String,
-			unique: true
-		},
+		id: Number,
+		hash: String,
 		image_url: String,
-		image_id: {
-			type: Number,
-			unique: true
-		},
+		image_id: Number,
 	},
 	flags: {
 		active: Boolean,
