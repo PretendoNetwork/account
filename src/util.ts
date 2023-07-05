@@ -233,6 +233,21 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 	await sendMail(mailerOptions);
 }
 
+export async function sendPNIDDeletedEmail(email: string, username: string): Promise<void> {
+	const options: MailerOptions = {
+		to: email,
+		subject: '[Pretendo Network] PNID Deleted',
+		username: username,
+		link: {
+			text: 'Discord Server',
+			href: 'https://discord.com/invite/pretendo'
+		},
+		text: `Your PNID ${username} has successfully been deleted. If you had a tier subscription, a separate cancellation email will be sent. If you do not receive this cancellation email, or your subscription is still being charged, please contact @jon on our Discord server`
+	};
+
+	await sendMail(options);
+}
+
 export function makeSafeQs(query: ParsedQs): SafeQs {
 	const entries = Object.entries(query);
 	const output: SafeQs = {};

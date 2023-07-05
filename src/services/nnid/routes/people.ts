@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
-import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail } from '@/util';
+import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
@@ -539,8 +539,16 @@ router.post('/@me/deletion', async (request: express.Request, response: express.
 		return;
 	}
 
+	const email: string = pnid.email.address;
+
 	await pnid.scrub();
 	await pnid.save();
+
+	try {
+		await sendPNIDDeletedEmail(email, pnid.username);
+	} catch (error) {
+		LOG_ERROR(error);
+	}
 
 	response.send('');
 });
