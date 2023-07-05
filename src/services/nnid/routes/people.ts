@@ -547,7 +547,7 @@ router.post('/@me/deletion', async (request: express.Request, response: express.
 	try {
 		await sendPNIDDeletedEmail(email, pnid.username);
 	} catch (error) {
-		LOG_ERROR(error);
+		LOG_ERROR(`Error sending deletion email ${error}`);
 	}
 
 	response.send('');
