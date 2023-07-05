@@ -8,7 +8,7 @@ import Mii from 'mii-js';
 import Stripe from 'stripe';
 import { DeviceSchema } from '@/models/device';
 import { uploadCDNAsset } from '@/util';
-import { LOG_WARN } from '@/logger';
+import { LOG_ERROR, LOG_WARN } from '@/logger';
 import { HydratedPNIDDocument, IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 import { config } from '@/config-manager';
 
@@ -221,10 +221,16 @@ PNIDSchema.method('scrub', async function scrub() {
 	// * Remove all personal info from a PNID
 	// * Username and PID remain so thye do not get assigned again
 
-	if (this.connections?.stripe?.subscription_id && stripe) {
-		await stripe.subscriptions.del(this.connections.stripe.subscription_id);
-	} else {
-		LOG_WARN(`SCRUBBING USER DATA FOR USER ${this.username}. HAS STRIPE SUBSCRIPTION ${this.connections.stripe.subscription_id}, BUT STRIPE CLIENT NOT ENABLED. SUBSCRIPTION NOT CANCELED`);
+	if (this.connections?.stripe?.subscription_id) {
+		try {
+			if (stripe) {
+				await stripe.subscriptions.del(this.connections.stripe.subscription_id);
+			} else {
+				LOG_WARN(`SCRUBBING USER DATA FOR USER ${this.username}. HAS STRIPE SUBSCRIPTION ${this.connections.stripe.subscription_id}, BUT STRIPE CLIENT NOT ENABLED. SUBSCRIPTION NOT CANCELED`);
+			}
+		} catch (error) {
+			LOG_ERROR(`ERROR REMOVING ${this.username} STRIPE SUBSCRIPTION. ${error}`);
+		}
 	}
 
 	await this.updateMii({
@@ -234,6 +240,8 @@ PNIDSchema.method('scrub', async function scrub() {
 	});
 
 	this.deleted = true;
+	this.access_level = 0;
+	this.server_access_level = 'prod';
 	this.creation_date = '';
 	this.birthdate = '';
 	this.gender = '';
