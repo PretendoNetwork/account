@@ -30,7 +30,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 	let unpackedToken: Token;
 	try {
-		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'base64'));
+		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'hex'));
 		unpackedToken = unpackToken(decryptedToken);
 	} catch (error) {
 		response.status(400).json({
