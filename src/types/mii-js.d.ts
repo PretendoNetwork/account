@@ -96,4 +96,5 @@ type Mii = {
 
 	studioUrl: (options: MiiStudioURLOptions) => string;
 	encode: () => Buffer;
+	validate: () => void;
 };

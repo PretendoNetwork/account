@@ -57,7 +57,8 @@
     "typescript-is": "^0.19.0",
     "validator": "^13.7.0",
     "xmlbuilder": "^13.0.2",
-    "xmlbuilder2": "0.0.4"
+    "xmlbuilder2": "0.0.4",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@hcaptcha/types": "^1.0.3",
