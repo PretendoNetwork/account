@@ -123,11 +123,15 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 		});
 	}
 
-	response.send(xmlbuilder.create({
-		miis: {
-			mii: miis
-		}
-	}).end());
+	if (miis.length === 0) {
+		response.status(404).end();
+	} else {
+		response.send(xmlbuilder.create({
+			miis: {
+				mii: miis
+			}
+		}).end());
+	}
 });
 
 export default router;
