@@ -32,7 +32,6 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 
 	const pids: number[] = input.split(',').map(pid => Number(pid)).filter(pid => !isNaN(pid));
 
-	const results: HydratedPNIDDocument[] = await PNID.where('pid', pids);
 	const miis: {
 		data: string;
 		id: number;
@@ -50,77 +49,72 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 		user_id: string;
 	}[] = [];
 
-	for (const user of results) {
-		const mii: {
-			name: string;
-			primary: boolean;
-			data: string;
-			id: number;
-			hash: string;
-			image_url: string;
-			image_id: number;
-		} = user.mii;
+	for (const pid of pids) {
+		// TODO - Replace this with a single query again somehow? Maybe aggregation?
+		const pnid: HydratedPNIDDocument | null = await PNID.findOne({ pid });
 
-		miis.push({
-			data: mii.data.replace(/(\r\n|\n|\r)/gm, ''),
-			id: mii.id,
-			images: {
-				image: [
-					{
-						cached_url: `${config.cdn.base_url}/mii/${user.pid}/normal_face.png`,
-						id: mii.id,
-						url: `${config.cdn.base_url}/mii/${user.pid}/normal_face.png`,
-						type: 'standard'
-					},
-					{
-						cached_url: `${config.cdn.base_url}/mii/${user.pid}/frustrated.png`,
-						id: mii.id,
-						url: `${config.cdn.base_url}/mii/${user.pid}/frustrated.png`,
-						type: 'frustrated_face'
-					},
-					{
-						cached_url: `${config.cdn.base_url}/mii/${user.pid}/smile_open_mouth.png`,
-						id: mii.id,
-						url: `${config.cdn.base_url}/mii/${user.pid}/smile_open_mouth.png`,
-						type: 'happy_face'
-					},
-					{
-						cached_url: `${config.cdn.base_url}/mii/${user.pid}/wink_left.png`,
-						id: mii.id,
-						url: `${config.cdn.base_url}/mii/${user.pid}/wink_left.png`,
-						type: 'like_face'
-					},
-					{
-						cached_url: `${config.cdn.base_url}/mii/${user.pid}/normal_face.png`,
-						id: mii.id,
-						url: `${config.cdn.base_url}/mii/${user.pid}/normal_face.png`,
-						type: 'normal_face'
-					},
-					{
-						cached_url: `${config.cdn.base_url}/mii/${user.pid}/sorrow.png`,
-						id: mii.id,
-						url: `${config.cdn.base_url}/mii/${user.pid}/sorrow.png`,
-						type: 'puzzled_face'
-					},
-					{
-						cached_url: `${config.cdn.base_url}/mii/${user.pid}/surprised_open_mouth.png`,
-						id: mii.id,
-						url: `${config.cdn.base_url}/mii/${user.pid}/surprised_open_mouth.png`,
-						type: 'surprised_face'
-					},
-					{
-						cached_url: `${config.cdn.base_url}/mii/${user.pid}/body.png`,
-						id: mii.id,
-						url: `${config.cdn.base_url}/mii/${user.pid}/body.png`,
-						type: 'whole_body'
-					}
-				]
-			},
-			name: mii.name,
-			pid: user.pid,
-			primary: mii.primary ? 'Y' : 'N',
-			user_id: user.username
-		});
+		if (pnid) {
+			miis.push({
+				data: pnid.mii.data.replace(/(\r\n|\n|\r)/gm, ''),
+				id: pnid.mii.id,
+				images: {
+					image: [
+						{
+							cached_url: `${config.cdn.base_url}/mii/${pnid.pid}/normal_face.png`,
+							id: pnid.mii.id,
+							url: `${config.cdn.base_url}/mii/${pnid.pid}/normal_face.png`,
+							type: 'standard'
+						},
+						{
+							cached_url: `${config.cdn.base_url}/mii/${pnid.pid}/frustrated.png`,
+							id: pnid.mii.id,
+							url: `${config.cdn.base_url}/mii/${pnid.pid}/frustrated.png`,
+							type: 'frustrated_face'
+						},
+						{
+							cached_url: `${config.cdn.base_url}/mii/${pnid.pid}/smile_open_mouth.png`,
+							id: pnid.mii.id,
+							url: `${config.cdn.base_url}/mii/${pnid.pid}/smile_open_mouth.png`,
+							type: 'happy_face'
+						},
+						{
+							cached_url: `${config.cdn.base_url}/mii/${pnid.pid}/wink_left.png`,
+							id: pnid.mii.id,
+							url: `${config.cdn.base_url}/mii/${pnid.pid}/wink_left.png`,
+							type: 'like_face'
+						},
+						{
+							cached_url: `${config.cdn.base_url}/mii/${pnid.pid}/normal_face.png`,
+							id: pnid.mii.id,
+							url: `${config.cdn.base_url}/mii/${pnid.pid}/normal_face.png`,
+							type: 'normal_face'
+						},
+						{
+							cached_url: `${config.cdn.base_url}/mii/${pnid.pid}/sorrow.png`,
+							id: pnid.mii.id,
+							url: `${config.cdn.base_url}/mii/${pnid.pid}/sorrow.png`,
+							type: 'puzzled_face'
+						},
+						{
+							cached_url: `${config.cdn.base_url}/mii/${pnid.pid}/surprised_open_mouth.png`,
+							id: pnid.mii.id,
+							url: `${config.cdn.base_url}/mii/${pnid.pid}/surprised_open_mouth.png`,
+							type: 'surprised_face'
+						},
+						{
+							cached_url: `${config.cdn.base_url}/mii/${pnid.pid}/body.png`,
+							id: pnid.mii.id,
+							url: `${config.cdn.base_url}/mii/${pnid.pid}/body.png`,
+							type: 'whole_body'
+						}
+					]
+				},
+				name: pnid.mii.name,
+				pid: pnid.pid,
+				primary: pnid.mii.primary ? 'Y' : 'N',
+				user_id: pnid.username
+			});
+		}
 	}
 
 	if (miis.length === 0) {
