@@ -30,7 +30,7 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 		return;
 	}
 
-	const pids: number[] = input.split(',').map(pid => Number(pid));
+	const pids: number[] = input.split(',').map(pid => Number(pid)).filter(pid => !isNaN(pid));
 
 	const results: HydratedPNIDDocument[] = await PNID.where('pid', pids);
 	const miis: {
