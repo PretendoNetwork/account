@@ -19,10 +19,10 @@ import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router: express.Router = express.Router();
 
-const PNID_VALID_CHARACTERS_REGEX: RegExp = /^[\w\-.]*$/gm;
-const PNID_PUNCTUATION_START_REGEX: RegExp = /^[_\-.]/gm;
-const PNID_PUNCTUATION_END_REGEX: RegExp = /[_\-.]$/gm;
-const PNID_PUNCTUATION_DUPLICATE_REGEX: RegExp = /[_\-.]{2,}/gm;
+const PNID_VALID_CHARACTERS_REGEX: RegExp = /^[\w\-.]*$/;
+const PNID_PUNCTUATION_START_REGEX: RegExp = /^[_\-.]/;
+const PNID_PUNCTUATION_END_REGEX: RegExp = /[_\-.]$/;
+const PNID_PUNCTUATION_DUPLICATE_REGEX: RegExp = /[_\-.]{2,}/;
 
 // This sucks
 const PASSWORD_WORD_OR_NUMBER_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*\d).*/;
