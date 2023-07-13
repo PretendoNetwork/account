@@ -7,12 +7,10 @@ import { HydratedDeviceDocument } from '@/types/mongoose/device';
 
 async function consoleStatusVerificationMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	if (!request.certificate || !request.certificate.valid) {
-		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
 			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
+				code: '0110',
+				message: 'Unlinked device'
 			}
 		}).end());
 
@@ -22,12 +20,10 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 	const deviceIDHeader: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
 
 	if (!deviceIDHeader) {
-		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
 			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
+				code: '0002',
+				message: 'deviceId format is invalid'
 			}
 		}).end());
 
@@ -37,12 +33,10 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 	const deviceID: number = Number(deviceIDHeader);
 
 	if (isNaN(deviceID)) {
-		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
 			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
+				code: '0002',
+				message: 'deviceId format is invalid'
 			}
 		}).end());
 
@@ -51,13 +45,24 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 
 	const serialNumber: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-serial-number');
 
+	// TODO - Verify serial numbers somehow?
+	// * This is difficult to do safely because serial numbers are
+	// * inherently insecure.
+	// * Information about their structure can be found here:
+	// * https://www.3dbrew.org/wiki/Serials
+	// * Given this, anyone can generate a valid serial number which
+	// * passes these checks, even if the serial number isn't real.
+	// * The 3DS also futher complicates things, as it never sends
+	// * the complete serial number. The 3DS omits the check digit,
+	// * meaning any attempt to verify the serial number of a 3DS
+	// * family of console will ALWAYS fail. Nintendo likely just
+	// * has a database of all known serials which they are able to
+	// * compare against. We are not so lucky
 	if (!serialNumber) {
-		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
 			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
+				code: '0002',
+				message: 'serialNumber format is invalid'
 			}
 		}).end());
 
