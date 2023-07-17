@@ -3,7 +3,7 @@
 ## Overview
 To use this, you must have Docker installed on your system. Please follow a tutorial elsewhere.
 
-After performing installation, you will have the following running containers:
+After performing the following steps, you will have the following running containers:
 - mongodb (the database)
 - account (the account server itself)
 
