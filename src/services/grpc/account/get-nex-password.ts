@@ -9,7 +9,7 @@ export async function getNEXPassword(request: GetNEXPasswordRequest): Promise<De
 	if (!nexAccount) {
 		throw new ServerError(
 			Status.INVALID_ARGUMENT,
-			'No NEX account found found',
+			'No NEX account found',
 		);
 	}
 
