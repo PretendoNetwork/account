@@ -1,5 +1,6 @@
 # Setup
 
+- [Docker](#docker)
 - [Required software](#required-software)
 	- [NodeJS](#nodejs)
 	- [MongoDB](#mongodb)
@@ -11,6 +12,8 @@
 	- [CDN](#cdn)
 - [Configuration](#configuration)
 
+## Docker
+If using Docker, please see [DOCKER.md](DOCKER.md) for setup instructions.
 
 ## Required software
 
