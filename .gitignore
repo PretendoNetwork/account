@@ -62,3 +62,7 @@ config.json
 certs
 cdn
 dist
+*.yaml
+*.yml
+data
+datastore
