@@ -3,7 +3,7 @@ import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
-import { getPNIDByUsername } from '@/database';
+import { getPNIDByTokenAuth, getPNIDByUsername } from '@/database';
 import { generateToken } from '@/util';
 import { config } from '@/config-manager';
 import { TokenOptions } from '@/types/common/token-options';
@@ -18,9 +18,10 @@ const router: express.Router = express.Router();
  * Description: Generates an access token for a user
  */
 router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatusVerificationMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
-	const grantType: string = request.body?.grant_type;
-	const username: string = request.body?.user_id;
-	const password: string = request.body?.password;
+	const grantType: string = request.body.grant_type;
+	const username: string | undefined = request.body.user_id;
+	const password: string | undefined = request.body.password;
+	const refreshToken: string | undefined = request.body.refresh_token;
 
 	if (!['password', 'refresh_token'].includes(grantType)) {
 		response.status(400).send(xmlbuilder.create({
@@ -34,43 +35,85 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		return;
 	}
 
-	if (!username || username.trim() === '') {
-		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'user_id',
-				code: '0002',
-				message: 'user_id format is invalid'
-			}
-		}).end());
+	let pnid: HydratedPNIDDocument | null = null;
 
-		return;
-	}
-
-	if (!password || password.trim() === '') {
-		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'password',
-				code: '0002',
-				message: 'password format is invalid'
-			}
-		}).end());
-
-		return;
-	}
-
-	const pnid: HydratedPNIDDocument | null = await getPNIDByUsername(username);
-
-	if (!pnid || !await bcrypt.compare(password, pnid.password)) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
+	if (grantType === 'password') {
+		if (!username || username.trim() === '') {
+			response.status(400).send(xmlbuilder.create({
 				error: {
-					code: '0106',
-					message: 'Invalid account ID or password'
+					cause: 'user_id',
+					code: '0002',
+					message: 'user_id format is invalid'
 				}
-			}
-		}).end({ pretty: true }));
+			}).end());
 
-		return;
+			return;
+		}
+
+		if (!password || password.trim() === '') {
+			response.status(400).send(xmlbuilder.create({
+				error: {
+					cause: 'password',
+					code: '0002',
+					message: 'password format is invalid'
+				}
+			}).end());
+
+			return;
+		}
+
+		pnid = await getPNIDByUsername(username);
+
+		if (!pnid || !await bcrypt.compare(password, pnid.password)) {
+			response.status(400).send(xmlbuilder.create({
+				errors: {
+					error: {
+						code: '0106',
+						message: 'Invalid account ID or password'
+					}
+				}
+			}).end({ pretty: true }));
+
+			return;
+		}
+	} else {
+		if (!refreshToken || refreshToken.trim() === '') {
+			response.status(400).send(xmlbuilder.create({
+				error: {
+					cause: 'refresh_token',
+					code: '0106',
+					message: 'Invalid Refresh Token'
+				}
+			}).end());
+
+			return;
+		}
+
+		try {
+			pnid = await getPNIDByTokenAuth(refreshToken);
+
+			if (!pnid) {
+				response.status(400).send(xmlbuilder.create({
+					error: {
+						cause: 'refresh_token',
+						code: '0106',
+						message: 'Invalid Refresh Token'
+					}
+				}).end());
+
+				return;
+			}
+		} catch (error) {
+			response.status(400).send(xmlbuilder.create({
+				error: {
+					cause: 'refresh_token',
+					code: '0106',
+					message: 'Invalid Refresh Token'
+				}
+			}).end());
+
+			return;
+		}
 	}
 
 	// * This are set/validated in consoleStatusVerificationMiddleware
@@ -116,7 +159,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 	const refreshTokenBuffer: Buffer | null = await generateToken(config.aes_key, refreshTokenOptions);
 
 	const accessToken: string = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const refreshToken: string = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+	const newRefreshToken: string = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
 
 	// TODO - Handle null tokens
 
@@ -124,7 +167,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		OAuth20: {
 			access_token: {
 				token: accessToken,
-				refresh_token: refreshToken,
+				refresh_token: newRefreshToken,
 				expires_in: 3600
 			}
 		}
