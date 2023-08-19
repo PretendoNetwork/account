@@ -1,10 +1,11 @@
 import { Status, ServerError } from 'nice-grpc';
-import { GetUserDataRequest, GetUserDataResponse, DeepPartial } from 'pretendo-grpc-ts/dist/account/get_user_data_rpc';
+import { GetUserDataRequest, GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
 import { getPNIDByPID } from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 
-export async function getUserData(request: GetUserDataRequest): Promise<DeepPartial<GetUserDataResponse>> {
+export async function getUserData(request: GetUserDataRequest): Promise<GetUserDataResponse> {
 	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(request.pid);
 
 	if (!pnid) {
@@ -31,6 +32,23 @@ export async function getUserData(request: GetUserDataRequest): Promise<DeepPart
 		country: pnid.country,
 		language: pnid.language,
 		emailAddress: pnid.email.address,
-		tierName: pnid.connections.stripe.tier_name
+		tierName: pnid.connections.stripe.tier_name,
+		permissions: {
+			bannedAllPermanently: pnid.hasPermission(PNID_PERMISSION_FLAGS.BANNED_ALL_PERMANENTLY),
+			bannedAllTemporarily: pnid.hasPermission(PNID_PERMISSION_FLAGS.BANNED_ALL_TEMPORARILY),
+			betaAccess: pnid.hasPermission(PNID_PERMISSION_FLAGS.BETA_ACCESS),
+			accessAdminPanel: pnid.hasPermission(PNID_PERMISSION_FLAGS.ACCESS_ADMIN_PANEL),
+			createServerConfigs: pnid.hasPermission(PNID_PERMISSION_FLAGS.CREATE_SERVER_CONFIGS),
+			modifyServerConfigs: pnid.hasPermission(PNID_PERMISSION_FLAGS.MODIFY_SERVER_CONFIGS),
+			deployServer: pnid.hasPermission(PNID_PERMISSION_FLAGS.DEPLOY_SERVER),
+			modifyPnids: pnid.hasPermission(PNID_PERMISSION_FLAGS.MODIFY_PNIDS),
+			modifyNexAccounts: pnid.hasPermission(PNID_PERMISSION_FLAGS.MODIFY_NEX_ACCOUNTS),
+			modifyConsoles: pnid.hasPermission(PNID_PERMISSION_FLAGS.MODIFY_CONSOLES),
+			banPnids: pnid.hasPermission(PNID_PERMISSION_FLAGS.BAN_PNIDS),
+			banNexAccounts: pnid.hasPermission(PNID_PERMISSION_FLAGS.BAN_NEX_ACCOUNTS),
+			banConsoles: pnid.hasPermission(PNID_PERMISSION_FLAGS.BAN_CONSOLES),
+			moderateMiiverse: pnid.hasPermission(PNID_PERMISSION_FLAGS.MODERATE_MIIVERSE),
+			createApiKeys: pnid.hasPermission(PNID_PERMISSION_FLAGS.CREATE_API_KEYS)
+		}
 	};
 }

@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
 import { Status, ServerError } from 'nice-grpc';
-import { ResetPasswordRequest } from 'pretendo-grpc-ts/dist/api/reset_password_rpc';
+import { ResetPasswordRequest } from '@pretendonetwork/grpc/api/reset_password_rpc';
 import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
 import { getPNIDByPID } from '@/database';
-import type { Empty } from 'pretendo-grpc-ts/dist/api/google/protobuf/empty';
+import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { Token } from '@/types/common/token';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 

@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { Status, ServerError } from 'nice-grpc';
-import { RegisterRequest, DeepPartial } from 'pretendo-grpc-ts/dist/api/register_rpc';
-import { LoginResponse } from 'pretendo-grpc-ts/dist/api/login_rpc';
+import { RegisterRequest, DeepPartial } from '@pretendonetwork/grpc/api/register_rpc';
+import { LoginResponse } from '@pretendonetwork/grpc/api/login_rpc';
 import emailvalidator from 'email-validator';
 import bcrypt from 'bcrypt';
 import moment from 'moment';

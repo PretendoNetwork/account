@@ -10,6 +10,7 @@ import { DeviceSchema } from '@/models/device';
 import { uploadCDNAsset } from '@/util';
 import { LOG_ERROR, LOG_WARN } from '@/logger';
 import { HydratedPNIDDocument, IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
+import { PNIDPermissionFlag } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 
 let stripe: Stripe;
@@ -25,6 +26,10 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	deleted: {
 		type: Boolean,
 		default: false
+	},
+	permissions: {
+		type: BigInt,
+		default: 0n
 	},
 	access_level: {
 		type: Number,
@@ -271,6 +276,18 @@ PNIDSchema.method('scrub', async function scrub() {
 	this.connections.stripe.tier_level = '';
 	this.connections.stripe.tier_name = '';
 	this.connections.stripe.latest_webhook_timestamp = '';
+});
+
+PNIDSchema.method('hasPermission', function hasPermission(flag: PNIDPermissionFlag): boolean {
+	return (this.permissions & flag) === flag;
+});
+
+PNIDSchema.method('addPermission', function addPermission(flag: PNIDPermissionFlag): void {
+	this.permissions |= flag;
+});
+
+PNIDSchema.method('clearPermission', function clearPermission(flag: PNIDPermissionFlag): void {
+	this.permissions &= ~flag;
 });
 
 export const PNID: PNIDModel = model<IPNID, PNIDModel>('PNID', PNIDSchema);

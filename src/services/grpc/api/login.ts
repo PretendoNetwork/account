@@ -1,5 +1,5 @@
 import { Status, ServerError } from 'nice-grpc';
-import { LoginRequest, LoginResponse, DeepPartial } from 'pretendo-grpc-ts/dist/api/login_rpc';
+import { LoginRequest, LoginResponse, DeepPartial } from '@pretendonetwork/grpc/api/login_rpc';
 import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
 import { nintendoPasswordHash, generateToken} from '@/util';

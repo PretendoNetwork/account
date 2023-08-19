@@ -1,10 +1,12 @@
-import { AccountServiceImplementation } from 'pretendo-grpc-ts/dist/account/account_service';
+import { AccountServiceImplementation } from '@pretendonetwork/grpc/account/account_service';
 import { getUserData } from '@/services/grpc/account/get-user-data';
 import { getNEXPassword } from '@/services/grpc/account/get-nex-password';
 import { getNEXData } from '@/services/grpc/account/get-nex-data';
+import { updatePNIDPermissions } from '@/services/grpc/account/update-pnid-permissions';
 
 export const accountServiceImplementation: AccountServiceImplementation = {
 	getUserData,
 	getNEXPassword,
-	getNEXData
+	getNEXData,
+	updatePNIDPermissions
 };

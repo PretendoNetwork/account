@@ -1,8 +1,10 @@
 import { Model, Types, HydratedDocument } from 'mongoose';
 import { IDevice } from '@/types/mongoose/device';
+import { PNIDPermissionFlag } from '@/types/common/permission-flags';
 
 export interface IPNID {
 	deleted: boolean;
+	permissions: bigint;
 	access_level: number;
 	server_access_level: string;
 	pid: number;
@@ -80,6 +82,9 @@ export interface IPNIDMethods {
 	updateMii(mii: { name: string, primary: string, data: string}): Promise<void>;
 	generateMiiImages(): Promise<void>;
 	scrub(): Promise<void>;
+	hasPermission(flag: PNIDPermissionFlag): boolean;
+	addPermission(flag: PNIDPermissionFlag): void;
+	clearPermission(flag: PNIDPermissionFlag): void;
 }
 
 interface IPNIDQueryHelpers {}

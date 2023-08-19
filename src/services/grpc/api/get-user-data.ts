@@ -1,7 +1,7 @@
 import { CallContext } from 'nice-grpc';
-import { GetUserDataResponse, DeepPartial } from 'pretendo-grpc-ts/dist/api/get_user_data_rpc';
+import { GetUserDataResponse, DeepPartial } from '@pretendonetwork/grpc/api/get_user_data_rpc';
 import { config } from '@/config-manager';
-import type { Empty } from 'pretendo-grpc-ts/dist/api/google/protobuf/empty';
+import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 

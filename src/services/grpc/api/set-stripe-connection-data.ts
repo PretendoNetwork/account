@@ -1,7 +1,7 @@
 import { Status, ServerError, CallContext } from 'nice-grpc';
-import { SetStripeConnectionDataRequest } from 'pretendo-grpc-ts/dist/api/set_stripe_connection_data_rpc';
+import { SetStripeConnectionDataRequest } from '@pretendonetwork/grpc/api/set_stripe_connection_data_rpc';
 import { PNID } from '@/models/pnid';
-import type { Empty } from 'pretendo-grpc-ts/dist/api/google/protobuf/empty';
+import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 

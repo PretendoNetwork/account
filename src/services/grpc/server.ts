@@ -1,6 +1,6 @@
 import { createServer, Server } from 'nice-grpc';
-import { AccountDefinition } from 'pretendo-grpc-ts/dist/account/account_service';
-import { APIDefinition } from 'pretendo-grpc-ts/dist/api/api_service';
+import { AccountDefinition } from '@pretendonetwork/grpc/account/account_service';
+import { APIDefinition } from '@pretendonetwork/grpc/api/api_service';
 
 import { apiKeyMiddleware as accountApiKeyMiddleware } from '@/services/grpc/account/api-key-middleware';
 import { apiKeyMiddleware as apiApiKeyMiddleware } from '@/services/grpc/api/api-key-middleware';

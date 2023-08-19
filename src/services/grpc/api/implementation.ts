@@ -1,4 +1,4 @@
-import { APIServiceImplementation } from 'pretendo-grpc-ts/dist/api/api_service';
+import { APIServiceImplementation } from '@pretendonetwork/grpc/api/api_service';
 import { register } from '@/services/grpc/api/register';
 import { login } from '@/services/grpc/api/login';
 import { getUserData } from '@/services/grpc/api/get-user-data';
