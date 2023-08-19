@@ -51,7 +51,6 @@
     "nice-grpc": "^2.1.4",
     "node-rsa": "^1.0.7",
     "nodemailer": "^6.4.2",
-    "pretendo-grpc-ts": "github:PretendoNetwork/grpc-ts",
     "redis": "^4.3.1",
     "stripe": "^12.3.0",
     "tga": "^1.0.4",
