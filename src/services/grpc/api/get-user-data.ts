@@ -38,7 +38,7 @@ export async function getUserData(_request: Empty, context: CallContext & Authen
 				priceId: pnid.connections.stripe.price_id,
 				tierLevel: pnid.connections.stripe.tier_level,
 				tierName: pnid.connections.stripe.tier_name,
-				latestWebhookTimestamp: pnid.connections.stripe.latest_webhook_timestamp
+				latestWebhookTimestamp: BigInt(pnid.connections.stripe.latest_webhook_timestamp)
 			}
 		},
 		marketingFlag: pnid.flags.marketing

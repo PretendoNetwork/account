@@ -21,7 +21,7 @@ export async function setStripeConnectionData(request: SetStripeConnectionDataRe
 	const pnid: HydratedPNIDDocument = context.pnid!;
 
 	const updateData: StripeMongoUpdateScheme = {
-		'connections.stripe.latest_webhook_timestamp': request.timestamp
+		'connections.stripe.latest_webhook_timestamp': Number(request.timestamp)
 	};
 
 	if (request.customerId && !pnid.connections.stripe.customer_id) {
