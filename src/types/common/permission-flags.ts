@@ -14,6 +14,12 @@ export const PNID_PERMISSION_FLAGS = {
 	BAN_CONSOLES:           1n << 12n,
 	MODERATE_MIIVERSE:      1n << 13n,
 	CREATE_API_KEYS:        1n << 14n, // * This applies to all services
+	CREATE_BOSS_TASKS:      1n << 15n,
+	UPDATE_BOSS_TASKS:      1n << 16n,
+	DELETE_BOSS_TASKS:      1n << 17n,
+	UPLOAD_BOSS_FILES:      1n << 18n,
+	UPDATE_BOSS_FILES:      1n << 18n,
+	DELETE_BOSS_FILES:      1n << 19n
 } as const;
 
 export type PNIDPermissionFlag = (typeof PNID_PERMISSION_FLAGS)[keyof typeof PNID_PERMISSION_FLAGS];
