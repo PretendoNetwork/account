@@ -18,8 +18,8 @@ Create a `.env` file with all of the environment variables set. The list of vari
 
 Use a command similar to the following:
 ```bash
-$ docker run --name mongodb -i -p 27017:27017 -t -e MONGODB_INITDB_ROOT_USERNAME=user -e MONGODB_INITDB_ROOT_PASSWORD=pass -v $(pwd)/data:/data/db mongo
-$ docker run --name account -i -p 7070:7070 -p 7071:7071 -t -v $(pwd)/cdn:/app/cdn -v $(pwd)/datastore:/app/certs/nex/datastore --env-file .env account
+$ docker run --name mongodb -d -p 27017:27017 -e MONGODB_INITDB_ROOT_USERNAME=user -e MONGODB_INITDB_ROOT_PASSWORD=pass -v $(pwd)/data:/data/db mongo
+$ docker run --name account -d -p 7070:7070 -p 7071:7071 -v $(pwd)/cdn:/app/cdn --env-file .env account
 ```
 
 ## Running Using `docker compose`
@@ -59,7 +59,6 @@ services:
       PN_ACT_CONFIG_GRPC_PORT: "7071"
     volumes:
       - "${PWD}/cdn:/app/cdn"
-      - "${PWD}/datastore:/app/certs/nex/datastore"
     networks:
       - pretendo_web
 
