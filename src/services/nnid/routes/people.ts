@@ -580,7 +580,8 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 	const region: number = person.region ? person.region : pnid.region;
 	const countryCode: string = person.country ? person.country : pnid.country;
 	const language: string = person.language ? person.language : pnid.language;
-	const timezoneName: string = person.tz_name ? person.tz_name : pnid.timezone.name;
+	// The 3DS sends an empty object when the timezone isn't updated, so this fixes validation from failing.
+	const timezoneName: string = (person.tz_name && !!Object.keys(person.tz_name).length) ? person.tz_name : pnid.timezone.name;
 	const marketingFlag: boolean = person.marketing_flag ? person.marketing_flag === 'Y' : pnid.flags.marketing;
 	const offDeviceFlag: boolean = person.off_device_flag ? person.off_device_flag === 'Y' : pnid.flags.off_device;
 
@@ -610,9 +611,8 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 	pnid.region = region;
 	pnid.timezone.name = timezoneName;
 	pnid.timezone.offset = Number(timezone.utc_offset);
-	pnid.timezone.marketing = marketingFlag;
-	pnid.timezone.off_device = offDeviceFlag;
-
+	pnid.flags.marketing = marketingFlag;
+	pnid.flags.off_device = offDeviceFlag;
 	await pnid.save();
 
 	response.send('');
