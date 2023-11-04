@@ -1,158 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Account Settings</title>
-        <link rel="stylesheet" type="text/css" href="/v1/account-settings/css/index.css">
-        <script src="/v1/account-settings/js/index.js" "=""></script>
+
+<head>
+    <title>Account Settings</title>
+    <link rel="stylesheet" type="text/css" href="/v1/account-settings/css/index.css">
+    <script src="/v1/account-settings/js/index.js" "=""></script>
     </head>
     <body>
-        <header>
-            <h1>Pretendo Network ID Settings</h1>
-            <button id="close" class="fixed-bottom-button left" onclick="wiiuBrowser.jumpToBaristaAccount();">Close</button>
-            <button id="save" class="fixed-bottom-button" onclick="window.location.reload();">Save</button>
-        </header>
-        <div class="account-info">
-            <img src="/mii/<%= PNID.pid %>/normal_face.png">
-            <h2 class="content"><%= PNID.mii.name %></h2>
-            <h3 class="content"><%= PNID.username %></h3>
-            <h3 class="content">
-                <% if(PNID.connections.stripe) { %>
-                <p class="tier-name tier-level-<%= PNID.connections.stripe.tier_level %>" value="Developer">Developer</p>
-                <% } else { %>
-                    <p class="tier-name access-level-<%= PNID.access_level %>" value="Developer">Developer</p>
-                <% } %>
-            </h3>
-        </div>
-        <div class="body-content">
-            <h1>User Settings</h1>
-            <div class="group">
-            <h2>Birth Date</h2>
-            <p class="content"><%= PNID.birthdate %></p>
+        <form action=" /v1/account-settings/update" method="post">
+            <header>
+                <h1>Pretendo Network ID Settings</h1>
+                <button id="close" class="fixed-bottom-button left" onclick="wiiuBrowser.jumpToBaristaAccount();">Close</button>
+                <input  id="save" class="fixed-bottom-button" type="submit" value="Submit">
+            </header>
+            <div class="account-info">
+                <img src="http://mii.olv.pretendo.cc/mii/<%= PNID.pid %>/normal_face.png">
+                <h2 class="content"><%= PNID.mii.name %></h2>
+                <h3 class="content"><%= PNID.username %></h3>
+                <h3 class="content">
+                    <% if (PNID.connections.stripe) { %>
+                    <p class="tier-name tier-level-<%= PNID.connections.stripe.tier_level %>" value="Developer">Developer</p>
+                    <% } else { %>
+                        <p class="tier-name access-level-<%= PNID.access_level %>" value="Developer">Developer</p>
+                    <% } %>
+                </h3>
             </div>
-            <div class="group">
-                <h2>Gender</h2>
-                <select name="gender" id="gender">
-                <option value="M" <% if(PNID.gender === 'M') { %>selected<% } %>>Male</option>
-                <option value="F" <% if(PNID.gender === 'F') { %>selected<% } %>>Female</option>
-                </select>
-            </div>
-            <div class="group">
-                <h2>Country/region</h2>
-                <p class="content" id="country"><%= PNID.country %></p>
-            </div>
-            <div class="group">
-                <h2>Timezone</h2>
-                <p class="content" id="timezone"><%= PNID.timezone.name %></p>
-            </div>
-            <h1>Sign in and Security</h1>
-            <div class="group">
+            <div class="body-content">
+                <h1>User Settings</h1>
                 <div class="group">
-                    <h2>Email</h2>
-                    <p class="content"><%= PNID.email.address %></p>
+                <h2>Birth Date</h2>
+                <p class="content"><%= PNID.birthdate %></p>
+                </div>
+                <div class="group">
+                    <h2>Gender</h2>
+                    <select name="gender" id="gender">
+                    <option value="M" <% if (PNID.gender === 'M') { %>selected<% } %>>Male</option>
+                    <option value="F" <% if (PNID.gender === 'F') { %>selected<% } %>>Female</option>
+                    </select>
+                </div>
+                <div class="group">
+                    <h2>Country/region</h2>
+                    <p class="content" id="country"><%= PNID.country %></p>
+                </div>
+                <div class="group">
+                    <h2>Timezone</h2>
+                    <p class="content" id="timezone"><%= PNID.timezone.name %></p>
+                </div>
+                <h1>Sign in and Security</h1>
+                <div class="group">
+                    <div class="group">
+                        <h2>Email</h2>
+                        <p class="content"><%= PNID.email.address %></p>
+                    </div>
+                </div>
+                <h1>Other Settings</h1>
+                <div class="group">
+                    <h2>Server Environment</h2>
+                    <div class="radio server-selection" id="server">
+                        <input type="radio" id="prod" name="server_selection" value="prod" <% if (PNID.server_access_level === 'prod') { %>checked=""<% } %>>
+                        <label for="prod">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                                <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                                <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                            <h2>Production</h2>
+                        </label>
+                            <input type="radio" id="beta" name="server_selection" value="test" <% if (PNID.server_access_level === 'test') { %>checked=""<% } %>>
+                        <label for="beta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="2,21 22,21 14,11.5 14,5 10,3 10,11.5"></polygon>
+                            </svg>
+                            <h2>Beta</h2>
+                        </label>
+                    </div>
+                </div>
+                <div class="group">
+                    <h2>Email Notifications</h2>
+                    <div class="radio server-selection" id="server">
+                        <input type="radio" id="true" name="email_offers" value="true" <% if (PNID.flags.marketing) { %>checked=""<% } %>>
+                        <label for="prod">
+                            <h2>Receive</h2>
+                        </label>
+                            <input type="radio" id="false" name="email_offers" value="false" <% if (!PNID.flags.marketing) { %>checked=""<% } %>>
+                        <label for="beta">
+                            <h2>Do Not Receive</h2>
+                        </label>
+                    </div>
+                </div>
+                <div class="group">
+                    <h2>Non-Nintendo Device Setting</h2>
+                    <div class="radio server-selection" id="server">
+                        <input type="radio" id="true" name="device_access" value="true" <% if (PNID.flags.off_device) { %>checked=""<% } %>>
+                        <label for="prod">
+                            <h2>Allow</h2>
+                        </label>
+                            <input type="radio" id="false" name="device_access" value="false" <% if (!PNID.flags.off_device) { %>checked=""<% } %>>
+                        <label for="beta">
+                            <h2>Deny</h2>
+                        </label>
+                    </div>
                 </div>
             </div>
-            <h1>Other Settings</h1>
-            <div class="group">
-                <h2>Server Environment</h2>
-                <form class="server-selection" id="server">
-                    <input type="radio" id="prod" name="server_selection" value="prod" <% if(PNID.server_access_level === 'prod') { %>checked=""<% } %>>
-                    <label for="prod">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                            <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
-                            <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
-                            <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                        </svg>
-                        <h2>Production</h2>
-                    </label>
-                        <input type="radio" id="beta" name="server_selection" value="test" <% if(PNID.server_access_level === 'test') { %>checked=""<% } %>>
-                    <label for="beta">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="2,21 22,21 14,11.5 14,5 10,3 10,11.5"></polygon>
-                        </svg>
-                        <h2>Beta</h2>
-                    </label>
-                </form>
-            </div>
-            <div class="group">
-                <h2>Email Notifications</h2>
-                <form class="server-selection" id="server">
-                    <input type="radio" id="true" name="email_offers" value="true" <% if(PNID.flags.marketing) { %>checked=""<% } %>>
-                    <label for="prod">
-                        <h2>Receive</h2>
-                    </label>
-                        <input type="radio" id="false" name="email_offers" value="false" <% if(!PNID.flags.marketing) { %>checked=""<% } %>>
-                    <label for="beta">
-                        <h2>Do Not Receive</h2>
-                    </label>
-                </form>
-            </div>
-            <div class="group">
-                <h2>Non-Nintendo Device Setting</h2>
-                <form class="server-selection" id="server">
-                    <input type="radio" id="true" name="device_access" value="true" <% if(PNID.flags.off_device) { %>checked=""<% } %>>
-                    <label for="prod">
-                        <h2>Allow</h2>
-                    </label>
-                        <input type="radio" id="false" name="device_access" value="false" <% if(!PNID.flags.off_device) { %>checked=""<% } %>>
-                    <label for="beta">
-                        <h2>Deny</h2>
-                    </label>
-                </form>
-            </div>
-        </div>
+        </form>
         <script>
             var country = wiiuSystemSetting.getRegion();
             var utc = wiiuSystemSetting.getUTC();
+                global = window[global];
 
-            //document.getElementById('country').innerText = country.code;
-            //document.getElementById('timezone').innerText = utc.epochMilliSeconds;
-			function getGlobals() {
-				if (Object.keys) {
-					var _wiiuglobals = [];
-					var globals = Object.keys(window);
-
-					for (var i=0; i<=globals.length; i++) {
-						var global = globals[i];
-						if (global && global.slice) {
-							const prefix = global.slice(0, 4);
-							if (prefix == 'wiiu') {
-								_wiiuglobals.push(global);
-							}
-						}
-					}
-
-					alert(_wiiuglobals);
-				} else {
-					alert('Object.keys is not defined');
-				}
-			}
-
-			function getGlobalMethods(global) {
-				if (!global) global = 'wiiu';
-				global = window[global];
-
-				if (global) {
-					var prototype = Object.getPrototypeOf(global);
-					var members = Object.getOwnPropertyNames(prototype);
-
-					alert(members);
-				} else {
-					alert('Global not found');
-				}
-			}
-
-			function getMethodSource(global, method) {
-				global = window[global];
-
-				if (global) {
-					alert(typeof global[method].arguments)
-				} else {
-					alert('Global not found');
-				}
-			}
-		</script>
+                if (global) {
+                    alert(typeof global[method].arguments)
+                } else {
+                    alert('Global not found');
+                }
+            }
+        </script>
     </body>
+
 </html>
