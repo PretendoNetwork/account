@@ -1,5 +1,5 @@
 html {
-  background: red;
+  background: #FF0000;
 }
 
 body {
@@ -9,28 +9,32 @@ body {
   margin: 0;
   overflow: auto;
   box-sizing: border-box;
-  background: #eaeaea;
+  background: #EAEAEA;
 }
+
 button:active, .server-selection input:checked + label {
-  box-shadow: inset 0 0px 10px 0 rgba(66,45,120,.75) !important;
+  box-shadow: inset 0 0px 10px 0 rgba(66, 45, 120, 0.75) !important;
   color: #9D6FF3;
 }
+
 header {
   position: relative;
-  background: #37a985;
-  color: white;
+  background: #37A985;
+  color: #FFF;
   height: 70px;
   line-height: 70px;
   border-bottom: 2px solid #4F2E8C;
   background: -webkit-gradient(linear, left top, left bottom, from(#9D6FF3), to(#673DB6));
   z-index: 19;
 }
+
 header h1 {
   margin: 0;
   font-size: 30px;
   text-align: center;
   font-weight: normal;
 }
+
 button, .button, input[type="submit"] {
   font-family: Poppins, Arial, Helvetica, sans-serif;
   color: #45297A;
@@ -42,38 +46,39 @@ button, .button, input[type="submit"] {
   min-height: 60px;
   text-align: center;
   font-size: 28px;
-  background: -webkit-gradient(linear,left top,left bottom,from(#fff),color-stop(.5,#fff),color-stop(.8,#f6f6f6),color-stop(.95,#f5f5f5),to(#bbb))0 0;
+  background: -webkit-gradient(linear, left top, left bottom, from(#FFF), color-stop(0.5, #FFF), color-stop(0.8, #F6F6F6), color-stop(0.95, #F5F5F5), to(#BBB))0 0;
   border-radius: 12px;
   cursor: pointer;
   border: 0;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   margin: 5px;
 }
 
 .body-content {
   margin: 30px 60px 0 200px;
 }
+
 div.group h2 {
   font-weight: normal;
 }
+
 div.group {
-  /*! background: #673DB6; */
-  /*! color: #fff; */
-  /*! padding: 4px 20px; */
-  /*! border-radius: 15px; */
   width: 485px;
   display: inline-block;
   margin: 0 5px;
 }
+
 div.body-content > h1 {
   margin: 15px 0 0 0;
 }
+
 div.group > * {
   margin: 5px 0;
   font-size: 30px;
 }
+
 div.group > p.content, div.group > select {
-  background: #fff;
+  background: #FFF;
   color: #6A6C75;
   padding: 10px;
   border-radius: 8px;
@@ -83,6 +88,7 @@ div.group > p.content, div.group > select {
   width: 100%;
   height: 58px;
   box-sizing: border-box;
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   text-indent: 1px;
@@ -93,7 +99,7 @@ div.group > p.content, div.group > select {
 
 div.group > select {
   content: ' ';
-  background-color: #fff;
+  background-color: #FFF;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='%23673DB6' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3E%3C/path%3E%3C/svg%3E");
   background-size: 40px;
   background-position: 440px center;
@@ -117,9 +123,9 @@ div.group > select {
   height: 128px;
   overflow: hidden;
   border-radius: 100%;
-  background: #e4dbf2;
+  background: #E4DBF2;
   margin: 30px 30px 0 35px;
-  box-shadow: 0-1px 2px rgba(0,0,0,.4);
+  box-shadow: 0-1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .account-info > .content {
@@ -127,6 +133,7 @@ div.group > select {
   color: #673DB6;
   margin: 0;
 }
+
 .account-info > h3.content {
   font-weight: normal;
   color: #9D6FF3;
@@ -134,27 +141,27 @@ div.group > select {
 }
 
 .account-info .access-level-banned {
-  background: #791e00;
+  background: #791E00;
   color: #FF3F00;
-  border-color: rgba(255, 63, 0, 0.8);
+  border-color: #FF3F00;
 }
 
 .account-info .tier-level-1 {
   background: #934D4D;
-	color: #FF8484;
-	border-color: #FF8484;
+  color: #FF8484;
+  border-color: #FF8484;
 }
 
 .account-info .tier-level-2 {
-  background: #316c59;
-	color:#59c9a5;
-	border-color: #59c9a5;
+  background: #316C59;
+  color: #59C9A5;
+  border-color: #59C9A5;
 }
 
 .account-info .tier-level-3 {
   background: #6B5E84;
-	color: #CAB1FB;
-	border-color: #CAB1FB;
+  color: #CAB1FB;
+  border-color: #CAB1FB;
 }
 
 .account-info .access-level-1 {
@@ -170,10 +177,11 @@ div.group > select {
 }
 
 .account-info .access-level-3 {
-  background: #3a973c;
+  background: #3A973C;
   color: #5AFF15;
   border-color: #5AFF15;
 }
+
 .account-info .tier-name {
   margin: 12px auto;
   line-height: 1.2em;
@@ -196,6 +204,7 @@ div.group > p.content > button {
 form {
   display: inline-block;
 }
+
 .server-selection input {
   opacity: 0;
   position: absolute;
@@ -203,6 +212,7 @@ form {
   height: 70px;
   cursor: pointer;
 }
+
 form label {
   display: inline-block;
   color: #6A6C75;
@@ -212,34 +222,40 @@ form label {
   -webkit-box-align: center;
   -webkit-box-pack: center;
   text-align: center;
-  background: -webkit-gradient(linear,left top,left bottom,from(#fff),color-stop(.5,#fff),color-stop(.8,#f6f6f6),color-stop(.95,#f5f5f5),to(#bbb))0 0;
+  background: -webkit-gradient(linear, left top, left bottom, from(#FFF), color-stop(0.5, #FFF), color-stop(0.8, #F6F6F6), color-stop(0.95, #F5F5F5), to(#BBB))0 0;
   border-radius: 12px;
   cursor: pointer;
   border: 0;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   margin: 5px;
   font-weight: normal;
   font-size: 15px;
 }
+
 form label h2 {
   display: inline-block;
   font-weight: normal;
 }
+
 form label svg {
   margin: -6px 0;
 }
+
 header .fixed-bottom-button.left {
   padding: 0 60px 0 40px;
 }
+
 .fixed-bottom-button.left {
   right: auto;
   left: 0;
   border-radius: 0 40px 0 0;
 }
+
 header .fixed-bottom-button {
   min-width: 120px;
   padding: 0 40px 0 60px;
 }
+
 .fixed-bottom-button {
   position: fixed;
   bottom: 0;
@@ -247,7 +263,7 @@ header .fixed-bottom-button {
   height: 85px;
   line-height: 100px;
   padding: 0 40px 0 100px;
-  background: -webkit-gradient(linear,left top,left bottom,from(#fff),color-stop(.5,#fff),to(#e6e6e6))0 0;
+  background: -webkit-gradient(linear, left top, left bottom, from(#FFF), color-stop(0.5, #FFF), to(#E6E6E6))0 0;
   font-size: 28px;
   z-index: 20;
   border-radius: 40px 0 0 0;

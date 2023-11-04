@@ -1,8 +1,9 @@
 // handles "account.nintendo.net" endpoints
 
+import path from 'node:path';
 import express from 'express';
 import subdomain from 'express-subdomain';
-import path from 'path';
+
 import clientHeaderCheck from '@/middleware/client-header';
 import cemuMiddleware from '@/middleware/cemu';
 import pnidMiddleware from '@/middleware/pnid';
@@ -34,7 +35,7 @@ async function setJSHeader(request: express.Request, response: express.Response,
 }
 
 async function setIMGHeader(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
-	response.set('Content-Type', 'application/octet-stream');
+	response.set('Content-Type', 'image/png');
 	return next();
 }
 

@@ -108,7 +108,7 @@ export function decryptToken(token: Buffer, key?: string): Buffer {
 		encryptedBody = token.subarray(4);
 	}
 
-	if(!key) {
+	if (!key) {
 		key = config.aes_key;
 	}
 
