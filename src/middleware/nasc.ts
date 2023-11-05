@@ -124,14 +124,9 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 			// * So, the linked PIDs won't have the user's PID
 			// * anymore.
 			if (!linkedPIDs.includes(pid)) {
-				const session: mongoose.ClientSession = await databaseConnection().startSession();
-				await session.startTransaction();
-
 				device.linked_pids.push(pid);
 
-				await device.save({ session });
-
-				await session.commitTransaction();
+				await device.save();
 			}
 		}
 	}
@@ -148,9 +143,6 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	// * have the same serial number and MAC address.
 	// * Do we want this? If not, are there other solutions?
 	if (!device && pid) {
-		const session: mongoose.ClientSession = await databaseConnection().startSession();
-		await session.startTransaction();
-
 		device = new Device({
 			model,
 			serial: serialNumber,
@@ -160,9 +152,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 			linked_pids: [pid]
 		});
 
-		await device.save({ session });
-
-		await session.commitTransaction();
+		await device.save();
 	}
 
 	if (titleID === '0004013000003202') {
