@@ -95,12 +95,16 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
-	const nexAccount: HydratedNEXAccountDocument | null = await NEXAccount.findOne({ pid });
+	let nexAccount: HydratedNEXAccountDocument | null = null;
+	if (pid) {
+		nexAccount = await NEXAccount.findOne({ pid });
 
-	if (!nexAccount || nexAccount.access_level < 0) {
-		response.status(200).send(nascError('102').toString());
-		return;
+		if (!nexAccount || nexAccount.access_level < 0) {
+			response.status(200).send(nascError('102').toString());
+			return;
+		}
 	}
+
 
 	let device: HydratedDeviceDocument | null = await Device.findOne({
 		fcdcert_hash: fcdcertHash,
@@ -164,7 +168,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 			try {
 				// Create new NEX account
-				const nexAccount: HydratedNEXAccountDocument = new NEXAccount({
+				nexAccount = new NEXAccount({
 					device_type: '3ds',
 					password
 				});
