@@ -72,7 +72,8 @@ export const config: Config = {
 			api: process.env.PN_ACT_CONFIG_GRPC_MASTER_API_KEY_API || '',
 		},
 		port: Number(process.env.PN_ACT_CONFIG_GRPC_PORT || ''),
-	}
+	},
+	server_environment: (process.env.PN_ACT_CONFIG_SERVER_ENVIRONMENT || 'prod')
 };
 
 if (process.env.PN_ACT_CONFIG_STRIPE_SECRET_KEY) {

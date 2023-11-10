@@ -3,6 +3,6 @@ export interface AccountSettings {
 	tz_name: string;
 	email: string;
 	server_selection: string;
-	email_offers: boolean;
-	device_access: boolean;
+	marketing_flag: boolean;
+	off_device_flag: boolean;
 }

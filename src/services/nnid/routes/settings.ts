@@ -4,6 +4,7 @@ import got from 'got';
 import { getServerByClientID, getPNIDByPID } from '@/database';
 import { LOG_ERROR } from '@/logger';
 import { decryptToken, unpackToken, getValueFromHeaders, sendConfirmationEmail } from '@/util';
+import { config } from '@/config-manager';
 import { HydratedServerDocument } from '@/types/mongoose/server';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { AccountSettings } from '@/types/services/nnid/account-settings';
@@ -20,7 +21,7 @@ const router: express.Router = express.Router();
  * Description: Serves the Nintendo Network ID Settings page for the Wii U
  */
 router.get('/ui/profile', async function (request: express.Request, response: express.Response): Promise<void> {
-	const server: HydratedServerDocument | null = await getServerByClientID('3f3928cc6f780638d360f0485cef973f', 'prod');
+	const server: HydratedServerDocument | null = await getServerByClientID('3f3928cc6f780638d360f0485cef973f', config.server_environment);
 	const token: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-service-token');
 	if (!server || !token) {
 		response.sendStatus(504);
@@ -74,7 +75,11 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
  * on the Wii U.
  */
 router.get('/mii/:pid/:face', async function (request: express.Request, response: express.Response): Promise<void> {
-	const miiImage: Buffer = await got(`https://pretendo-cdn.b-cdn.net/mii/${request.params.pid}/${request.params.face}.png`).buffer();
+	if (!config.cdn.base_url) {
+		response.sendStatus(404);
+		return;
+	}
+	const miiImage: Buffer = await got(`${config.cdn.base_url}/mii/${request.params.pid}/${request.params.face}.png`).buffer();
 	response.set('Content-Type', 'image/png');
 	response.send(miiImage);
 });
@@ -84,7 +89,7 @@ router.get('/mii/:pid/:face', async function (request: express.Request, response
  * Description: Endpoint to update the PNID from the account settings app on the Wii
  */
 router.post('/update', async function (request: express.Request, response: express.Response): Promise<void> {
-	const server: HydratedServerDocument | null = await getServerByClientID('3f3928cc6f780638d360f0485cef973f', 'prod');
+	const server: HydratedServerDocument | null = await getServerByClientID('3f3928cc6f780638d360f0485cef973f', config.server_environment);
 	const token: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-service-token');
 	if (!server || !token) {
 		response.sendStatus(504);
@@ -107,8 +112,8 @@ router.post('/update', async function (request: express.Request, response: expre
 
 		const gender: string = person.gender ? person.gender : pnid.gender;
 		const timezoneName: string = (person.tz_name && !!Object.keys(person.tz_name).length) ? person.tz_name : pnid.timezone.name;
-		const marketingFlag: boolean = person.email_offers ? person.email_offers : pnid.flags.marketing;
-		const offDeviceFlag: boolean = person.device_access ? person.device_access: pnid.flags.off_device;
+		const marketingFlag: boolean = person.marketing_flag ? person.marketing_flag : pnid.flags.marketing;
+		const offDeviceFlag: boolean = person.off_device_flag ? person.off_device_flag: pnid.flags.off_device;
 
 		const regionLanguages: RegionLanguages = timezones[pnid.country as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[pnid.language] ? regionLanguages[pnid.language] : Object.values(regionLanguages)[0];

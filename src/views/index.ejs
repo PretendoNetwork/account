@@ -87,12 +87,12 @@
                 <div class="group">
                     <h2>Email Notifications</h2>
                     <div class="radio server-selection" id="server">
-                        <input type="radio" id="true" name="email_offers" value="true" <% if (PNID.flags.marketing) { %>checked=""<% } %>>
-                        <label for="email_offers">
+                        <input type="radio" id="true" name="marketing_flag" value="true" <% if (PNID.flags.marketing) { %>checked=""<% } %>>
+                        <label for="marketing_flag">
                             <h2>Receive</h2>
                         </label>
-                            <input type="radio" id="false" name="email_offers" value="false" <% if (!PNID.flags.marketing) { %>checked=""<% } %>>
-                        <label for="email_offers">
+                            <input type="radio" id="false" name="marketing_flag" value="false" <% if (!PNID.flags.marketing) { %>checked=""<% } %>>
+                        <label for="marketing_flag">
                             <h2>Do Not Receive</h2>
                         </label>
                     </div>
@@ -100,12 +100,12 @@
                 <div class="group">
                     <h2>Non-Nintendo Device Setting</h2>
                     <div class="radio server-selection" id="server">
-                        <input type="radio" id="true" name="device_access" value="true" <% if (PNID.flags.off_device) { %>checked=""<% } %>>
-                        <label for="device_access">
+                        <input type="radio" id="true" name="off_device_flag" value="true" <% if (PNID.flags.off_device) { %>checked=""<% } %>>
+                        <label for="off_device_flag">
                             <h2>Allow</h2>
                         </label>
-                            <input type="radio" id="false" name="device_access" value="false" <% if (!PNID.flags.off_device) { %>checked=""<% } %>>
-                        <label for="device_access">
+                            <input type="radio" id="false" name="off_device_flag" value="false" <% if (!PNID.flags.off_device) { %>checked=""<% } %>>
+                        <label for="off_device_flag">
                             <h2>Deny</h2>
                         </label>
                     </div>
