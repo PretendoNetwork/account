@@ -4,7 +4,6 @@
 <head>
     <title>Account Settings</title>
     <link rel="stylesheet" type="text/css" href="/v1/account-settings/css/index.css">
-    <script src="/v1/account-settings/js/index.js" "=""></script>
     </head>
     <body>
         <form action=" /v1/account-settings/update" method="post">
@@ -14,14 +13,16 @@
                 <input  id="save" class="fixed-bottom-button" type="submit" value="Submit">
             </header>
             <div class="account-info">
-                <img src="http://mii.olv.pretendo.cc/mii/<%= PNID.pid %>/normal_face.png">
+                <img src="/v1/account-settings/mii/<%= PNID.pid %>/<%= face %>">
                 <h2 class="content"><%= PNID.mii.name %></h2>
                 <h3 class="content"><%= PNID.username %></h3>
                 <h3 class="content">
-                    <% if (PNID.connections.stripe) { %>
-                    <p class="tier-name tier-level-<%= PNID.connections.stripe.tier_level %>" value="Developer">Developer</p>
+                    <% if (PNID.access_level === -1) { %>
+                        <p class="tier-name access-level-banned">Banned</p>
+                    <% } else if (PNID.connections.stripe.tier_level) { %>
+                        <p class="tier-name tier-level-<%= PNID.connections.stripe.tier_level %>"><%= PNID.connections.stripe.tier_name %></p>
                     <% } else { %>
-                        <p class="tier-name access-level-<%= PNID.access_level %>" value="Developer">Developer</p>
+                        <p class="tier-name access-level-<%= PNID.access_level %>"><%= accountLevel[PNID.access_level] %></p>
                     <% } %>
                 </h3>
             </div>
@@ -44,13 +45,16 @@
                 </div>
                 <div class="group">
                     <h2>Timezone</h2>
-                    <p class="content" id="timezone"><%= PNID.timezone.name %></p>
+                    <select name="tz_name" id="gender">
+                        <% for (let timezone of regionTimezones) { %>
+                        <option value="<%= timezone.area %>" <% if (PNID.timezone.name === timezone.area) { %>selected<% } %>><%= timezone.area %></option>
+                        <% } %>
+                    </select>
                 </div>
-                <h1>Sign in and Security</h1>
+                <h1>Email</h1>
                 <div class="group">
                     <div class="group">
-                        <h2>Email</h2>
-                        <p class="content"><%= PNID.email.address %></p>
+                        <input name="email" type="text" class="content" value="<%= PNID.email.address %>"></input>
                     </div>
                 </div>
                 <h1>Other Settings</h1>
@@ -69,24 +73,26 @@
                             </svg>
                             <h2>Production</h2>
                         </label>
-                            <input type="radio" id="beta" name="server_selection" value="test" <% if (PNID.server_access_level === 'test') { %>checked=""<% } %>>
-                        <label for="beta">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="2,21 22,21 14,11.5 14,5 10,3 10,11.5"></polygon>
-                            </svg>
-                            <h2>Beta</h2>
-                        </label>
+                        <% if(PNID.access_level >= 1) { %>
+                            <input type="radio" id="beta" name="server_selection" value="test" <% if (PNID.server_access_level === 'test') { %> checked="" <% } %> <% if(PNID.access_level < 1) { %> disabled <% } %> >
+                            <label for="beta">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="2,21 22,21 14,11.5 14,5 10,3 10,11.5"></polygon>
+                                </svg>
+                                <h2>Beta</h2>
+                            </label>
+                        <% } %>
                     </div>
                 </div>
                 <div class="group">
                     <h2>Email Notifications</h2>
                     <div class="radio server-selection" id="server">
                         <input type="radio" id="true" name="email_offers" value="true" <% if (PNID.flags.marketing) { %>checked=""<% } %>>
-                        <label for="prod">
+                        <label for="email_offers">
                             <h2>Receive</h2>
                         </label>
                             <input type="radio" id="false" name="email_offers" value="false" <% if (!PNID.flags.marketing) { %>checked=""<% } %>>
-                        <label for="beta">
+                        <label for="email_offers">
                             <h2>Do Not Receive</h2>
                         </label>
                     </div>
@@ -95,11 +101,11 @@
                     <h2>Non-Nintendo Device Setting</h2>
                     <div class="radio server-selection" id="server">
                         <input type="radio" id="true" name="device_access" value="true" <% if (PNID.flags.off_device) { %>checked=""<% } %>>
-                        <label for="prod">
+                        <label for="device_access">
                             <h2>Allow</h2>
                         </label>
                             <input type="radio" id="false" name="device_access" value="false" <% if (!PNID.flags.off_device) { %>checked=""<% } %>>
-                        <label for="beta">
+                        <label for="device_access">
                             <h2>Deny</h2>
                         </label>
                     </div>
@@ -109,14 +115,9 @@
         <script>
             var country = wiiuSystemSetting.getRegion();
             var utc = wiiuSystemSetting.getUTC();
-                global = window[global];
-
-                if (global) {
-                    alert(typeof global[method].arguments)
-                } else {
-                    alert('Global not found');
-                }
-            }
+            <% if (notice) { %>
+                alert('<%= notice %>');
+            <% } %>
         </script>
     </body>
 

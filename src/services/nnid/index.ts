@@ -5,7 +5,6 @@ import express from 'express';
 import subdomain from 'express-subdomain';
 
 import clientHeaderCheck from '@/middleware/client-header';
-import cemuMiddleware from '@/middleware/cemu';
 import pnidMiddleware from '@/middleware/pnid';
 import { LOG_INFO } from '@/logger';
 
@@ -41,12 +40,11 @@ async function setIMGHeader(request: express.Request, response: express.Response
 
 LOG_INFO('[NNID] Importing middleware');
 middleware.use(clientHeaderCheck);
-middleware.use(cemuMiddleware);
 middleware.use(pnidMiddleware);
 
 // Setup routes
 LOG_INFO('[NNID] Applying imported routes');
-nnid.use('/v1/account-settings/ui/', settings);
+nnid.use('/v1/account-settings/', settings);
 nnid.use('/v1/account-settings/css/', setCSSHeader, express.static(path.join(__dirname, '../../assets/user-info-settings')));
 nnid.use('/v1/account-settings/js/', setJSHeader, express.static(path.join(__dirname, '../../assets/user-info-settings')));
 nnid.use('/v1/account-settings/img/', setIMGHeader, express.static(path.join(__dirname, '../../assets/user-info-settings')));

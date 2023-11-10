@@ -81,6 +81,7 @@ div.group > * {
 }
 
 div.group > p.content,
+div.group > input[type="text"],
 div.group > select {
 	background: #FFF;
 	color: #6A6C75;
@@ -99,6 +100,10 @@ div.group > select {
 	text-overflow: '';
 	line-height: 38px;
 	user-select: none;
+}
+
+div.group > input[type="text"] {
+	color: #000;
 }
 
 div.group > select {
@@ -145,7 +150,7 @@ div.group > select {
 }
 
 .account-info .access-level-banned {
-	background: #791E00;
+	background: rgba(255, 63, 0, 0.3);
 	color: #FF3F00;
 	border-color: #FF3F00;
 }
