@@ -11,7 +11,9 @@ import { AccountSettings } from '@/types/services/nnid/account-settings';
 import { Token } from '@/types/common/token';
 import { RegionLanguages } from '@/types/services/nnid/region-languages';
 import { RegionTimezone, RegionTimezones } from '@/types/services/nnid/region-timezones';
+import { Regions } from '@/types/services/nnid/regions';
 import timezones from '@/services/nnid/timezones.json';
+import regionsList from '@/services/nnid/regions.json';
 
 const router: express.Router = express.Router();
 
@@ -46,6 +48,8 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 		const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
 
+		const region: Regions | undefined = regionsList.find((region) => region.iso_code === countryCode);
+
 		const miiFaces = ['normal_face', 'smile_open_mouth', 'sorrow', 'surprise_open_mouth', 'wink_left', 'frustrated'];
 		const face = miiFaces[crypto.randomInt(5)];
 
@@ -58,7 +62,8 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 			regionTimezones,
 			face,
 			notice,
-			accountLevel
+			accountLevel,
+			regions: region ? region.regions: []
 		});
 	}
 	catch (error: any) {
@@ -118,7 +123,7 @@ router.post('/update', async function (request: express.Request, response: expre
 		const regionLanguages: RegionLanguages = timezones[pnid.country as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[pnid.language] ? regionLanguages[pnid.language] : Object.values(regionLanguages)[0];
 		const timezone: RegionTimezone | undefined = regionTimezones.find(tz => tz.area === timezoneName);
-
+		const region: number = person.region ? person.region: pnid.region;
 		let notice: string = '';
 
 		if (!timezone) {
@@ -128,6 +133,7 @@ router.post('/update', async function (request: express.Request, response: expre
 		}
 
 		pnid.gender = gender;
+		pnid.region = region;
 		pnid.timezone.name = timezoneName;
 		pnid.timezone.offset = Number(timezone.utc_offset);
 		pnid.flags.marketing = marketingFlag;

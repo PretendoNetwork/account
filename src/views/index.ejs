@@ -40,8 +40,16 @@
                     </select>
                 </div>
                 <div class="group">
-                    <h2>Country/region</h2>
+                    <h2>Country</h2>
                     <p class="content" id="country"><%= PNID.country %></p>
+                </div>
+                <div class="group">
+                    <h2>Region</h2>
+                    <select name="region" id="region">
+                        <% for (let region of regions) { %>
+                        <option value="<%= region.id %>" <% if (PNID.region === region.id) { %>selected<% } %>><%= region.name %></option>
+                        <% } %>
+                    </select>
                 </div>
                 <div class="group">
                     <h2>Timezone</h2>
