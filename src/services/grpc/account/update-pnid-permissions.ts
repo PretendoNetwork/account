@@ -112,6 +112,48 @@ export async function updatePNIDPermissions(request: UpdatePNIDPermissionsReques
 		await pnid.clearPermission(PNID_PERMISSION_FLAGS.CREATE_API_KEYS);
 	}
 
+	if (request.permissions.createBossTasks === true) {
+		await pnid.addPermission(PNID_PERMISSION_FLAGS.CREATE_BOSS_TASKS);
+	} else if (request.permissions.createBossTasks === false) {
+		await pnid.clearPermission(PNID_PERMISSION_FLAGS.CREATE_BOSS_TASKS);
+	}
+
+	if (request.permissions.updateBossTasks === true) {
+		await pnid.addPermission(PNID_PERMISSION_FLAGS.UPDATE_BOSS_TASKS);
+	} else if (request.permissions.updateBossTasks === false) {
+		await pnid.clearPermission(PNID_PERMISSION_FLAGS.UPDATE_BOSS_TASKS);
+	}
+
+	if (request.permissions.deleteBossTasks === true) {
+		await pnid.addPermission(PNID_PERMISSION_FLAGS.DELETE_BOSS_TASKS);
+	} else if (request.permissions.deleteBossTasks === false) {
+		await pnid.clearPermission(PNID_PERMISSION_FLAGS.DELETE_BOSS_TASKS);
+	}
+
+	if (request.permissions.uploadBossFiles === true) {
+		await pnid.addPermission(PNID_PERMISSION_FLAGS.UPLOAD_BOSS_FILES);
+	} else if (request.permissions.uploadBossFiles === false) {
+		await pnid.clearPermission(PNID_PERMISSION_FLAGS.UPLOAD_BOSS_FILES);
+	}
+
+	if (request.permissions.updateBossFiles === true) {
+		await pnid.addPermission(PNID_PERMISSION_FLAGS.UPDATE_BOSS_FILES);
+	} else if (request.permissions.updateBossFiles === false) {
+		await pnid.clearPermission(PNID_PERMISSION_FLAGS.UPDATE_BOSS_FILES);
+	}
+
+	if (request.permissions.deleteBossFiles === true) {
+		await pnid.addPermission(PNID_PERMISSION_FLAGS.DELETE_BOSS_FILES);
+	} else if (request.permissions.deleteBossFiles === false) {
+		await pnid.clearPermission(PNID_PERMISSION_FLAGS.DELETE_BOSS_FILES);
+	}
+
+	if (request.permissions.updatePnidPermissions === true) {
+		await pnid.addPermission(PNID_PERMISSION_FLAGS.UPDATE_PNID_PERMISSIONS);
+	} else if (request.permissions.updatePnidPermissions === false) {
+		await pnid.clearPermission(PNID_PERMISSION_FLAGS.UPDATE_PNID_PERMISSIONS);
+	}
+
 	await pnid.save();
 
 	return {};
