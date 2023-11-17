@@ -273,9 +273,9 @@ PNIDSchema.method('scrub', async function scrub() {
 	this.connections.stripe.customer_id = '';
 	this.connections.stripe.subscription_id = '';
 	this.connections.stripe.price_id = '';
-	this.connections.stripe.tier_level = '';
+	this.connections.stripe.tier_level = 0;
 	this.connections.stripe.tier_name = '';
-	this.connections.stripe.latest_webhook_timestamp = '';
+	this.connections.stripe.latest_webhook_timestamp = 0;
 });
 
 PNIDSchema.method('hasPermission', function hasPermission(flag: PNIDPermissionFlag): boolean {
