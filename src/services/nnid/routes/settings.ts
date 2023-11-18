@@ -100,8 +100,9 @@ router.post('/update', async function (request: express.Request, response: expre
 		response.sendStatus(504);
 		return;
 	}
-	const aes_key: string = server?.aes_key;
-	const decryptedToken: Buffer = decryptToken(Buffer.from(token, 'base64'), aes_key);
+
+	const aesKey: string = server?.aes_key;
+	const decryptedToken: Buffer = decryptToken(Buffer.from(token, 'base64'), aesKey);
 
 	const tokenContents: Token = unpackToken(decryptedToken);
 
@@ -176,8 +177,7 @@ router.post('/update', async function (request: express.Request, response: expre
 
 		await pnid.save();
 		response.redirect(`/v1/account-settings/ui/profile?notice=${notice}`);
-	}
-	catch (error: any) {
+	} catch (error: any) {
 		LOG_ERROR(error);
 		response.sendStatus(504);
 		return;

@@ -1,4 +1,4 @@
-export interface Regions {
+export interface Country {
 	id: number;
 	iso_code: string;
 	name: string;
@@ -25,14 +25,12 @@ export interface Translations {
 	unknown4: string;
 }
 
-export interface RegionsEntity {
+export interface Region {
 	id: number;
 	name: string;
 	translations: Translations;
-	coordinates: Coordinates;
-}
-
-export interface Coordinates {
-	latitude: number;
-	longitude: number;
+	coordinates: {
+		latitude: number;
+		longitude: number;
+	};
 }
