@@ -3,7 +3,7 @@ export interface Country {
 	iso_code: string;
 	name: string;
 	translations: Translations;
-	regions?: (RegionsEntity)[] | null;
+	regions?: Region[];
 }
 
 export interface Translations {

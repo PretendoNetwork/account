@@ -11,7 +11,7 @@ import { AccountSettings } from '@/types/services/nnid/account-settings';
 import { Token } from '@/types/common/token';
 import { RegionLanguages } from '@/types/services/nnid/region-languages';
 import { RegionTimezone, RegionTimezones } from '@/types/services/nnid/region-timezones';
-import { Regions } from '@/types/services/nnid/regions';
+import { Country } from '@/types/services/nnid/regions';
 import timezones from '@/services/nnid/timezones.json';
 import regionsList from '@/services/nnid/regions.json';
 
@@ -48,7 +48,7 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 		const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
 
-		const region: Regions | undefined = regionsList.find((region) => region.iso_code === countryCode);
+		const region: Country | undefined = regionsList.find((region) => region.iso_code === countryCode);
 
 		const miiFaces = ['normal_face', 'smile_open_mouth', 'sorrow', 'surprise_open_mouth', 'wink_left', 'frustrated'];
 		const face = miiFaces[crypto.randomInt(5)];

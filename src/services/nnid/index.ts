@@ -16,7 +16,7 @@ import oauth from '@/services/nnid/routes/oauth';
 import people from '@/services/nnid/routes/people';
 import provider from '@/services/nnid/routes/provider';
 import support from '@/services/nnid/routes/support';
-import settings from '@/services/nnid/routes/settings';
+import settings from '@/services/nnid/routes/account-settings';
 
 // Router to handle the subdomain restriction
 const nnid: express.Router = express.Router();

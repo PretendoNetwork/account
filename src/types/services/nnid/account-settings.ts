@@ -1,5 +1,7 @@
+import { GenderTypes } from '@/types/common/gender-types';
+
 export interface AccountSettings {
-	gender: string;
+	gender: GenderTypes;
 	tz_name: string;
 	region: number;
 	email: string;
