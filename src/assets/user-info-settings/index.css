@@ -117,6 +117,22 @@ div.group > select {
 	cursor: pointer;
 }
 
+
+div.group > span {
+	color: #000;
+  }
+  div.group > svg {
+	fill: #9D6FF3;
+	border: none;
+	height: 40px;
+	width: 40px;
+	box-sizing: border-box;
+	user-select: none;
+	padding: 0px;
+	margin-bottom: -10px;
+	margin-left: 5px;
+  }
+
 .account-info {
 	float: left;
 	width: 200px;
