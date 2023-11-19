@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import express from 'express';
 import got from 'got';
+import { z } from 'zod';
 import { getServerByClientID, getPNIDByPID } from '@/database';
 import { LOG_ERROR } from '@/logger';
 import { decryptToken, unpackToken, getValueFromHeaders, sendConfirmationEmail } from '@/util';
@@ -11,11 +12,21 @@ import { AccountSettings } from '@/types/services/nnid/account-settings';
 import { Token } from '@/types/common/token';
 import { RegionLanguages } from '@/types/services/nnid/region-languages';
 import { RegionTimezone, RegionTimezones } from '@/types/services/nnid/region-timezones';
-import { Country } from '@/types/services/nnid/regions';
+import { Country, Region } from '@/types/services/nnid/regions';
 import timezones from '@/services/nnid/timezones.json';
 import regionsList from '@/services/nnid/regions.json';
 
 const router: express.Router = express.Router();
+
+const accountSettingsSchema = z.object({
+	gender: z.enum(['M', 'F']),
+	tz_name: z.string(),
+	region: z.coerce.number(),
+	email: z.string().email(),
+	server_selection: z.enum(['prod', 'test', 'dev']),
+	marketing_flag: z.enum(['true', 'false']).transform((value) => value === 'true'),
+	off_device_flag: z.enum(['true', 'false']).transform((value) => value === 'true'),
+});
 
 /**
  * [GET]
@@ -108,7 +119,7 @@ router.post('/update', async function (request: express.Request, response: expre
 
 	try {
 		const pnid: HydratedPNIDDocument | null = await getPNIDByPID(tokenContents.pid);
-		const person: AccountSettings = request.body;
+		const personBody: AccountSettings = request.body;
 
 		if (!pnid) {
 			response.status(404);
@@ -116,16 +127,30 @@ router.post('/update', async function (request: express.Request, response: expre
 			return;
 		}
 
-		const gender: string = person.gender ? person.gender : pnid.gender;
-		const timezoneName: string = (person.tz_name && !!Object.keys(person.tz_name).length) ? person.tz_name : pnid.timezone.name;
-		const marketingFlag: boolean = person.marketing_flag ? person.marketing_flag : pnid.flags.marketing;
-		const offDeviceFlag: boolean = person.off_device_flag ? person.off_device_flag: pnid.flags.off_device;
+		const person = accountSettingsSchema.safeParse(personBody);
+
+		if (!person.success) {
+			response.status(404);
+			response.redirect('/v1/account-settings/ui/profile');
+			return;
+		}
+
+		const timezoneName: string = (person.data.tz_name && !!Object.keys(person.data.tz_name).length) ? person.data.tz_name : pnid.timezone.name;
 
 		const regionLanguages: RegionLanguages = timezones[pnid.country as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[pnid.language] ? regionLanguages[pnid.language] : Object.values(regionLanguages)[0];
 		const timezone: RegionTimezone | undefined = regionTimezones.find(tz => tz.area === timezoneName);
-		const region: number = person.region ? person.region: pnid.region;
+		const country: Country | undefined = regionsList.find((region) => region.iso_code === pnid.country);
 		let notice: string = '';
+
+		if (!country) {
+			response.status(404);
+			response.redirect('/v1/account-settings/ui/profile');
+			return;
+		}
+
+		const regionObject: Region | undefined = country.regions.find((region) => region.id === person.data.region);
+		const region: number = regionObject ? regionObject.id : pnid.region;
 
 		if (!timezone) {
 			response.status(404);
@@ -133,15 +158,15 @@ router.post('/update', async function (request: express.Request, response: expre
 			return;
 		}
 
-		pnid.gender = gender;
+		pnid.gender = person.data.gender;
 		pnid.region = region;
 		pnid.timezone.name = timezoneName;
 		pnid.timezone.offset = Number(timezone.utc_offset);
-		pnid.flags.marketing = marketingFlag;
-		pnid.flags.off_device = offDeviceFlag;
+		pnid.flags.marketing = person.data.marketing_flag;
+		pnid.flags.off_device = person.data.off_device_flag;
 
-		if (person.server_selection) {
-			const environment: string = person.server_selection;
+		if (person.data.server_selection) {
+			const environment: string = person.data.server_selection;
 
 			if (environment === 'test' && pnid.access_level < 1) {
 				response.status(400);
@@ -160,9 +185,9 @@ router.post('/update', async function (request: express.Request, response: expre
 			pnid.server_access_level = environment;
 		}
 
-		if (person.email.trim().toLowerCase() !== pnid.email.address) {
+		if (person.data.email.trim().toLowerCase() !== pnid.email.address) {
 			// TODO - Better email check
-			pnid.email.address = person.email.trim().toLowerCase();
+			pnid.email.address = person.data.email.trim().toLowerCase();
 			pnid.email.reachable = false;
 			pnid.email.validated = false;
 			pnid.email.validated_date = '';

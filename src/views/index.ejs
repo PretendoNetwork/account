@@ -127,13 +127,11 @@
                 </div>
             </div>
         </form>
+        <% if (notice) { %>
         <script>
-            var country = wiiuSystemSetting.getRegion();
-            var utc = wiiuSystemSetting.getUTC();
-            <% if (notice) { %>
                 alert('<%= notice %>');
-            <% } %>
         </script>
+        <% } %>
     </body>
 
 </html>
