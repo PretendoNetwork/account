@@ -15,6 +15,7 @@ import { fullUrl, getValueFromHeaders } from '@/util';
 import { LOG_INFO, LOG_SUCCESS, LOG_WARN } from '@/logger';
 
 import conntest from '@/services/conntest';
+import cbvc from '@/services/cbvc';
 import nnid from '@/services/nnid';
 import nasc from '@/services/nasc';
 import datastore from '@/services/datastore';
@@ -39,6 +40,7 @@ app.use(xmlparser);
 
 // import the servers into one
 app.use(conntest);
+app.use(cbvc);
 app.use(nnid);
 app.use(nasc);
 app.use(datastore);
