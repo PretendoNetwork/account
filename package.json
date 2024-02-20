@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/PretendoNetwork/account#readme",
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.515.0",
     "@pretendonetwork/grpc": "^1.0.5",
     "aws-sdk": "^2.978.0",
     "bcrypt": "^5.0.0",
