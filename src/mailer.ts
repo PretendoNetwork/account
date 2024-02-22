@@ -1,6 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import nodemailer from 'nodemailer';
+import * as aws from '@aws-sdk/client-ses';
 import { config, disabledFeatures } from '@/config-manager';
 import { MailerOptions } from '@/types/common/mailer-options';
 
@@ -10,7 +11,21 @@ const confirmationEmailTemplate: string = fs.readFileSync(path.join(__dirname, '
 let transporter: nodemailer.Transporter;
 
 if (!disabledFeatures.email) {
-	transporter = nodemailer.createTransport(config.email);
+	const ses = new aws.SES({
+		apiVersion: '2010-12-01',
+		region: config.email.ses.region,
+		credentials: {
+			accessKeyId: config.email.ses.key,
+			secretAccessKey: config.email.ses.secret
+		}
+	});
+
+	transporter = transporter = nodemailer.createTransport({
+		SES: {
+			ses,
+			aws
+		}
+	});
 }
 
 export async function sendMail(options: MailerOptions): Promise<void> {

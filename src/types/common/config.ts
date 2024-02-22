@@ -14,12 +14,10 @@ export interface Config {
 		}
 	};
 	email: {
-		host: string;
-		port: number;
-		secure: boolean;
-		auth: {
-			user: string;
-			pass: string;
+		ses: {
+			region: string;
+			key: string;
+			secret: string;
 		};
 		from: string;
 	};
