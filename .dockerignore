@@ -4,3 +4,5 @@ logs
 certs
 cdn
 node_modules
+*.yaml
+*.yml
