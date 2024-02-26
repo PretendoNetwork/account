@@ -95,6 +95,17 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
+	let nexAccount: HydratedNEXAccountDocument | null = null;
+	if (pid) {
+		nexAccount = await NEXAccount.findOne({ pid });
+
+		if (!nexAccount || nexAccount.access_level < 0) {
+			response.status(200).send(nascError('102').toString());
+			return;
+		}
+	}
+
+
 	let device: HydratedDeviceDocument | null = await Device.findOne({
 		fcdcert_hash: fcdcertHash,
 	});
@@ -108,11 +119,44 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		if (pid) {
 			const linkedPIDs: number[] = device.linked_pids;
 
+			// * If a user performs a system transfer from
+			// * a console to another using a Nintendo account
+			// * during the transfer and both consoles have
+			// * a Pretendo account, the devices will be swapped
+			// * since we check it using the LFCS.
+			// *
+			// * So, the linked PIDs won't have the user's PID
+			// * anymore.
 			if (!linkedPIDs.includes(pid)) {
-				response.status(200).send(nascError('102').toString());
-				return;
+				device.linked_pids.push(pid);
+
+				await device.save();
 			}
 		}
+	}
+
+	// * Workaround for edge case on system transfers
+	// * if a console that has a Pretendo account performs
+	// * a system transfer using the Nintendo account to
+	// * another that doesn't have a Pretendo account.
+	// *
+	// * This would make the Pretendo account to not have
+	// * a device on the database.
+	// *
+	// * TODO: With this change, now multiple devices can
+	// * have the same serial number and MAC address.
+	// * Do we want this? If not, are there other solutions?
+	if (!device && pid) {
+		device = new Device({
+			model,
+			serial: serialNumber,
+			environment,
+			mac_hash: macAddressHash,
+			fcdcert_hash: fcdcertHash,
+			linked_pids: [pid]
+		});
+
+		await device.save();
 	}
 
 	if (titleID === '0004013000003202') {
@@ -124,7 +168,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 			try {
 				// Create new NEX account
-				const nexAccount: HydratedNEXAccountDocument = new NEXAccount({
+				nexAccount = new NEXAccount({
 					device_type: '3ds',
 					password
 				});
@@ -181,13 +225,6 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 				await session.endSession();
 			}
 		}
-	}
-
-	const nexAccount: HydratedNEXAccountDocument | null = await NEXAccount.findOne({ pid });
-
-	if (!nexAccount || nexAccount.access_level < 0) {
-		response.status(200).send(nascError('102').toString());
-		return;
 	}
 
 	request.nexAccount = nexAccount;
