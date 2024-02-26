@@ -582,7 +582,9 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 	const language: string = person.language ? person.language : pnid.language;
 	let timezoneName: string = person.tz_name ? person.tz_name : pnid.timezone.name;
 
-	// Fix for 3DS sending empty person.tz_name, which is interpreted as an empty object
+	// * Fix for 3DS sending empty person.tz_name, which is interpreted as an empty object
+	// TODO - See if there's a cleaner way to do this?
+
 	if (typeof timezoneName === 'object' && Object.keys(timezoneName).length === 0) {
 		timezoneName = pnid.timezone.name;
 	}
