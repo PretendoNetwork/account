@@ -73,7 +73,7 @@ export const config: Config = {
 		},
 		port: Number(process.env.PN_ACT_CONFIG_GRPC_PORT || ''),
 	},
-	server_environment: (process.env.PN_ACT_CONFIG_SERVER_ENVIRONMENT || 'prod')
+	server_environment: process.env.PN_ACT_CONFIG_SERVER_ENVIRONMENT || ''
 };
 
 if (process.env.PN_ACT_CONFIG_STRIPE_SECRET_KEY) {
@@ -159,6 +159,11 @@ if (!config.s3.key) {
 if (!config.s3.secret) {
 	LOG_WARN('Failed to find s3 secret key config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ACCESS_SECRET environment variable');
 	disabledFeatures.s3 = true;
+}
+
+if (!config.server_environment) {
+	LOG_WARN('Failed to find server environment. To change the environment, set the PN_ACT_CONFIG_SERVER_ENVIRONMENT environment variable');
+	config.server_environment = 'prod';
 }
 
 if (disabledFeatures.s3) {
