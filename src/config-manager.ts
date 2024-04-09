@@ -42,12 +42,10 @@ export const config: Config = {
 		}
 	},
 	email: {
-		host: process.env.PN_ACT_CONFIG_EMAIL_HOST || '',
-		port: Number(process.env.PN_ACT_CONFIG_EMAIL_PORT || ''),
-		secure: (process.env.PN_ACT_CONFIG_EMAIL_SECURE || '') === 'true',
-		auth: {
-			user: process.env.PN_ACT_CONFIG_EMAIL_USERNAME || '',
-			pass: process.env.PN_ACT_CONFIG_EMAIL_PASSWORD || ''
+		ses: {
+			region: process.env.PN_ACT_CONFIG_EMAIL_SES_REGION || '',
+			key: process.env.PN_ACT_CONFIG_EMAIL_SES_ACCESS_KEY || '',
+			secret: process.env.PN_ACT_CONFIG_EMAIL_SES_SECRET_KEY || ''
 		},
 		from: process.env.PN_ACT_CONFIG_EMAIL_FROM || ''
 	},
@@ -104,28 +102,18 @@ if (!config.redis.client.url) {
 	disabledFeatures.redis = true;
 }
 
-if (!config.email.host) {
-	LOG_WARN('Failed to find email SMTP host. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_HOST environment variable');
+if (!config.email.ses.region) {
+	LOG_WARN('Failed to find AWS SES region. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_SES_REGION environment variable');
 	disabledFeatures.email = true;
 }
 
-if (!config.email.port) {
-	LOG_WARN('Failed to find email SMTP port. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_PORT environment variable');
+if (!config.email.ses.key) {
+	LOG_WARN('Failed to find AWS SES access key. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_SES_ACCESS_KEY environment variable');
 	disabledFeatures.email = true;
 }
 
-if (config.email.secure === undefined) {
-	LOG_WARN('Failed to find email SMTP secure flag. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_SECURE environment variable');
-	disabledFeatures.email = true;
-}
-
-if (!config.email.auth.user) {
-	LOG_WARN('Failed to find email account username. Disabling feature. To enable feature set the auth.user environment variable');
-	disabledFeatures.email = true;
-}
-
-if (!config.email.auth.pass) {
-	LOG_WARN('Failed to find email account password. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_PASSWORD environment variable');
+if (!config.email.ses.secret) {
+	LOG_WARN('Failed to find AWS SES secret key. Disabling feature. To enable feature set the PN_ACT_CONFIG_EMAIL_SES_SECRET_KEY environment variable');
 	disabledFeatures.email = true;
 }
 

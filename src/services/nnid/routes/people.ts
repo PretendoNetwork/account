@@ -582,6 +582,14 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 	const language: string = person.language ? person.language : pnid.language;
 	// The 3DS sends an empty object when the timezone isn't updated, so this fixes validation from failing.
 	const timezoneName: string = (person.tz_name && !!Object.keys(person.tz_name).length) ? person.tz_name : pnid.timezone.name;
+	let timezoneName: string = person.tz_name ? person.tz_name : pnid.timezone.name;
+
+	// * Fix for 3DS sending empty person.tz_name, which is interpreted as an empty object
+	// TODO - See if there's a cleaner way to do this?
+
+	if (typeof timezoneName === 'object' && Object.keys(timezoneName).length === 0) {
+		timezoneName = pnid.timezone.name;
+	}
 	const marketingFlag: boolean = person.marketing_flag ? person.marketing_flag === 'Y' : pnid.flags.marketing;
 	const offDeviceFlag: boolean = person.off_device_flag ? person.off_device_flag === 'Y' : pnid.flags.off_device;
 
