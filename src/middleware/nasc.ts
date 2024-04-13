@@ -122,8 +122,8 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 			// * If a user performs a system transfer from
 			// * a console to another using a Nintendo account
 			// * during the transfer and both consoles have
-			// * a Pretendo account, the devices will be swapped
-			// * since we check it using the LFCS.
+			// * a Pretendo account, the new device won't have
+			// * the user's PID.
 			// *
 			// * So, the linked PIDs won't have the user's PID
 			// * anymore.
@@ -132,6 +132,16 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 				await device.save();
 			}
+		}
+
+		if (device.serial !== serialNumber) {
+			response.status(200).send(nascError('102').toString());
+			return;
+		}
+
+		if (device.mac_hash !== macAddressHash) {
+			response.status(200).send(nascError('102').toString());
+			return;
 		}
 	}
 
@@ -142,10 +152,6 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	// *
 	// * This would make the Pretendo account to not have
 	// * a device on the database.
-	// *
-	// * TODO: With this change, now multiple devices can
-	// * have the same serial number and MAC address.
-	// * Do we want this? If not, are there other solutions?
 	if (!device && pid) {
 		device = new Device({
 			model,
