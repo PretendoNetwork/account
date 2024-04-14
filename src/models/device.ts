@@ -35,11 +35,11 @@ export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 	linked_pids: [Number],
 	access_level: {
 		type: Number,
-		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
+		default: 0  // * 0: standard, 1: tester, 2: mod?, 3: dev
 	},
 	server_access_level: {
 		type: String,
-		default: 'prod' // everyone is in production by default
+		default: 'prod' // * everyone is in production by default
 	},
 	certificate_hash: String
 });

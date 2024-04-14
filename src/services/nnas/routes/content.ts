@@ -132,8 +132,8 @@ router.get('/time_zones/:countryCode/:language', (request: express.Request, resp
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
 	/*
-	// Old method. Crashes WiiU when sending a list with over 32 entries, but otherwise works
-	// countryTimezones is "countries-and-timezones" module
+	// * Old method. Crashes WiiU when sending a list with over 32 entries, but otherwise works
+	// * countryTimezones is "countries-and-timezones" module
 
 	const country = countryTimezones.getCountry(countryCode);
 	const timezones = country.timezones.map((timezone, index) => {

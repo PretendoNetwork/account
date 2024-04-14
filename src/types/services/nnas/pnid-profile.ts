@@ -1,7 +1,7 @@
 import { YesNoBoolString } from '@/types/common/yes-no-bool-string';
 
 export interface PNIDProfile {
-	//accounts: {}; // * We need to figure this out; no idea what these values mean or what they do
+	// *accounts: {}; // * We need to figure this out; no idea what these values mean or what they do
 	active_flag: YesNoBoolString;
 	birth_date: string;
 	country: string;

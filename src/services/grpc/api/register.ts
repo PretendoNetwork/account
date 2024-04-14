@@ -21,7 +21,7 @@ const PNID_PUNCTUATION_START_REGEX = /^[_\-.]/;
 const PNID_PUNCTUATION_END_REGEX = /[_\-.]$/;
 const PNID_PUNCTUATION_DUPLICATE_REGEX = /[_\-.]{2,}/;
 
-// This sucks
+// * This sucks
 const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
 const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
 const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
@@ -146,11 +146,11 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 		await nexAccount.generatePID();
 		await nexAccount.generatePassword();
 
-		// Quick hack to get the PIDs to match
-		// TODO: Change this maybe?
-		// NN with a NNID will always use the NNID PID
-		// even if the provided NEX PID is different
-		// To fix this we make them the same PID
+		// * Quick hack to get the PIDs to match
+		// TODO - Change this maybe?
+		// * NN with a NNID will always use the NNID PID
+		// * even if the provided NEX PID is different
+		// * To fix this we make them the same PID
 		nexAccount.owning_pid = nexAccount.pid;
 
 		await nexAccount.save({ session });
@@ -165,40 +165,40 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 			username: username,
 			usernameLower: username.toLowerCase(),
 			password: passwordHash,
-			birthdate: '1990-01-01', // TODO: Change this
-			gender: 'M', // TODO: Change this
-			country: 'US', // TODO: Change this
-			language: 'en', // TODO: Change this
+			birthdate: '1990-01-01', // TODO - Change this
+			gender: 'M', // TODO - Change this
+			country: 'US', // TODO - Change this
+			language: 'en', // TODO - Change this
 			email: {
 				address: email.toLowerCase(),
-				primary: true, // TODO: Change this
-				parent: true, // TODO: Change this
-				reachable: false, // TODO: Change this
-				validated: false, // TODO: Change this
+				primary: true, // TODO - Change this
+				parent: true, // TODO - Change this
+				reachable: false, // TODO - Change this
+				validated: false, // TODO - Change this
 				id: crypto.randomBytes(4).readUInt32LE()
 			},
-			region: 0x310B0000, // TODO: Change this
+			region: 0x310B0000, // TODO - Change this
 			timezone: {
-				name: 'America/New_York', // TODO: Change this
-				offset: -14400 // TODO: Change this
+				name: 'America/New_York', // TODO - Change this
+				offset: -14400 // TODO - Change this
 			},
 			mii: {
 				name: miiName,
-				primary: true, // TODO: Change this
+				primary: true, // TODO - Change this
 				data: mii.encode().toString('base64'),
 				id: crypto.randomBytes(4).readUInt32LE(),
 				hash: crypto.randomBytes(7).toString('hex'),
-				image_url: '', // deprecated, will be removed in the future
+				image_url: '', // * deprecated, will be removed in the future
 				image_id: crypto.randomBytes(4).readUInt32LE()
 			},
 			flags: {
-				active: true, // TODO: Change this
-				marketing: true, // TODO: Change this
-				off_device: true // TODO: Change this
+				active: true, // TODO - Change this
+				marketing: true, // TODO - Change this
+				off_device: true // TODO - Change this
 			},
 			identification: {
-				email_code: 1, // will be overwritten before saving
-				email_token: '' // will be overwritten before saving
+				email_code: 1, // * will be overwritten before saving
+				email_token: '' // * will be overwritten before saving
 			}
 		});
 

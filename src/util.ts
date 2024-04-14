@@ -209,7 +209,7 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // Only valid for 24 hours
+		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // * Only valid for 24 hours
 	};
 
 	const tokenBuffer = await generateToken(config.aes_key, tokenOptions);

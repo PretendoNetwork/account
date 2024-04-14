@@ -75,7 +75,7 @@ router.post('/upload', multipartParser, async (request: express.Request, respons
 	const date = request.files.date.toString();
 	const signature = request.files.signature.toString();
 
-	// Signatures only good for 1 minute
+	// * Signatures only good for 1 minute
 	const minute = 1000 * 60;
 	const minuteAgo = Date.now() - minute;
 

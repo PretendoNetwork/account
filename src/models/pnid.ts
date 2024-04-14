@@ -33,11 +33,11 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	},
 	access_level: {
 		type: Number,
-		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
+		default: 0  // * 0: standard, 1: tester, 2: mod?, 3: dev
 	},
 	server_access_level: {
 		type: String,
-		default: 'prod' // everyone is in production by default
+		default: 'prod' // * everyone is in production by default
 	},
 	pid: {
 		type: Number,
@@ -89,7 +89,7 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		off_device: Boolean
 	},
 	devices: [DeviceSchema],
-	identification: { // user identification tokens
+	identification: { // * user identification tokens
 		email_code: {
 			type: String,
 			unique: true
@@ -133,7 +133,7 @@ PNIDSchema.plugin(uniqueValidator, {message: '{PATH} already in use.'});
 	and the next few accounts counting down seem to be admin, service and internal test accounts
 */
 PNIDSchema.method('generatePID', async function generatePID(): Promise<void> {
-	const min = 1000000000; // The console (WiiU) seems to not accept PIDs smaller than this
+	const min = 1000000000; // * The console (WiiU) seems to not accept PIDs smaller than this
 	const max = 1799999999;
 
 	const pid =  Math.floor(Math.random() * (max - min + 1) + min);
@@ -150,9 +150,9 @@ PNIDSchema.method('generatePID', async function generatePID(): Promise<void> {
 });
 
 PNIDSchema.method('generateEmailValidationCode', async function generateEmailValidationCode(): Promise<void> {
-	// WiiU passes the PID along with the email code
-	// Does not actually need to be unique to all users
-	const code = Math.random().toFixed(6).split('.')[1]; // Dirty one-liner to generate numbers of 6 length and padded 0
+	// * WiiU passes the PID along with the email code
+	// * Does not actually need to be unique to all users
+	const code = Math.random().toFixed(6).split('.')[1]; // * Dirty one-liner to generate numbers of 6 length and padded 0
 
 	this.identification.email_code = code;
 });

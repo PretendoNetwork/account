@@ -6,7 +6,7 @@ import { getPNIDByPID } from '@/database';
 import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { Token } from '@/types/common/token';
 
-// This sucks
+// * This sucks
 const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
 const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
 const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;

@@ -17,7 +17,7 @@ import { DiscordConnectionData } from '@/types/services/api/discord-connection-d
 const connection_string = config.mongoose.connection_string;
 const options = config.mongoose.options;
 
-// TODO: Extend this later with more settings
+// TODO - Extend this later with more settings
 const discordConnectionSchema = joi.object({
 	id: joi.string()
 });
@@ -116,7 +116,7 @@ export async function getPNIDByTokenAuth(token: string): Promise<HydratedPNIDDoc
 
 		return pnid;
 	} catch (error: any) {
-		// TODO: Handle error
+		// TODO - Handle error
 		LOG_ERROR(error);
 		return null;
 	}
@@ -157,7 +157,7 @@ export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile 
 	}
 
 	return {
-		//accounts: {}, // * We need to figure this out, no idea what these values mean or what they do
+		// *accounts: {}, // * We need to figure this out, no idea what these values mean or what they do
 		active_flag: pnid.flags.active ? 'Y' : 'N',
 		birth_date: pnid.birthdate,
 		country: pnid.country,

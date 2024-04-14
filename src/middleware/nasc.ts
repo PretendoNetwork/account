@@ -18,7 +18,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		!requestParams.titleid ||
 		!requestParams.servertype
 	) {
-		response.status(200).send(nascError('null').toString()); // This is what Nintendo sends
+		response.status(200).send(nascError('null').toString()); // * This is what Nintendo sends
 		return;
 	}
 
@@ -49,7 +49,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	}
 
 	if (action !== 'LOGIN' && action !== 'SVCLOC') {
-		response.status(200).send(nascError('null').toString()); // This is what Nintendo sends
+		response.status(200).send(nascError('null').toString()); // * This is what Nintendo sends
 		return;
 	}
 
@@ -164,13 +164,13 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 	if (titleID === '0004013000003202') {
 		if (password && !pid && !pidHmac) {
-			// Register new user
+			// * Register new user
 
 			const session = await databaseConnection().startSession();
 			await session.startTransaction();
 
 			try {
-				// Create new NEX account
+				// * Create new NEX account
 				nexAccount = new NEXAccount({
 					device_type: '3ds',
 					password
@@ -196,7 +196,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 				await nexAccount.save({ session });
 
-				// Set password
+				// * Set password
 
 				if (!device) {
 					device = new Device({
@@ -219,7 +219,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 				await session.abortTransaction();
 
-				// 3DS expects 200 even on error
+				// * 3DS expects 200 even on error
 				response.status(200).send(nascError('102').toString());
 				return;
 			} finally {
@@ -235,8 +235,8 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	return next();
 }
 
-// https://www.adminsub.net/mac-address-finder/nintendo
-// Saves us from doing an OUI lookup each time
+// * https://www.adminsub.net/mac-address-finder/nintendo
+// * Saves us from doing an OUI lookup each time
 const NINTENDO_VENDER_OUIS = [
 	'ECC40D', 'E84ECE', 'E0F6B5', 'E0E751', 'E00C7F', 'DC68EB',
 	'D86BF7', 'D4F057', 'CCFB65', 'CC9E00', 'B8AE6E', 'B88AEC',
@@ -262,10 +262,10 @@ const NINTENDO_VENDER_OUIS = [
 	'001AE9', '0019FD', '00191D', '0017AB', '001656', '0009BF'
 ];
 
-// TODO: Make something better
+// TODO - Make something better
 const MAC_REGEX = /^[0-9a-fA-F]{12}$/;
 
-// Maybe should later parse more data out
+// * Maybe should later parse more data out
 function validNintendoMACAddress(macAddress: string): boolean {
 	if (!NINTENDO_VENDER_OUIS.includes(macAddress.substring(0, 6).toUpperCase())) {
 		return false;

@@ -214,7 +214,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 
 	const tokenOptions = {
 		system_type: server.device,
-		token_type: 0x3, // nex token,
+		token_type: 0x3, // * nex token,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),

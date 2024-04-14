@@ -1,4 +1,4 @@
-// handles "account.nintendo.net" endpoints
+// * handles "account.nintendo.net" endpoints
 
 import express from 'express';
 import subdomain from 'express-subdomain';
@@ -16,7 +16,7 @@ import people from '@/services/nnas/routes/people';
 import provider from '@/services/nnas/routes/provider';
 import support from '@/services/nnas/routes/support';
 
-// Router to handle the subdomain restriction
+// * Router to handle the subdomain restriction
 const nnas = express.Router();
 
 LOG_INFO('[NNAS] Importing middleware');
@@ -24,7 +24,7 @@ nnas.use(clientHeaderCheck);
 nnas.use(cemuMiddleware);
 nnas.use(pnidMiddleware);
 
-// Setup routes
+// * Setup routes
 LOG_INFO('[NNAS] Applying imported routes');
 nnas.use('/v1/api/admin', admin);
 nnas.use('/v1/api/content', content);
@@ -35,10 +35,10 @@ nnas.use('/v1/api/people', people);
 nnas.use('/v1/api/provider', provider);
 nnas.use('/v1/api/support', support);
 
-// Main router for endpoints
+// * Main router for endpoints
 const router = express.Router();
 
-// Create subdomains
+// * Create subdomains
 LOG_INFO('[NNAS] Creating \'account\' subdomain');
 router.use(subdomain('account', nnas));
 

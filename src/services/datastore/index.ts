@@ -4,17 +4,17 @@ import { LOG_INFO } from '@/logger';
 
 import upload from '@/services/datastore/routes/upload';
 
-// Router to handle the subdomain
+// * Router to handle the subdomain
 const datastore = express.Router();
 
-// Setup routes
+// * Setup routes
 LOG_INFO('[DATASTORE] Applying imported routes');
 datastore.use(upload);
 
-// Main router for endpoints
+// * Main router for endpoints
 const router = express.Router();
 
-// Create subdomains
+// * Create subdomains
 LOG_INFO('[DATASTORE] Creating \'datastore\' subdomain');
 router.use(subdomain('datastore', datastore));
 

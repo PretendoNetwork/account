@@ -27,9 +27,9 @@ import { config } from '@/config-manager';
 
 const app = express();
 
-// START APPLICATION
+// * START APPLICATION
 
-// Create router
+// * Create router
 LOG_INFO('Setting up Middleware');
 app.use(morgan('dev'));
 app.use(express.json());
@@ -38,7 +38,7 @@ app.use(express.urlencoded({
 }));
 app.use(xmlparser);
 
-// import the servers into one
+// * import the servers into one
 app.use(conntest);
 app.use(cbvc);
 app.use(nnas);
@@ -48,7 +48,7 @@ app.use(api);
 app.use(localcdn);
 app.use(assets);
 
-// 404 handler
+// * 404 handler
 LOG_INFO('Creating 404 status handler');
 app.use((request: express.Request, response: express.Response): void => {
 	const url = fullUrl(request);
@@ -75,7 +75,7 @@ app.use((request: express.Request, response: express.Response): void => {
 	}).end());
 });
 
-// non-404 error handler
+// * non-404 error handler
 LOG_INFO('Creating non-404 status handler');
 app.use((error: any, request: express.Request, response: express.Response, _next: express.NextFunction): void => {
 	const status = error.status || 500;
@@ -96,7 +96,7 @@ app.use((error: any, request: express.Request, response: express.Response, _next
 });
 
 async function main(): Promise<void> {
-	// Starts the server
+	// * Starts the server
 	LOG_INFO('Starting server');
 
 	await connectDatabase();

@@ -41,7 +41,7 @@ const CTR_LFCS_B_PUB = Buffer.from([
 	0xAF, 0x07, 0xEB, 0x9C, 0xBF, 0xA9, 0xC9
 ]);
 
-// Signature options
+// * Signature options
 const SIGNATURE_SIZES = {
 	RSA_4096_SHA1: <SignatureSize>{
 		SIZE: 0x200,
@@ -201,10 +201,10 @@ class NintendoCertificate {
 		this.valid = publicKey.verify(this._certificateBody, this.signature);
 	}
 
-	// Huge thanks to Myria for helping get ECDSA working
-	// with Nodes native crypto module and getting the keys
-	// from bytes to PEM!
-	// https://github.com/Myriachan
+	// * Huge thanks to Myria for helping get ECDSA working
+	// * with Nodes native crypto module and getting the keys
+	// * from bytes to PEM!
+	// * https://github.com/Myriachan
 	_verifySignatureECDSA(): void {
 		const pem = this.consoleType === 'wiiu' ? WIIU_DEVICE_PUB_PEM : CTR_DEVICE_PUB_PEM;
 		const key = {

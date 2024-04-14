@@ -51,7 +51,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
  */
 router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	if (!request.certificate || !request.certificate.valid) {
-		// TODO: Change this to a different error
+		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
 			error: {
 				cause: 'Bad Request',
@@ -95,11 +95,11 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		await nexAccount.generatePID();
 		await nexAccount.generatePassword();
 
-		// Quick hack to get the PIDs to match
-		// TODO: Change this maybe?
-		// NN with a NNID will always use the NNID PID
-		// even if the provided NEX PID is different
-		// To fix this we make them the same PID
+		// * Quick hack to get the PIDs to match
+		// TODO - Change this maybe?
+		// * NN with a NNID will always use the NNID PID
+		// * even if the provided NEX PID is different
+		// * To fix this we make them the same PID
 		nexAccount.owning_pid = nexAccount.pid;
 
 		await nexAccount.save({ session });
@@ -156,7 +156,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 				data: person.mii.data,
 				id: crypto.randomBytes(4).readUInt32LE(),
 				hash: crypto.randomBytes(7).toString('hex'),
-				image_url: '', // deprecated, will be removed in the future
+				image_url: '', // * deprecated, will be removed in the future
 				image_id: crypto.randomBytes(4).readUInt32LE()
 			},
 			flags: {
@@ -165,8 +165,8 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 				off_device: person.off_device_flag === 'Y'
 			},
 			identification: {
-				email_code: 1, // will be overwritten before saving
-				email_token: '' // will be overwritten before saving
+				email_code: 1, // * will be overwritten before saving
+				email_token: '' // * will be overwritten before saving
 			}
 		});
 
@@ -265,9 +265,9 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	// We don't care about the device attributes
-	// The console ignores them and PNIDs are not tied to consoles anyway
-	// So the server also ignores them and does not save the ones posted here
+	// * We don't care about the device attributes
+	// * The console ignores them and PNIDs are not tied to consoles anyway
+	// * So the server also ignores them and does not save the ones posted here
 
 	// TODO - CHANGE THIS. WE NEED TO SAVE CONSOLE DETAILS !!!
 
@@ -652,8 +652,8 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 					parent: pnid.email.parent ? 'Y' : 'N',
 					primary: pnid.email.primary ? 'Y' : 'N',
 					reachable: pnid.email.reachable ? 'Y' : 'N',
-					type: 'DEFAULT', // what is this?
-					updated_by: 'USER', // need to actually update this
+					type: 'DEFAULT', // * what is this?
+					updated_by: 'USER', // * need to actually update this
 					validated: pnid.email.validated ? 'Y' : 'N',
 					validated_date: pnid.email.validated_date,
 				}

@@ -23,7 +23,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	// TODO: REMOVE AFTER PUBLIC LAUNCH
+	// TODO - REMOVE AFTER PUBLIC LAUNCH
 	// * LET EVERYONE IN THE `test` FRIENDS SERVER
 	// * THAT WAY EVERYONE CAN GET AN ASSIGNED PID
 	let serverAccessLevel = 'test';

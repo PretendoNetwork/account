@@ -48,7 +48,7 @@ export interface IPNID {
 		off_device: boolean;
 	};
 	devices: Types.DocumentArray<IDevice>;
-	identification: { // user identification tokens
+	identification: { // * user identification tokens
 		email_code: string;
 		email_token: string;
 		access_token: {

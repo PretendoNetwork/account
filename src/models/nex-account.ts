@@ -6,7 +6,7 @@ const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMet
 	device_type: {
 		type: String,
 		enum: [
-			// Only track the family here not the model
+			// * Only track the family here not the model
 			'wiiu',
 			'3ds',
 		]
@@ -19,11 +19,11 @@ const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMet
 	owning_pid: Number,
 	access_level: {
 		type: Number,
-		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
+		default: 0  // * 0: standard, 1: tester, 2: mod?, 3: dev
 	},
 	server_access_level: {
 		type: String,
-		default: 'prod' // everyone is in production by default
+		default: 'prod' // * everyone is in production by default
 	},
 	friend_code: String
 });
@@ -39,7 +39,7 @@ NEXAccountSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 	and the next few accounts counting down seem to be admin, service and internal test accounts
 */
 NEXAccountSchema.method('generatePID', async function generatePID(): Promise<void> {
-	const min = 1000000000; // The console (WiiU) seems to not accept PIDs smaller than this
+	const min = 1000000000; // * The console (WiiU) seems to not accept PIDs smaller than this
 	const max = 1799999999;
 
 	const pid = Math.floor(Math.random() * (max - min + 1) + min);
