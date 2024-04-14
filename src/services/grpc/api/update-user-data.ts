@@ -2,12 +2,11 @@ import { CallContext } from 'nice-grpc';
 import { UpdateUserDataRequest, DeepPartial } from '@pretendonetwork/grpc/api/update_user_data_rpc';
 import { GetUserDataResponse } from '@pretendonetwork/grpc/api/get_user_data_rpc';
 import { config } from '@/config-manager';
-import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
 
 export async function updateUserData(_request: UpdateUserDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<DeepPartial<GetUserDataResponse>> {
 	// * This is asserted in authentication-middleware, we know this is never null
-	const pnid: HydratedPNIDDocument = context.pnid!;
+	const pnid = context.pnid!;
 
 	// TODO - STUBBED, DO SOMETHING HERE
 

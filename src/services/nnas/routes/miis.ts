@@ -3,10 +3,9 @@ import xmlbuilder from 'xmlbuilder';
 import { getValueFromQueryString } from '@/util';
 import { PNID } from '@/models/pnid';
 import { config } from '@/config-manager';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { YesNoBoolString } from '@/types/common/yes-no-bool-string';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [GET]
@@ -14,7 +13,7 @@ const router: express.Router = express.Router();
  * Description: Returns a list of NNID miis
  */
 router.get('/', async (request: express.Request, response: express.Response): Promise<void> => {
-	const input: string | undefined = getValueFromQueryString(request.query, 'pids');
+	const input = getValueFromQueryString(request.query, 'pids');
 
 	if (!input) {
 		response.status(400).send(xmlbuilder.create({
@@ -30,7 +29,7 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 		return;
 	}
 
-	const pids: number[] = input.split(',').map(pid => Number(pid)).filter(pid => !isNaN(pid));
+	const pids = input.split(',').map(pid => Number(pid)).filter(pid => !isNaN(pid));
 
 	const miis: {
 		data: string;
@@ -51,7 +50,7 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 
 	for (const pid of pids) {
 		// TODO - Replace this with a single query again somehow? Maybe aggregation?
-		const pnid: HydratedPNIDDocument | null = await PNID.findOne({ pid });
+		const pnid = await PNID.findOne({ pid });
 
 		if (pnid) {
 			miis.push({

@@ -3,10 +3,9 @@ import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
 import { nintendoPasswordHash, generateToken} from '@/util';
 import { config } from '@/config-manager';
-import { TokenOptions } from '@/types/common/token-options';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [POST]
@@ -15,10 +14,10 @@ const router: express.Router = express.Router();
  * TODO: Replace this with a more robust OAuth2 implementation
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
-	const grantType: string = request.body?.grant_type;
-	const username: string = request.body?.username;
-	const password: string = request.body?.password;
-	const refreshToken: string = request.body?.refresh_token;
+	const grantType = request.body?.grant_type;
+	const username = request.body?.username;
+	const password = request.body?.password;
+	const refreshToken = request.body?.refresh_token;
 
 	if (!['password', 'refresh_token'].includes(grantType)) {
 		response.status(400).json({
@@ -75,7 +74,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			return;
 		}
 
-		const hashedPassword: string = nintendoPasswordHash(password, pnid.pid);
+		const hashedPassword = nintendoPasswordHash(password, pnid.pid);
 
 		if (!pnid || !bcrypt.compareSync(hashedPassword, pnid.password)) {
 			response.status(400).json({
@@ -100,7 +99,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		}
 	}
 
-	const accessTokenOptions: TokenOptions = {
+	const accessTokenOptions = {
 		system_type: 0x3, // * API
 		token_type: 0x1, // * OAuth Access
 		pid: pnid.pid,
@@ -109,7 +108,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const refreshTokenOptions: TokenOptions = {
+	const refreshTokenOptions = {
 		system_type: 0x3, // * API
 		token_type: 0x2, // * OAuth Refresh
 		pid: pnid.pid,
@@ -118,11 +117,11 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessTokenBuffer: Buffer | null = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer: Buffer | null = await generateToken(config.aes_key, refreshTokenOptions);
+	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
+	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
 
-	const accessToken: string = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken: string = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
+	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
 
 	// TODO - Handle null tokens
 

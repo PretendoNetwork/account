@@ -3,12 +3,8 @@ import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { NEXAccount } from '@/models/nex-account';
-import { TokenOptions } from '@/types/common/token-options';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import { HydratedServerDocument } from '@/types/mongoose/server';
-import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [GET]
@@ -16,7 +12,7 @@ const router: express.Router = express.Router();
  * Description: Gets a service token
  */
 router.get('/service_token/@me', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		response.status(400).send(xmlbuilder.create({
@@ -32,7 +28,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	const clientID: string | undefined = getValueFromQueryString(request.query, 'client_id');
+	const clientID = getValueFromQueryString(request.query, 'client_id');
 
 	if (!clientID) {
 		// TODO - Research this error more
@@ -48,7 +44,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	const titleID: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
+	const titleID = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
 
 	if (!titleID) {
 		// TODO - Research this error more
@@ -64,8 +60,8 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	const serverAccessLevel: string = pnid.server_access_level;
-	const server: HydratedServerDocument | null = await getServerByClientID(clientID, serverAccessLevel);
+	const serverAccessLevel = pnid.server_access_level;
+	const server = await getServerByClientID(clientID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
 		response.send(xmlbuilder.create({
@@ -93,7 +89,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	const tokenOptions: TokenOptions = {
+	const tokenOptions = {
 		system_type: server.device,
 		token_type: 0x4, // * Service token
 		pid: pnid.pid,
@@ -102,8 +98,8 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const serviceTokenBuffer: Buffer | null = await generateToken(server.aes_key, tokenOptions);
-	let serviceToken: string = serviceTokenBuffer ? serviceTokenBuffer.toString('base64') : '';
+	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	let serviceToken = serviceTokenBuffer ? serviceTokenBuffer.toString('base64') : '';
 
 	if (request.isCemu) {
 		serviceToken = Buffer.from(serviceToken, 'base64').toString('hex');
@@ -122,7 +118,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
  * Description: Gets a NEX server address and token
  */
 router.get('/nex_token/@me', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		response.status(400).send(xmlbuilder.create({
@@ -138,7 +134,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	const nexAccount: HydratedNEXAccountDocument | null = await NEXAccount.findOne({
+	const nexAccount = await NEXAccount.findOne({
 		owning_pid: pnid.pid
 	});
 
@@ -156,7 +152,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	const gameServerID: string | undefined = getValueFromQueryString(request.query, 'game_server_id');
+	const gameServerID = getValueFromQueryString(request.query, 'game_server_id');
 
 	if (!gameServerID) {
 		response.send(xmlbuilder.create({
@@ -171,8 +167,8 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	const serverAccessLevel: string = pnid.server_access_level;
-	const server: HydratedServerDocument | null = await getServerByGameServerID(gameServerID, serverAccessLevel);
+	const serverAccessLevel = pnid.server_access_level;
+	const server = await getServerByGameServerID(gameServerID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
 		response.send(xmlbuilder.create({
@@ -200,7 +196,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	const titleID: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
+	const titleID = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
 
 	if (!titleID) {
 		// TODO - Research this error more
@@ -216,7 +212,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	const tokenOptions: TokenOptions = {
+	const tokenOptions = {
 		system_type: server.device,
 		token_type: 0x3, // nex token,
 		pid: pnid.pid,
@@ -225,8 +221,8 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const nexTokenBuffer: Buffer | null = await generateToken(server.aes_key, tokenOptions);
-	let nexToken: string = nexTokenBuffer ? nexTokenBuffer.toString('base64') : '';
+	const nexTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	let nexToken = nexTokenBuffer ? nexTokenBuffer.toString('base64') : '';
 
 	if (request.isCemu) {
 		nexToken = Buffer.from(nexToken || '', 'base64').toString('hex');

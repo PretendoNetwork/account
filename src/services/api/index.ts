@@ -7,7 +7,7 @@ import { LOG_INFO } from '@/logger';
 import { V1 } from '@/services/api/routes';
 
 // Router to handle the subdomain restriction
-const api: express.Router = express.Router();
+const api = express.Router();
 
 LOG_INFO('[USER API] Importing middleware');
 api.use(APIMiddleware);
@@ -26,7 +26,7 @@ api.use('/v1/user', V1.USER);
 
 
 // Main router for endpoints
-const router: express.Router = express.Router();
+const router = express.Router();
 
 // Create subdomains
 LOG_INFO('[USER API] Creating \'api\' subdomain');

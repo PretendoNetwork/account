@@ -47,10 +47,3 @@ export interface Config {
 		secret_key: string;
 	};
 }
-
-export interface DisabledFeatures {
-	redis: boolean;
-	email: boolean;
-	captcha: boolean;
-	s3: boolean
-}

@@ -5,7 +5,7 @@ import subdomain from 'express-subdomain';
 import { LOG_INFO } from '@/logger';
 
 // Router to handle the subdomain restriction
-const cbvc: express.Router = express.Router();
+const cbvc = express.Router();
 
 // Setup route
 LOG_INFO('[cbvc] Applying imported routes');
@@ -22,7 +22,7 @@ cbvc.get('/:consoleType/:unknown/:region', (request: express.Request, response: 
 });
 
 // Main router for endpoints
-const router: express.Router = express.Router();
+const router = express.Router();
 
 // Create subdomains
 LOG_INFO('[cbvc] Creating \'cbvc\' subdomain');

@@ -1,10 +1,8 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import timezones from '@/services/nnas/timezones.json';
-import { RegionLanguages } from '@/types/services/nnas/region-languages';
-import { RegionTimezones } from '@/types/services/nnas/region-timezones';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [GET]
@@ -151,11 +149,11 @@ router.get('/time_zones/:countryCode/:language', (request: express.Request, resp
 	});
 	*/
 
-	const countryCode: string = request.params.countryCode;
-	const language: string = request.params.language;
+	const countryCode = request.params.countryCode;
+	const language = request.params.language;
 
-	const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
-	const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
+	const regionLanguages = timezones[countryCode as keyof typeof timezones];
+	const regionTimezones = regionLanguages[language as keyof typeof regionLanguages] ? regionLanguages[language as keyof typeof regionLanguages] : Object.values(regionLanguages)[0];
 
 	response.send(xmlbuilder.create({
 		timezones: {

@@ -44,4 +44,4 @@ export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 	certificate_hash: String
 });
 
-export const Device: DeviceModel = model<IDevice, DeviceModel>('Device', DeviceSchema);
+export const Device = model<IDevice, DeviceModel>('Device', DeviceSchema);

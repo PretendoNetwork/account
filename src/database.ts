@@ -7,20 +7,18 @@ import { Server } from '@/models/server';
 import { LOG_ERROR } from '@/logger';
 import { config } from '@/config-manager';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import { IDevice } from '@/types/mongoose/device';
 import { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 import { HydratedServerDocument } from '@/types/mongoose/server';
-import { Token } from '@/types/common/token';
 import { PNIDProfile } from '@/types/services/nnas/pnid-profile';
 import { ConnectionData } from '@/types/services/api/connection-data';
 import { ConnectionResponse } from '@/types/services/api/connection-response';
 import { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
 
-const connection_string: string = config.mongoose.connection_string;
-const options: mongoose.ConnectOptions = config.mongoose.options;
+const connection_string = config.mongoose.connection_string;
+const options = config.mongoose.options;
 
 // TODO: Extend this later with more settings
-const discordConnectionSchema: joi.ObjectSchema = joi.object({
+const discordConnectionSchema = joi.object({
 	id: joi.string()
 });
 
@@ -79,19 +77,19 @@ export async function getPNIDByBasicAuth(token: string): Promise<HydratedPNIDDoc
 
 	// * Wii U sends Basic auth as `username password`, where the password may not have spaces
 	// * This is not to spec, but that is the consoles fault not ours
-	const decoded: string = Buffer.from(token, 'base64').toString();
-	const parts: string[] = decoded.split(' ');
+	const decoded = Buffer.from(token, 'base64').toString();
+	const parts = decoded.split(' ');
 
-	const username: string = parts[0];
-	const password: string = parts[1];
+	const username = parts[0];
+	const password = parts[1];
 
-	const pnid: HydratedPNIDDocument | null = await getPNIDByUsername(username);
+	const pnid = await getPNIDByUsername(username);
 
 	if (!pnid) {
 		return null;
 	}
 
-	const hashedPassword: string = nintendoPasswordHash(password, pnid.pid);
+	const hashedPassword = nintendoPasswordHash(password, pnid.pid);
 
 	if (!bcrypt.compareSync(hashedPassword, pnid.password)) {
 		return null;
@@ -104,13 +102,12 @@ export async function getPNIDByTokenAuth(token: string): Promise<HydratedPNIDDoc
 	verifyConnected();
 
 	try {
-		const decryptedToken: Buffer = decryptToken(Buffer.from(token, 'hex'));
-		const unpackedToken: Token = unpackToken(decryptedToken);
-
-		const pnid: HydratedPNIDDocument | null = await getPNIDByPID(unpackedToken.pid);
+		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
+		const unpackedToken = unpackToken(decryptedToken);
+		const pnid = await getPNIDByPID(unpackedToken.pid);
 
 		if (pnid) {
-			const expireTime: number = Math.floor((Number(unpackedToken.expire_time) / 1000));
+			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
 
 			if (Math.floor(Date.now() / 1000) > expireTime) {
 				return null;
@@ -128,13 +125,13 @@ export async function getPNIDByTokenAuth(token: string): Promise<HydratedPNIDDoc
 export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile | null> {
 	verifyConnected();
 
-	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
+	const pnid = await getPNIDByPID(pid);
 
 	if (!pnid) {
 		return null;
 	}
 
-	const device: IDevice = pnid.devices[0]; // * Just grab the first device
+	const device = pnid.devices[0]; // * Just grab the first device
 	let device_attributes: {
 		device_attribute: {
 			name: string;
@@ -145,9 +142,9 @@ export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile 
 
 	if (device) {
 		device_attributes = device.device_attributes.map((attribute: IDeviceAttribute) => {
-			const name: string = attribute.name;
-			const value: string = attribute.value;
-			const created_date: string | undefined = attribute.created_date;
+			const name = attribute.name;
+			const value = attribute.value;
+			const created_date = attribute.created_date;
 
 			return {
 				device_attribute: {
@@ -237,7 +234,7 @@ export async function addPNIDConnection(pnid: HydratedPNIDDocument, data: Connec
 }
 
 export async function addPNIDConnectionDiscord(pnid: HydratedPNIDDocument, data: DiscordConnectionData): Promise<ConnectionResponse> {
-	const valid: joi.ValidationResult = discordConnectionSchema.validate(data);
+	const valid = discordConnectionSchema.validate(data);
 
 	if (valid.error) {
 		return {

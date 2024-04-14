@@ -2,11 +2,11 @@ import fs from 'fs-extra';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { LOG_INFO, LOG_WARN, LOG_ERROR } from '@/logger';
-import { Config, DisabledFeatures } from '@/types/common/config';
+import { Config } from '@/types/common/config';
 
 dotenv.config();
 
-export const disabledFeatures: DisabledFeatures = {
+export const disabledFeatures = {
 	redis: false,
 	email: false,
 	captcha: false,

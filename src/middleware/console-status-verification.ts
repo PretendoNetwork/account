@@ -3,7 +3,6 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { Device } from '@/models/device';
 import { getValueFromHeaders } from '@/util';
-import { HydratedDeviceDocument } from '@/types/mongoose/device';
 
 async function consoleStatusVerificationMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	if (!request.certificate || !request.certificate.valid) {
@@ -17,7 +16,7 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		return;
 	}
 
-	const deviceIDHeader: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
+	const deviceIDHeader = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
 
 	if (!deviceIDHeader) {
 		response.status(400).send(xmlbuilder.create({
@@ -30,7 +29,7 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		return;
 	}
 
-	const deviceID: number = Number(deviceIDHeader);
+	const deviceID = Number(deviceIDHeader);
 
 	if (isNaN(deviceID)) {
 		response.status(400).send(xmlbuilder.create({
@@ -43,7 +42,7 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		return;
 	}
 
-	const serialNumber: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-serial-number');
+	const serialNumber = getValueFromHeaders(request.headers, 'x-nintendo-serial-number');
 
 	// TODO - Verify serial numbers somehow?
 	// * This is difficult to do safely because serial numbers are
@@ -72,7 +71,7 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 	// * This is kinda temp for now. Needs to be redone to handle linking this data to existing 3DS devices in the DB
 	// TODO - 3DS consoles are created in the NASC middleware. They need special handling to link them up with the data in the NNID API!
 	if (request.certificate.consoleType === 'wiiu') {
-		const certificateDeviceID: number = parseInt(request.certificate.certificateName.slice(2), 16);
+		const certificateDeviceID = parseInt(request.certificate.certificateName.slice(2), 16);
 
 		if (deviceID !== certificateDeviceID) {
 			// TODO - Change this to a different error
@@ -88,9 +87,9 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		}
 
 		// * Only store a hash of the certificate in case of a breach
-		const certificateHash: string = crypto.createHash('sha256').update(request.certificate._certificate).digest('base64');
+		const certificateHash = crypto.createHash('sha256').update(request.certificate._certificate).digest('base64');
 
-		let device: HydratedDeviceDocument | null = await Device.findOne({
+		let device = await Device.findOne({
 			certificate_hash: certificateHash,
 		});
 

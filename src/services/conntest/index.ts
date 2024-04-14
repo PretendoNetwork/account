@@ -5,7 +5,7 @@ import subdomain from 'express-subdomain';
 import { LOG_INFO } from '@/logger';
 
 // Router to handle the subdomain restriction
-const conntest: express.Router = express.Router();
+const conntest = express.Router();
 
 // Setup route
 LOG_INFO('[conntest] Applying imported routes');
@@ -27,7 +27,7 @@ This is test.html page
 });
 
 // Main router for endpoints
-const router: express.Router = express.Router();
+const router = express.Router();
 
 // Create subdomains
 LOG_INFO('[conntest] Creating \'conntest\' subdomain');

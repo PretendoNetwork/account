@@ -3,10 +3,9 @@ import { UpdatePNIDPermissionsRequest } from '@pretendonetwork/grpc/account/upda
 import { getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
-import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 export async function updatePNIDPermissions(request: UpdatePNIDPermissionsRequest): Promise<Empty> {
-	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(request.pid);
+	const pnid = await getPNIDByPID(request.pid);
 
 	if (!pnid) {
 		throw new ServerError(

@@ -3,10 +3,9 @@ import { z } from 'zod';
 import Mii from 'mii-js';
 import { config } from '@/config-manager';
 import { PNID } from '@/models/pnid';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { UpdateUserRequest } from '@/types/services/api/update-user-request';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 // TODO - Extend this later with more settings
 const userSchema = z.object({
@@ -24,7 +23,7 @@ const userSchema = z.object({
  * Description: Gets PNID details about the current user
  */
 router.get('/', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		response.status(400).json({
@@ -74,7 +73,7 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
  * Description: Updates PNID certain details about the current user
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 	const updateUserRequest: UpdateUserRequest = request.body;
 
 	if (!pnid) {
@@ -100,7 +99,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	}
 
 	if (result.data.mii) {
-		const miiNameBuffer: Buffer = Buffer.from(result.data.mii.name, 'utf16le'); // * UTF8 to UTF16
+		const miiNameBuffer = Buffer.from(result.data.mii.name, 'utf16le'); // * UTF8 to UTF16
 
 		if (miiNameBuffer.length < 1) {
 			response.status(400).json({
@@ -123,7 +122,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		}
 
 		try {
-			const miiDataBuffer: Buffer = Buffer.from(result.data.mii.data, 'base64');
+			const miiDataBuffer = Buffer.from(result.data.mii.data, 'base64');
 
 			if (miiDataBuffer.length < 0x60) {
 				response.status(400).json({
@@ -145,7 +144,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 				return;
 			}
 
-			const mii: Mii = new Mii(miiDataBuffer);
+			const mii = new Mii(miiDataBuffer);
 			mii.validate();
 		} catch (_) {
 			response.status(400).json({
@@ -167,7 +166,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	const updateData: Record<string, any> = {};
 
 	if (result.data.environment) {
-		const environment: string = result.data.environment;
+		const environment = result.data.environment;
 
 		if (environment === 'test' && pnid.access_level < 1) {
 			response.status(400).json({

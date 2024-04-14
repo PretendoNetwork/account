@@ -2,9 +2,8 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getValueFromQueryString } from '@/util';
 import { PNID } from '@/models/pnid';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [GET]
@@ -12,9 +11,9 @@ const router: express.Router = express.Router();
  * Description: Maps between NNID usernames and PIDs
  */
 router.get('/mapped_ids', async (request: express.Request, response: express.Response): Promise<void> => {
-	const inputType: string | undefined = getValueFromQueryString(request.query, 'input_type');
-	const outputType: string | undefined = getValueFromQueryString(request.query, 'output_type');
-	const input: string | undefined = getValueFromQueryString(request.query, 'input');
+	const inputType = getValueFromQueryString(request.query, 'input_type');
+	const outputType = getValueFromQueryString(request.query, 'output_type');
+	const input = getValueFromQueryString(request.query, 'input');
 
 	if (!inputType || !outputType || !input) {
 		response.status(400).send(xmlbuilder.create({
@@ -30,7 +29,7 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 		return;
 	}
 
-	let inputList: string[] = input.split(',');
+	let inputList = input.split(',');
 	let queryInput: string;
 	let queryOutput: string;
 
@@ -57,7 +56,7 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 		in_id: string;
 		out_id: string;
 	}[] = [];
-	const allowedTypes: string[] = ['pid', 'user_id'];
+	const allowedTypes = ['pid', 'user_id'];
 
 	for (const input of inputList) {
 		const result: {
@@ -88,7 +87,7 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 				}
 			}
 
-			const searchResult: HydratedPNIDDocument | null = await PNID.findOne(query);
+			const searchResult = await PNID.findOne(query);
 
 			if (searchResult) {
 				result.out_id = searchResult.get(queryOutput);

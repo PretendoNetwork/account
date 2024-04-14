@@ -4,10 +4,10 @@ import { getPNIDByEmailAddress, getPNIDByUsername } from '@/database';
 import { sendForgotPasswordEmail } from '@/util';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
-	const input: string = request.body?.input;
+	const input = request.body?.input;
 
 	if (!input || input.trim() === '') {
 		response.status(400).json({

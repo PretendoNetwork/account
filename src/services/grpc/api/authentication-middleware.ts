@@ -3,7 +3,7 @@ import { getPNIDByTokenAuth } from '@/database';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 // * These paths require that a token be present
-const TOKEN_REQUIRED_PATHS: string[] = [
+const TOKEN_REQUIRED_PATHS = [
 	'/api.API/GetUserData',
 	'/api.API/UpdateUserData',
 	'/api.API/ResetPassword', // * This paths token is not an authentication token, it is a password reset token
@@ -20,14 +20,14 @@ export async function* authenticationMiddleware<Request, Response>(
 	call: ServerMiddlewareCall<Request, Response, AuthenticationCallContextExt>,
 	context: CallContext,
 ): AsyncGenerator<Response, Response | void, undefined> {
-	const token: string | undefined = context.metadata.get('X-Token')?.trim();
+	const token = context.metadata.get('X-Token')?.trim();
 
 	if (!token && TOKEN_REQUIRED_PATHS.includes(call.method.path)) {
 		throw new ServerError(Status.UNAUTHENTICATED, 'Missing or invalid authentication token');
 	}
 
 	try {
-		let pnid: HydratedPNIDDocument | null = null;
+		let pnid = null;
 
 		if (token) {
 			pnid = await getPNIDByTokenAuth(token);
@@ -42,7 +42,7 @@ export async function* authenticationMiddleware<Request, Response>(
 			pnid
 		});
 	} catch (error) {
-		let message: string = 'Unknown server error';
+		let message = 'Unknown server error';
 
 		console.log(error);
 

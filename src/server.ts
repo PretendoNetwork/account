@@ -25,7 +25,7 @@ import assets from '@/services/assets';
 
 import { config } from '@/config-manager';
 
-const app: express.Express = express();
+const app = express();
 
 // START APPLICATION
 
@@ -51,8 +51,8 @@ app.use(assets);
 // 404 handler
 LOG_INFO('Creating 404 status handler');
 app.use((request: express.Request, response: express.Response): void => {
-	const url: string = fullUrl(request);
-	let deviceId: string | undefined = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
+	const url = fullUrl(request);
+	let deviceId = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
 
 	if (!deviceId) {
 		deviceId = 'Unknown';
@@ -78,9 +78,9 @@ app.use((request: express.Request, response: express.Response): void => {
 // non-404 error handler
 LOG_INFO('Creating non-404 status handler');
 app.use((error: any, request: express.Request, response: express.Response, _next: express.NextFunction): void => {
-	const status: number = error.status || 500;
-	const url: string = fullUrl(request);
-	let deviceId: string | undefined = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
+	const status = error.status || 500;
+	const url = fullUrl(request);
+	let deviceId = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
 
 	if (!deviceId) {
 		deviceId = 'Unknown';

@@ -3,7 +3,6 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
-import mongoose from 'mongoose';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
@@ -11,17 +10,13 @@ import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendP
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
-
 import timezones from '@/services/nnas/timezones.json';
 
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
-import { RegionLanguages } from '@/types/services/nnas/region-languages';
-import { RegionTimezone, RegionTimezones } from '@/types/services/nnas/region-timezones';
 import { Person } from '@/types/services/nnas/person';
-import { PNIDProfile } from '@/types/services/nnas/pnid-profile';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [GET]
@@ -29,9 +24,9 @@ const router: express.Router = express.Router();
  * Description: Checks if a username is in use
  */
 router.get('/:username', async (request: express.Request, response: express.Response): Promise<void> => {
-	const username: string = request.params.username;
+	const username = request.params.username;
 
-	const userExists: boolean = await doesPNIDExist(username);
+	const userExists = await doesPNIDExist(username);
 
 	if (userExists) {
 		response.status(400).send(xmlbuilder.create({
@@ -70,7 +65,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 	const person: Person = request.body.person;
 
-	const userExists: boolean = await doesPNIDExist(person.user_id);
+	const userExists = await doesPNIDExist(person.user_id);
 
 	if (userExists) {
 		response.status(400).send(xmlbuilder.create({
@@ -85,11 +80,11 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		return;
 	}
 
-	const creationDate: string = moment().format('YYYY-MM-DDTHH:MM:SS');
+	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid: HydratedPNIDDocument;
 	let nexAccount: HydratedNEXAccountDocument;
 
-	const session: mongoose.ClientSession = await databaseConnection().startSession();
+	const session = await databaseConnection().startSession();
 	await session.startTransaction();
 
 	try {
@@ -109,16 +104,16 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 		await nexAccount.save({ session });
 
-		const primaryPasswordHash: string = nintendoPasswordHash(person.password, nexAccount.pid);
-		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
+		const primaryPasswordHash = nintendoPasswordHash(person.password, nexAccount.pid);
+		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
 
-		const countryCode: string = person.country;
-		const language: string = person.language;
-		const timezoneName: string = person.tz_name;
+		const countryCode = person.country;
+		const language = person.language;
+		const timezoneName = person.tz_name;
 
-		const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
-		const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
-		let timezone: RegionTimezone | undefined = regionTimezones.find(tz => tz.area === timezoneName);
+		const regionLanguages = timezones[countryCode as keyof typeof timezones];
+		const regionTimezones = regionLanguages[language as keyof typeof regionLanguages] ? regionLanguages[language as keyof typeof regionLanguages] : Object.values(regionLanguages)[0];
+		let timezone = regionTimezones.find(tz => tz.area === timezoneName);
 
 		if (!timezone) {
 			// TODO - Change this, handle the error
@@ -221,7 +216,7 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		// TODO - Research this error more
@@ -238,7 +233,7 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 		return;
 	}
 
-	const person: PNIDProfile | null = await getPNIDProfileJSONByPID(pnid.pid);
+	const person = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
@@ -276,7 +271,7 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 
 	// TODO - CHANGE THIS. WE NEED TO SAVE CONSOLE DETAILS !!!
 
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		// TODO - Research this error more
@@ -293,7 +288,7 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 		return;
 	}
 
-	const person: PNIDProfile | null = await getPNIDProfileJSONByPID(pnid.pid);
+	const person = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
@@ -325,13 +320,13 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	const pnid: HydratedPNIDDocument | null = request.pnid;
-	const deviceId: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
-	const acceptLanguage: string | undefined = getValueFromHeaders(request.headers, 'accept-language');
-	const platformId: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-platform-id');
-	const region: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-region');
-	const serialNumber: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-serial-number');
-	const systemVersion: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-system-version');
+	const pnid = request.pnid;
+	const deviceId = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
+	const acceptLanguage = getValueFromHeaders(request.headers, 'accept-language');
+	const platformId = getValueFromHeaders(request.headers, 'x-nintendo-platform-id');
+	const region = getValueFromHeaders(request.headers, 'x-nintendo-region');
+	const serialNumber = getValueFromHeaders(request.headers, 'x-nintendo-serial-number');
+	const systemVersion = getValueFromHeaders(request.headers, 'x-nintendo-system-version');
 
 	if (!deviceId || !acceptLanguage || !platformId || !region || !serialNumber || !systemVersion) {
 		// TODO - Research these error more
@@ -394,7 +389,7 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', moment().add(5, 'h').toString());
 
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		// TODO - Research this error more
@@ -411,7 +406,7 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 		return;
 	}
 
-	const person: PNIDProfile | null = await getPNIDProfileJSONByPID(pnid.pid);
+	const person = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
@@ -455,7 +450,7 @@ router.get('/@me/devices/status', async (_request: express.Request, response: ex
  * Description: Updates a users Mii
  */
 router.put('/@me/miis/@primary', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		// TODO - Research this error more
@@ -480,9 +475,9 @@ router.put('/@me/miis/@primary', async (request: express.Request, response: expr
 
 	// TODO - Better checks
 
-	const name: string = mii.name;
-	const primary: string = mii.primary;
-	const data: string = mii.data;
+	const name = mii.name;
+	const primary = mii.primary;
+	const data = mii.data;
 
 	await pnid.updateMii({ name, primary, data });
 
@@ -498,7 +493,7 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		response.status(400).send(xmlbuilder.create({
@@ -523,7 +518,7 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
  * Description: Deletes a NNID
  */
 router.post('/@me/deletion', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		response.status(400).send(xmlbuilder.create({
@@ -539,7 +534,7 @@ router.post('/@me/deletion', async (request: express.Request, response: express.
 		return;
 	}
 
-	const email: string = pnid.email.address;
+	const email = pnid.email.address;
 
 	await pnid.scrub();
 	await pnid.save();
@@ -559,7 +554,7 @@ router.post('/@me/deletion', async (request: express.Request, response: express.
  * Description: Updates a PNIDs account details
  */
 router.put('/@me', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 	const person: Person = request.body.person;
 
 	if (!pnid) {
@@ -576,11 +571,11 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 		return;
 	}
 
-	const gender: string = person.gender ? person.gender : pnid.gender;
-	const region: number = person.region ? person.region : pnid.region;
-	const countryCode: string = person.country ? person.country : pnid.country;
-	const language: string = person.language ? person.language : pnid.language;
-	let timezoneName: string = person.tz_name ? person.tz_name : pnid.timezone.name;
+	const gender = person.gender ? person.gender : pnid.gender;
+	const region = person.region ? person.region : pnid.region;
+	const countryCode = person.country ? person.country : pnid.country;
+	const language = person.language ? person.language : pnid.language;
+	let timezoneName = person.tz_name ? person.tz_name : pnid.timezone.name;
 
 	// * Fix for 3DS sending empty person.tz_name, which is interpreted as an empty object
 	// TODO - See if there's a cleaner way to do this?
@@ -589,12 +584,12 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 		timezoneName = pnid.timezone.name;
 	}
 
-	const marketingFlag: boolean = person.marketing_flag ? person.marketing_flag === 'Y' : pnid.flags.marketing;
-	const offDeviceFlag: boolean = person.off_device_flag ? person.off_device_flag === 'Y' : pnid.flags.off_device;
+	const marketingFlag = person.marketing_flag ? person.marketing_flag === 'Y' : pnid.flags.marketing;
+	const offDeviceFlag = person.off_device_flag ? person.off_device_flag === 'Y' : pnid.flags.off_device;
 
-	const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
-	const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
-	let timezone: RegionTimezone | undefined = regionTimezones.find(tz => tz.area === timezoneName);
+	const regionLanguages = timezones[countryCode as keyof typeof timezones];
+	const regionTimezones = regionLanguages[language as keyof typeof regionLanguages] ? regionLanguages[language as keyof typeof regionLanguages] : Object.values(regionLanguages)[0];
+	let timezone = regionTimezones.find(tz => tz.area === timezoneName);
 
 	if (!timezone) {
 		// TODO - Change this, handle the error
@@ -608,8 +603,8 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 	}
 
 	if (person.password) {
-		const primaryPasswordHash: string = nintendoPasswordHash(person.password, pnid.pid);
-		const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
+		const primaryPasswordHash = nintendoPasswordHash(person.password, pnid.pid);
+		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid.password = passwordHash;
 	}
@@ -632,7 +627,7 @@ router.put('/@me', async (request: express.Request, response: express.Response):
  * Description: Gets a list (why?) of PNID emails
  */
 router.get('/@me/emails', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	if (!pnid) {
 		response.status(400).send(xmlbuilder.create({
@@ -673,7 +668,7 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
  * Description: Updates a users email address
  */
 router.put('/@me/emails/@primary', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
+	const pnid = request.pnid;
 
 	const email: {
 		address: string;

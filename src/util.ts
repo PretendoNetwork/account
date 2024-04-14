@@ -13,7 +13,6 @@ import { config, disabledFeatures } from '@/config-manager';
 import { TokenOptions } from '@/types/common/token-options';
 import { Token } from '@/types/common/token';
 import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
-import { MailerOptions } from '@/types/common/mailer-options';
 import { SafeQs } from '@/types/common/safe-qs';
 
 let s3: aws.S3;
@@ -27,10 +26,10 @@ if (!disabledFeatures.s3) {
 }
 
 export function nintendoPasswordHash(password: string, pid: number): string {
-	const pidBuffer: Buffer = Buffer.alloc(4);
+	const pidBuffer = Buffer.alloc(4);
 	pidBuffer.writeUInt32LE(pid);
 
-	const unpacked: Buffer = Buffer.concat([
+	const unpacked = Buffer.concat([
 		pidBuffer,
 		Buffer.from('\x02\x65\x43\x46'),
 		Buffer.from(password)
@@ -45,12 +44,12 @@ export function nintendoBase64Decode(encoded: string): Buffer {
 }
 
 export function nintendoBase64Encode(decoded: string | Buffer): string {
-	const encoded: string = Buffer.from(decoded).toString('base64');
+	const encoded = Buffer.from(decoded).toString('base64');
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
 export function generateToken(key: string, options: TokenOptions): Buffer | null {
-	let dataBuffer: Buffer = Buffer.alloc(1 + 1 + 4 + 8);
+	let dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
 	dataBuffer.writeUInt8(options.system_type, 0x0);
 	dataBuffer.writeUInt8(options.token_type, 0x1);
@@ -73,19 +72,19 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 		dataBuffer.writeInt8(options.access_level, 0x16);
 	}
 
-	const iv: Buffer = Buffer.alloc(16);
-	const cipher: crypto.Cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
+	const iv = Buffer.alloc(16);
+	const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
 
 	const encrypted = Buffer.concat([
 		cipher.update(dataBuffer),
 		cipher.final()
 	]);
 
-	let final: Buffer = encrypted;
+	let final = encrypted;
 
 	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
 		// * Access and refresh tokens don't get a checksum due to size constraints
-		const checksum: Buffer = crc32(dataBuffer);
+		const checksum = crc32(dataBuffer);
 
 		final = Buffer.concat([
 			checksum,
@@ -98,7 +97,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 
 export function decryptToken(token: Buffer): Buffer {
 	let encryptedBody: Buffer;
-	let expectedChecksum: number = 0;
+	let expectedChecksum = 0;
 
 	if (token.length === 16) {
 		// * Token is an access/refresh token, no checksum
@@ -108,10 +107,10 @@ export function decryptToken(token: Buffer): Buffer {
 		encryptedBody = token.subarray(4);
 	}
 
-	const iv: Buffer = Buffer.alloc(16);
-	const decipher: crypto.Decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(config.aes_key, 'hex'), iv);
+	const iv = Buffer.alloc(16);
+	const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(config.aes_key, 'hex'), iv);
 
-	const decrypted: Buffer = Buffer.concat([
+	const decrypted = Buffer.concat([
 		decipher.update(encryptedBody),
 		decipher.final()
 	]);
@@ -140,9 +139,9 @@ export function unpackToken(token: Buffer): Token {
 }
 
 export function fullUrl(request: express.Request): string {
-	const protocol: string = request.protocol;
-	const host: string = request.host;
-	const opath: string = request.originalUrl;
+	const protocol = request.protocol;
+	const host = request.host;
+	const opath = request.originalUrl;
 
 	return `${protocol}://${host}${opath}`;
 }
@@ -161,8 +160,8 @@ export async function uploadCDNAsset(bucket: string, key: string, data: Buffer, 
 }
 
 export async function writeLocalCDNFile(key: string, data: Buffer): Promise<void> {
-	const filePath: string = config.cdn.disk_path;
-	const folder: string = path.dirname(filePath);
+	const filePath = config.cdn.disk_path;
+	const folder = path.dirname(filePath);
 
 	await fs.ensureDir(folder);
 	await fs.writeFile(filePath, data);
@@ -177,7 +176,7 @@ export function nascError(errorCode: string): URLSearchParams {
 }
 
 export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
-	const options: MailerOptions = {
+	const options = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Please confirm your email address',
 		username: pnid.username,
@@ -192,7 +191,7 @@ export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNI
 }
 
 export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void>  {
-	const options: MailerOptions = {
+	const options = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Email address confirmed',
 		username: pnid.username,
@@ -204,7 +203,7 @@ export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IP
 }
 
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
-	const tokenOptions: TokenOptions = {
+	const tokenOptions = {
 		system_type: 0xF, // * API
 		token_type: 0x5, // * Password reset
 		pid: pnid.pid,
@@ -213,12 +212,12 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // Only valid for 24 hours
 	};
 
-	const tokenBuffer: Buffer | null = await generateToken(config.aes_key, tokenOptions);
-	const passwordResetToken: string = tokenBuffer ? tokenBuffer.toString('hex') : '';
+	const tokenBuffer = await generateToken(config.aes_key, tokenOptions);
+	const passwordResetToken = tokenBuffer ? tokenBuffer.toString('hex') : '';
 
 	// TODO - Handle null token
 
-	const mailerOptions: MailerOptions = {
+	const mailerOptions = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Forgot Password',
 		username: pnid.username,
@@ -234,7 +233,7 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 }
 
 export async function sendPNIDDeletedEmail(email: string, username: string): Promise<void> {
-	const options: MailerOptions = {
+	const options = {
 		to: email,
 		subject: '[Pretendo Network] PNID Deleted',
 		username: username,
@@ -265,8 +264,8 @@ export function makeSafeQs(query: ParsedQs): SafeQs {
 }
 
 export function getValueFromQueryString(qs: ParsedQs, key: string): string | undefined {
-	let property: string | ParsedQs | string[] | ParsedQs[] | SafeQs | undefined = qs[key];
-	let value: string | undefined;
+	let property = qs[key];
+	let value;
 
 	if (property) {
 		if (Array.isArray(property)) {
@@ -285,8 +284,8 @@ export function getValueFromQueryString(qs: ParsedQs, key: string): string | und
 }
 
 export function getValueFromHeaders(headers: IncomingHttpHeaders, key: string): string | undefined {
-	let header: string | string[] | undefined = headers[key];
-	let value: string | undefined;
+	let header = headers[key];
+	let value;
 
 	if (header) {
 		if (!Array.isArray(header)) {

@@ -1,12 +1,9 @@
 import express from 'express';
 import { addPNIDConnection, removePNIDConnection } from '@/database';
-import { ConnectionData } from '@/types/services/api/connection-data';
-import { ConnectionResponse } from '@/types/services/api/connection-response';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
-const VALID_CONNECTION_TYPES: string[] = [
+const VALID_CONNECTION_TYPES = [
 	'discord'
 ];
 
@@ -16,9 +13,9 @@ const VALID_CONNECTION_TYPES: string[] = [
  * Description: Adds an account connection to the users PNID
  */
 router.post('/add/:type', async (request: express.Request, response: express.Response): Promise<void> => {
-	const data: ConnectionData = request.body?.data;
-	const pnid: HydratedPNIDDocument | null = request.pnid;
-	const type: string = request.params.type;
+	const data = request.body?.data;
+	const pnid = request.pnid;
+	const type = request.params.type;
 
 	if (!pnid) {
 		response.status(400).json({
@@ -50,7 +47,7 @@ router.post('/add/:type', async (request: express.Request, response: express.Res
 		return;
 	}
 
-	let result: ConnectionResponse | undefined = await addPNIDConnection(pnid, data, type);
+	let result = await addPNIDConnection(pnid, data, type);
 
 	if (!result) {
 		result = {
@@ -69,8 +66,8 @@ router.post('/add/:type', async (request: express.Request, response: express.Res
  * Description: Removes an account connection from the users PNID
  */
 router.delete('/remove/:type', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pnid: HydratedPNIDDocument | null = request.pnid;
-	const type: string = request.params.type;
+	const pnid = request.pnid;
+	const type = request.params.type;
 
 	if (!pnid) {
 		response.status(400).json({
@@ -92,7 +89,7 @@ router.delete('/remove/:type', async (request: express.Request, response: expres
 		return;
 	}
 
-	let result: ConnectionResponse | undefined = await removePNIDConnection(pnid, type);
+	let result = await removePNIDConnection(pnid, type);
 
 	if (!result) {
 		result = {

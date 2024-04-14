@@ -17,7 +17,7 @@ import provider from '@/services/nnas/routes/provider';
 import support from '@/services/nnas/routes/support';
 
 // Router to handle the subdomain restriction
-const nnas: express.Router = express.Router();
+const nnas = express.Router();
 
 LOG_INFO('[NNAS] Importing middleware');
 nnas.use(clientHeaderCheck);

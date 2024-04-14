@@ -4,14 +4,13 @@ import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
 import { nintendoPasswordHash, generateToken} from '@/util';
 import { config } from '@/config-manager';
-import type { TokenOptions } from '@/types/common/token-options';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 export async function login(request: LoginRequest): Promise<DeepPartial<LoginResponse>> {
-	const grantType: string = request.grantType?.trim();
-	const username: string | undefined = request.username?.trim();
-	const password: string | undefined = request.password?.trim();
-	const refreshToken: string | undefined = request.refreshToken?.trim();
+	const grantType = request.grantType?.trim();
+	const username = request.username?.trim();
+	const password = request.password?.trim();
+	const refreshToken = request.refreshToken?.trim();
 
 	if (!['password', 'refresh_token'].includes(grantType)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid grant type');
@@ -38,7 +37,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 			throw new ServerError(Status.INVALID_ARGUMENT, 'User not found');
 		}
 
-		const hashedPassword: string = nintendoPasswordHash(password!, pnid.pid); // * We know password will never be null here
+		const hashedPassword = nintendoPasswordHash(password!, pnid.pid); // * We know password will never be null here
 
 		if (!bcrypt.compareSync(hashedPassword, pnid.password)) {
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Password is incorrect');
@@ -55,7 +54,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 		throw new ServerError(Status.UNAUTHENTICATED, 'Account has been deleted');
 	}
 
-	const accessTokenOptions: TokenOptions = {
+	const accessTokenOptions = {
 		system_type: 0x3, // * API
 		token_type: 0x1, // * OAuth Access
 		pid: pnid.pid,
@@ -64,7 +63,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const refreshTokenOptions: TokenOptions = {
+	const refreshTokenOptions = {
 		system_type: 0x3, // * API
 		token_type: 0x2, // * OAuth Refresh
 		pid: pnid.pid,
@@ -73,11 +72,11 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessTokenBuffer: Buffer | null = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer: Buffer | null = await generateToken(config.aes_key, refreshTokenOptions);
+	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
+	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
 
-	const accessToken: string = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken: string = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
+	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
 
 	// TODO - Handle null tokens
 

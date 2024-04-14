@@ -3,7 +3,6 @@ import { SetStripeConnectionDataRequest } from '@pretendonetwork/grpc/api/set_st
 import { PNID } from '@/models/pnid';
 import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
-import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 type StripeMongoUpdateScheme = {
 	access_level?: number;
@@ -18,7 +17,7 @@ type StripeMongoUpdateScheme = {
 
 export async function setStripeConnectionData(request: SetStripeConnectionDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<Empty>{
 	// * This is asserted in authentication-middleware, we know this is never null
-	const pnid: HydratedPNIDDocument = context.pnid!;
+	const pnid = context.pnid!;
 
 	const updateData: StripeMongoUpdateScheme = {
 		'connections.stripe.latest_webhook_timestamp': Number(request.timestamp)
@@ -78,7 +77,7 @@ export async function setStripeConnectionData(request: SetStripeConnectionDataRe
 			}, { upsert: true }).exec();
 		}
 	} catch (error) {
-		let message: string = 'Unknown Mongo error';
+		let message = 'Unknown Mongo error';
 
 		if (error instanceof Error) {
 			message = error.message;
