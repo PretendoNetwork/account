@@ -9,7 +9,7 @@
     "clean": "rimraf ./dist",
     "copy-static": "npm run copy-assets && npm run copy-timezones",
     "copy-assets": "cp -r ./src/assets ./dist/assets",
-    "copy-timezones": "cp ./src/services/nnid/timezones.json ./dist/services/nnid/timezones.json",
+    "copy-timezones": "cp ./src/services/nnas/timezones.json ./dist/services/nnas/timezones.json",
     "start": "node .",
     "start:dev": "NODE_ENV=development node ."
   },

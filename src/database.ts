@@ -11,7 +11,7 @@ import { IDevice } from '@/types/mongoose/device';
 import { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 import { HydratedServerDocument } from '@/types/mongoose/server';
 import { Token } from '@/types/common/token';
-import { PNIDProfile } from '@/types/services/nnid/pnid-profile';
+import { PNIDProfile } from '@/types/services/nnas/pnid-profile';
 import { ConnectionData } from '@/types/services/api/connection-data';
 import { ConnectionResponse } from '@/types/services/api/connection-response';
 import { DiscordConnectionData } from '@/types/services/api/discord-connection-data';

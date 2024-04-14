@@ -1,8 +1,8 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
-import timezones from '@/services/nnid/timezones.json';
-import { RegionLanguages } from '@/types/services/nnid/region-languages';
-import { RegionTimezones } from '@/types/services/nnid/region-timezones';
+import timezones from '@/services/nnas/timezones.json';
+import { RegionLanguages } from '@/types/services/nnas/region-languages';
+import { RegionTimezones } from '@/types/services/nnas/region-timezones';
 
 const router: express.Router = express.Router();
 

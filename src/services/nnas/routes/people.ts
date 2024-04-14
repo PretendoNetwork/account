@@ -12,14 +12,14 @@ import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
 
-import timezones from '@/services/nnid/timezones.json';
+import timezones from '@/services/nnas/timezones.json';
 
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
-import { RegionLanguages } from '@/types/services/nnid/region-languages';
-import { RegionTimezone, RegionTimezones } from '@/types/services/nnid/region-timezones';
-import { Person } from '@/types/services/nnid/person';
-import { PNIDProfile } from '@/types/services/nnid/pnid-profile';
+import { RegionLanguages } from '@/types/services/nnas/region-languages';
+import { RegionTimezone, RegionTimezones } from '@/types/services/nnas/region-timezones';
+import { Person } from '@/types/services/nnas/person';
+import { PNIDProfile } from '@/types/services/nnas/pnid-profile';
 
 const router: express.Router = express.Router();
 
