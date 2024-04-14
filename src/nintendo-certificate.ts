@@ -77,7 +77,7 @@ class NintendoCertificate {
 	issuer: string;
 	keyType: number;
 	certificateName: string;
-	ngKeyId: number;
+	ngKeyID: number;
 	publicKey: Buffer;
 	valid: boolean;
 	publicKeyData: Buffer;
@@ -91,7 +91,7 @@ class NintendoCertificate {
 		this.issuer = '';
 		this.keyType = 0;
 		this.certificateName = '';
-		this.ngKeyId = 0;
+		this.ngKeyID = 0;
 		this.publicKey = Buffer.alloc(0);
 		this.valid = false;
 		this.publicKeyData = Buffer.alloc(0);
@@ -128,7 +128,7 @@ class NintendoCertificate {
 			this.issuer = this._certificate.subarray(0x80, 0xC0).toString().split('\0')[0];
 			this.keyType = this._certificate.readUInt32BE(0xC0);
 			this.certificateName = this._certificate.subarray(0xC4, 0x104).toString().split('\0')[0];
-			this.ngKeyId = this._certificate.readUInt32BE(0x104);
+			this.ngKeyID = this._certificate.readUInt32BE(0x104);
 			this.publicKeyData = this._certificate.subarray(0x108);
 
 			if (this.issuer === 'Root-CA00000003-MS00000012') {

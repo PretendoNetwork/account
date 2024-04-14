@@ -321,14 +321,14 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
 	const pnid = request.pnid;
-	const deviceId = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
+	const deviceID = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
 	const acceptLanguage = getValueFromHeaders(request.headers, 'accept-language');
-	const platformId = getValueFromHeaders(request.headers, 'x-nintendo-platform-id');
+	const platformID = getValueFromHeaders(request.headers, 'x-nintendo-platform-id');
 	const region = getValueFromHeaders(request.headers, 'x-nintendo-region');
 	const serialNumber = getValueFromHeaders(request.headers, 'x-nintendo-serial-number');
 	const systemVersion = getValueFromHeaders(request.headers, 'x-nintendo-system-version');
 
-	if (!deviceId || !acceptLanguage || !platformId || !region || !serialNumber || !systemVersion) {
+	if (!deviceID || !acceptLanguage || !platformID || !region || !serialNumber || !systemVersion) {
 		// TODO - Research these error more
 		response.status(400).send(xmlbuilder.create({
 			errors: {
@@ -362,11 +362,11 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 		devices: [
 			{
 				device: {
-					device_id: deviceId,
+					device_id: deviceID,
 					language: acceptLanguage,
 					updated: moment().format('YYYY-MM-DDTHH:MM:SS'),
 					pid: pnid.pid,
-					platform_id: platformId,
+					platform_id: platformID,
 					region: region,
 					serial_number: serialNumber,
 					status: 'ACTIVE',

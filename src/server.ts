@@ -52,13 +52,13 @@ app.use(assets);
 LOG_INFO('Creating 404 status handler');
 app.use((request: express.Request, response: express.Response): void => {
 	const url = fullUrl(request);
-	let deviceId = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
+	let deviceID = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
 
-	if (!deviceId) {
-		deviceId = 'Unknown';
+	if (!deviceID) {
+		deviceID = 'Unknown';
 	}
 
-	LOG_WARN(`HTTP 404 at ${url} from ${deviceId}`);
+	LOG_WARN(`HTTP 404 at ${url} from ${deviceID}`);
 
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
@@ -80,13 +80,13 @@ LOG_INFO('Creating non-404 status handler');
 app.use((error: any, request: express.Request, response: express.Response, _next: express.NextFunction): void => {
 	const status = error.status || 500;
 	const url = fullUrl(request);
-	let deviceId = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
+	let deviceID = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
 
-	if (!deviceId) {
-		deviceId = 'Unknown';
+	if (!deviceID) {
+		deviceID = 'Unknown';
 	}
 
-	LOG_WARN(`HTTP ${status} at ${url} from ${deviceId}: ${error.message}`);
+	LOG_WARN(`HTTP ${status} at ${url} from ${deviceID}: ${error.message}`);
 
 	response.status(status).json({
 		app: 'api',

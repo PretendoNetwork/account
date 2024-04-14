@@ -14,14 +14,14 @@ function nintendoClientHeaderCheck(request: express.Request, response: express.R
 	response.set('Server', 'Nintendo 3DS (http)');
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
-	const clientId = getValueFromHeaders(request.headers, 'x-nintendo-client-id');
+	const clientID = getValueFromHeaders(request.headers, 'x-nintendo-client-id');
 	const clientSecret = getValueFromHeaders(request.headers, 'x-nintendo-client-secret');
 
 	if (
-		!clientId ||
+		!clientID ||
 		!clientSecret ||
-		!VALID_CLIENT_ID_SECRET_PAIRS[clientId] ||
-		clientSecret !== VALID_CLIENT_ID_SECRET_PAIRS[clientId]
+		!VALID_CLIENT_ID_SECRET_PAIRS[clientID] ||
+		clientSecret !== VALID_CLIENT_ID_SECRET_PAIRS[clientID]
 	) {
 		response.send(xmlbuilder.create({
 			errors: {
