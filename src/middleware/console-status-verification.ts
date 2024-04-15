@@ -72,6 +72,8 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		serial: serialNumber,
 	});
 
+	const certificateHash = crypto.createHash('sha256').update(request.certificate._certificate).digest('base64');
+
 	if (!device && request.certificate.consoleType === '3ds') {
 		// * A 3DS console document will ALWAYS be created by NASC before
 		// * Hitting the NNAS server. NASC stores the serial number at
@@ -86,9 +88,15 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		}).end());
 
 		return;
+	} else if (device && !device.certificate_hash && request.certificate.consoleType === '3ds') {
+		device.certificate_hash = certificateHash;
+
+		await device.save();
 	}
 
-	const certificateHash = crypto.createHash('sha256').update(request.certificate._certificate).digest('base64');
+	device = await Device.findOne({
+		certificate_hash: certificateHash,
+	});
 
 	if (!device) {
 		// * Device must be a fresh Wii U
@@ -99,12 +107,6 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 			linked_pids: [],
 			certificate_hash: certificateHash
 		});
-	}
-
-	if (!device.certificate_hash && request.certificate.consoleType === '3ds') {
-		device.certificate_hash = certificateHash;
-
-		await device.save();
 	}
 
 	if (device.serial !== serialNumber) {
