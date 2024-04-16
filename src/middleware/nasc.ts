@@ -135,11 +135,6 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 			response.status(200).send(nascError('102').toString());
 			return;
 		}
-
-		if (device.mac_hash !== macAddressHash) {
-			response.status(200).send(nascError('102').toString());
-			return;
-		}
 	}
 
 	// * Workaround for edge case on system transfers
