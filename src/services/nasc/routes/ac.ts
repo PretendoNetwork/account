@@ -1,12 +1,10 @@
 import express from 'express';
 import { nintendoBase64Encode, nintendoBase64Decode, nascError, generateToken } from '@/util';
 import { getServerByTitleID } from '@/database';
-import { TokenOptions } from '@/types/common/token-options';
 import { NASCRequestParams } from '@/types/services/nasc/request-params';
-import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import { HydratedServerDocument } from '@/types/mongoose/server';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [POST]
@@ -15,25 +13,25 @@ const router: express.Router = express.Router();
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const requestParams: NASCRequestParams = request.body;
-	const action: string = nintendoBase64Decode(requestParams.action).toString();
-	const titleID: string = nintendoBase64Decode(requestParams.titleid).toString();
-	const nexAccount: HydratedNEXAccountDocument | null = request.nexAccount;
-	let responseData: URLSearchParams = nascError('null');
+	const action = nintendoBase64Decode(requestParams.action).toString();
+	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
+	const nexAccount = request.nexAccount;
+	let responseData = nascError('null');
 
 	if (!nexAccount) {
 		response.status(200).send(responseData.toString());
 		return;
 	}
 
-	// TODO: REMOVE AFTER PUBLIC LAUNCH
+	// TODO - REMOVE AFTER PUBLIC LAUNCH
 	// * LET EVERYONE IN THE `test` FRIENDS SERVER
 	// * THAT WAY EVERYONE CAN GET AN ASSIGNED PID
-	let serverAccessLevel: string = 'test';
+	let serverAccessLevel = 'test';
 	if (titleID !== '0004013000003202') {
 		serverAccessLevel = nexAccount.server_access_level;
 	}
 
-	const server: HydratedServerDocument | null = await getServerByTitleID(titleID, serverAccessLevel);
+	const server = await getServerByTitleID(titleID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
 		response.status(200).send(nascError('110').toString());
@@ -66,7 +64,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 });
 
 async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
-	const tokenOptions: TokenOptions = {
+	const tokenOptions = {
 		system_type: 0x2, // * 3DS
 		token_type: 0x3, // * NEX token
 		pid: pid,
@@ -77,8 +75,8 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 
 	// TODO - Handle null tokens
 
-	const nexTokenBuffer: Buffer | null = await generateToken(server.aes_key, tokenOptions);
-	const nexToken: string = nintendoBase64Encode(nexTokenBuffer || '');
+	const nexTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	const nexToken = nintendoBase64Encode(nexTokenBuffer || '');
 
 	return new URLSearchParams({
 		locator: nintendoBase64Encode(`${server.ip}:${server.port}`),
@@ -90,7 +88,7 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 }
 
 async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
-	const tokenOptions: TokenOptions = {
+	const tokenOptions = {
 		system_type: 0x2, // * 3DS
 		token_type: 0x4, // * Service token
 		pid: pid,
@@ -101,8 +99,8 @@ async function processServiceTokenRequest(server: HydratedServerDocument, pid: n
 
 	// TODO - Handle null tokens
 
-	const serviceTokenBuffer: Buffer | null = await generateToken(server.aes_key, tokenOptions);
-	const serviceToken: string = nintendoBase64Encode(serviceTokenBuffer || '');
+	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	const serviceToken = nintendoBase64Encode(serviceTokenBuffer || '');
 
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('0'),

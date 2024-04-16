@@ -3,20 +3,19 @@ import bcrypt from 'bcrypt';
 import { PNID } from '@/models/pnid';
 import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
 import { Token } from '@/types/common/token';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
-// This sucks
-const PASSWORD_WORD_OR_NUMBER_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*\d).*/;
-const PASSWORD_WORD_OR_PUNCTUATION_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
-const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX: RegExp = /(?=.*\d)(?=.*[_\-.]).*/;
-const PASSWORD_REPEATED_CHARACTER_REGEX: RegExp = /(.)\1\1/;
+// * This sucks
+const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
+const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
+const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
+const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
 
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
-	const password: string = request.body.password?.trim();
-	const passwordConfirm: string = request.body.password_confirm?.trim();
-	const token: string = request.body.token?.trim();
+	const password = request.body.password?.trim();
+	const passwordConfirm = request.body.password_confirm?.trim();
+	const token = request.body.token?.trim();
 
 	if (!token || token === '') {
 		response.status(400).json({
@@ -30,7 +29,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 	let unpackedToken: Token;
 	try {
-		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'hex'));
+		const decryptedToken = await decryptToken(Buffer.from(token, 'hex'));
 		unpackedToken = unpackToken(decryptedToken);
 	} catch (error) {
 		response.status(400).json({
@@ -52,7 +51,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	const pnid: HydratedPNIDDocument | null = await PNID.findOne({ pid: unpackedToken.pid });
+	const pnid = await PNID.findOne({ pid: unpackedToken.pid });
 
 	if (!pnid) {
 		response.status(400).json({
@@ -135,8 +134,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	const primaryPasswordHash: string = nintendoPasswordHash(password, pnid.pid);
-	const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
+	const primaryPasswordHash = nintendoPasswordHash(password, pnid.pid);
+	const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
 
 	pnid.password = passwordHash;
 

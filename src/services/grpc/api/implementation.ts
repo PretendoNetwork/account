@@ -1,4 +1,3 @@
-import { APIServiceImplementation } from '@pretendonetwork/grpc/api/api_service';
 import { register } from '@/services/grpc/api/register';
 import { login } from '@/services/grpc/api/login';
 import { getUserData } from '@/services/grpc/api/get-user-data';
@@ -8,7 +7,7 @@ import { resetPassword } from '@/services/grpc/api/reset-password';
 import { setDiscordConnectionData } from '@/services/grpc/api/set-discord-connection-data';
 import { setStripeConnectionData } from '@/services/grpc/api/set-stripe-connection-data';
 
-export const apiServiceImplementation: APIServiceImplementation = {
+export const apiServiceImplementation = {
 	register,
 	login,
 	getUserData,

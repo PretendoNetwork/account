@@ -1,12 +1,12 @@
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
-import { HydratedNEXAccountDocument, INEXAccount, INEXAccountMethods, NEXAccountModel } from '@/types/mongoose/nex-account';
+import { INEXAccount, INEXAccountMethods, NEXAccountModel } from '@/types/mongoose/nex-account';
 
 const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMethods>({
 	device_type: {
 		type: String,
 		enum: [
-			// Only track the family here not the model
+			// * Only track the family here not the model
 			'wiiu',
 			'3ds',
 		]
@@ -19,11 +19,11 @@ const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMet
 	owning_pid: Number,
 	access_level: {
 		type: Number,
-		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
+		default: 0  // * 0: standard, 1: tester, 2: mod?, 3: dev
 	},
 	server_access_level: {
 		type: String,
-		default: 'prod' // everyone is in production by default
+		default: 'prod' // * everyone is in production by default
 	},
 	friend_code: String
 });
@@ -39,12 +39,12 @@ NEXAccountSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 	and the next few accounts counting down seem to be admin, service and internal test accounts
 */
 NEXAccountSchema.method('generatePID', async function generatePID(): Promise<void> {
-	const min: number = 1000000000; // The console (WiiU) seems to not accept PIDs smaller than this
-	const max: number = 1799999999;
+	const min = 1000000000; // * The console (WiiU) seems to not accept PIDs smaller than this
+	const max = 1799999999;
 
-	const pid: number = Math.floor(Math.random() * (max - min + 1) + min);
+	const pid = Math.floor(Math.random() * (max - min + 1) + min);
 
-	const inuse: HydratedNEXAccountDocument | null = await NEXAccount.findOne({ pid });
+	const inuse = await NEXAccount.findOne({ pid });
 
 	if (inuse) {
 		await this.generatePID();
@@ -55,13 +55,13 @@ NEXAccountSchema.method('generatePID', async function generatePID(): Promise<voi
 
 NEXAccountSchema.method('generatePassword', function generatePassword(): void {
 	function character(): string | number {
-		const offset: number = Math.floor(Math.random() * 62);
+		const offset = Math.floor(Math.random() * 62);
 		if (offset < 10) return offset;
 		if (offset < 36) return String.fromCharCode(offset + 55);
 		return String.fromCharCode(offset + 61);
 	}
 
-	const output: string[] = [];
+	const output = [];
 
 	while (output.length < 16) {
 		output.push(String(character()));
@@ -70,4 +70,4 @@ NEXAccountSchema.method('generatePassword', function generatePassword(): void {
 	this.password = output.join('');
 });
 
-export const NEXAccount: NEXAccountModel = model<INEXAccount, NEXAccountModel>('NEXAccount', NEXAccountSchema);
+export const NEXAccount = model<INEXAccount, NEXAccountModel>('NEXAccount', NEXAccountSchema);

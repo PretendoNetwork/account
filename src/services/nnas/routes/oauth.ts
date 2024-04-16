@@ -6,11 +6,9 @@ import consoleStatusVerificationMiddleware from '@/middleware/console-status-ver
 import { getPNIDByTokenAuth, getPNIDByUsername } from '@/database';
 import { generateToken } from '@/util';
 import { config } from '@/config-manager';
-import { TokenOptions } from '@/types/common/token-options';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { Device } from '@/models/device';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [POST]
@@ -18,10 +16,10 @@ const router: express.Router = express.Router();
  * Description: Generates an access token for a user
  */
 router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatusVerificationMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
-	const grantType: string = request.body.grant_type;
-	const username: string | undefined = request.body.user_id;
-	const password: string | undefined = request.body.password;
-	const refreshToken: string | undefined = request.body.refresh_token;
+	const grantType = request.body.grant_type;
+	const username = request.body.user_id;
+	const password = request.body.password;
+	const refreshToken = request.body.refresh_token;
 
 	if (!['password', 'refresh_token'].includes(grantType)) {
 		response.status(400).send(xmlbuilder.create({
@@ -35,7 +33,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		return;
 	}
 
-	let pnid: HydratedPNIDDocument | null = null;
+	let pnid = null;
 
 	if (grantType === 'password') {
 		if (!username || username.trim() === '') {
@@ -141,25 +139,25 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		return;
 	}
 
-	const accessTokenOptions: TokenOptions = {
+	const accessTokenOptions = {
 		system_type: 0x1, // * WiiU
 		token_type: 0x1, // * OAuth Access
 		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const refreshTokenOptions: TokenOptions = {
+	const refreshTokenOptions = {
 		system_type: 0x1, // * WiiU
 		token_type: 0x2, // * OAuth Refresh
 		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const accessTokenBuffer: Buffer | null = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer: Buffer | null = await generateToken(config.aes_key, refreshTokenOptions);
+	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
+	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
 
-	const accessToken: string = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken: string = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
+	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
 
 	// TODO - Handle null tokens
 

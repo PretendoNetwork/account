@@ -16,7 +16,7 @@ import { LOG_INFO, LOG_SUCCESS, LOG_WARN } from '@/logger';
 
 import conntest from '@/services/conntest';
 import cbvc from '@/services/cbvc';
-import nnid from '@/services/nnid';
+import nnas from '@/services/nnas';
 import nasc from '@/services/nasc';
 import datastore from '@/services/datastore';
 import api from '@/services/api';
@@ -25,11 +25,11 @@ import assets from '@/services/assets';
 
 import { config } from '@/config-manager';
 
-const app: express.Express = express();
+const app = express();
 
-// START APPLICATION
+// * START APPLICATION
 
-// Create router
+// * Create router
 LOG_INFO('Setting up Middleware');
 app.use(morgan('dev'));
 app.use(express.json());
@@ -38,27 +38,27 @@ app.use(express.urlencoded({
 }));
 app.use(xmlparser);
 
-// import the servers into one
+// * import the servers into one
 app.use(conntest);
 app.use(cbvc);
-app.use(nnid);
+app.use(nnas);
 app.use(nasc);
 app.use(datastore);
 app.use(api);
 app.use(localcdn);
 app.use(assets);
 
-// 404 handler
+// * 404 handler
 LOG_INFO('Creating 404 status handler');
 app.use((request: express.Request, response: express.Response): void => {
-	const url: string = fullUrl(request);
-	let deviceId: string | undefined = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
+	const url = fullUrl(request);
+	let deviceID = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
 
-	if (!deviceId) {
-		deviceId = 'Unknown';
+	if (!deviceID) {
+		deviceID = 'Unknown';
 	}
 
-	LOG_WARN(`HTTP 404 at ${url} from ${deviceId}`);
+	LOG_WARN(`HTTP 404 at ${url} from ${deviceID}`);
 
 	response.set('Content-Type', 'text/xml');
 	response.set('Server', 'Nintendo 3DS (http)');
@@ -75,18 +75,18 @@ app.use((request: express.Request, response: express.Response): void => {
 	}).end());
 });
 
-// non-404 error handler
+// * non-404 error handler
 LOG_INFO('Creating non-404 status handler');
 app.use((error: any, request: express.Request, response: express.Response, _next: express.NextFunction): void => {
-	const status: number = error.status || 500;
-	const url: string = fullUrl(request);
-	let deviceId: string | undefined = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
+	const status = error.status || 500;
+	const url = fullUrl(request);
+	let deviceID = getValueFromHeaders(request.headers, 'X-Nintendo-Device-ID');
 
-	if (!deviceId) {
-		deviceId = 'Unknown';
+	if (!deviceID) {
+		deviceID = 'Unknown';
 	}
 
-	LOG_WARN(`HTTP ${status} at ${url} from ${deviceId}: ${error.message}`);
+	LOG_WARN(`HTTP ${status} at ${url} from ${deviceID}: ${error.message}`);
 
 	response.status(status).json({
 		app: 'api',
@@ -96,7 +96,7 @@ app.use((error: any, request: express.Request, response: express.Response, _next
 });
 
 async function main(): Promise<void> {
-	// Starts the server
+	// * Starts the server
 	LOG_INFO('Starting server');
 
 	await connectDatabase();

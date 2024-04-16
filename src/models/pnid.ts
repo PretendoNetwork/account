@@ -9,7 +9,7 @@ import Stripe from 'stripe';
 import { DeviceSchema } from '@/models/device';
 import { uploadCDNAsset } from '@/util';
 import { LOG_ERROR, LOG_WARN } from '@/logger';
-import { HydratedPNIDDocument, IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
+import { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 import { PNIDPermissionFlag } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 
@@ -33,11 +33,11 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	},
 	access_level: {
 		type: Number,
-		default: 0  // 0: standard, 1: tester, 2: mod?, 3: dev
+		default: 0  // * 0: standard, 1: tester, 2: mod?, 3: dev
 	},
 	server_access_level: {
 		type: String,
-		default: 'prod' // everyone is in production by default
+		default: 'prod' // * everyone is in production by default
 	},
 	pid: {
 		type: Number,
@@ -89,7 +89,7 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		off_device: Boolean
 	},
 	devices: [DeviceSchema],
-	identification: { // user identification tokens
+	identification: { // * user identification tokens
 		email_code: {
 			type: String,
 			unique: true
@@ -133,12 +133,12 @@ PNIDSchema.plugin(uniqueValidator, {message: '{PATH} already in use.'});
 	and the next few accounts counting down seem to be admin, service and internal test accounts
 */
 PNIDSchema.method('generatePID', async function generatePID(): Promise<void> {
-	const min: number = 1000000000; // The console (WiiU) seems to not accept PIDs smaller than this
-	const max: number = 1799999999;
+	const min = 1000000000; // * The console (WiiU) seems to not accept PIDs smaller than this
+	const max = 1799999999;
 
-	const pid: number =  Math.floor(Math.random() * (max - min + 1) + min);
+	const pid =  Math.floor(Math.random() * (max - min + 1) + min);
 
-	const inuse: HydratedPNIDDocument | null = await PNID.findOne({
+	const inuse = await PNID.findOne({
 		pid
 	});
 
@@ -150,17 +150,17 @@ PNIDSchema.method('generatePID', async function generatePID(): Promise<void> {
 });
 
 PNIDSchema.method('generateEmailValidationCode', async function generateEmailValidationCode(): Promise<void> {
-	// WiiU passes the PID along with the email code
-	// Does not actually need to be unique to all users
-	const code: string = Math.random().toFixed(6).split('.')[1]; // Dirty one-liner to generate numbers of 6 length and padded 0
+	// * WiiU passes the PID along with the email code
+	// * Does not actually need to be unique to all users
+	const code = Math.random().toFixed(6).split('.')[1]; // * Dirty one-liner to generate numbers of 6 length and padded 0
 
 	this.identification.email_code = code;
 });
 
 PNIDSchema.method('generateEmailValidationToken', async function generateEmailValidationToken(): Promise<void> {
-	const token: string = crypto.randomBytes(32).toString('hex');
+	const token = crypto.randomBytes(32).toString('hex');
 
-	const inuse: HydratedPNIDDocument | null = await PNID.findOne({
+	const inuse = await PNID.findOne({
 		'identification.email_token': token
 	});
 
@@ -185,40 +185,40 @@ PNIDSchema.method('updateMii', async function updateMii({ name, primary, data }:
 });
 
 PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promise<void> {
-	const miiData: string = this.mii.data;
-	const mii: Mii = new Mii(Buffer.from(miiData, 'base64'));
-	const miiStudioUrl: string = mii.studioUrl({
+	const miiData = this.mii.data;
+	const mii = new Mii(Buffer.from(miiData, 'base64'));
+	const miiStudioUrl = mii.studioUrl({
 		type: 'face',
 		width: 128,
 		instanceCount: 1,
 	});
-	const miiStudioNormalFaceImageData: Buffer = await got(miiStudioUrl).buffer();
-	const pngData: ImageData = await imagePixels(miiStudioNormalFaceImageData);
-	const tga: Buffer = TGA.createTgaBuffer(pngData.width, pngData.height, Uint8Array.from(pngData.data), false);
+	const miiStudioNormalFaceImageData = await got(miiStudioUrl).buffer();
+	const pngData = await imagePixels(miiStudioNormalFaceImageData);
+	const tga = TGA.createTgaBuffer(pngData.width, pngData.height, Uint8Array.from(pngData.data), false);
 
-	const userMiiKey: string = `mii/${this.pid}`;
+	const userMiiKey = `mii/${this.pid}`;
 
 	await uploadCDNAsset('pn-cdn', `${userMiiKey}/standard.tga`, tga, 'public-read');
 	await uploadCDNAsset('pn-cdn', `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
 
-	const expressions: string[] = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
+	const expressions = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
 	for (const expression of expressions) {
-		const miiStudioExpressionUrl: string = mii.studioUrl({
+		const miiStudioExpressionUrl = mii.studioUrl({
 			type: 'face',
 			expression: expression,
 			width: 128,
 			instanceCount: 1,
 		});
-		const miiStudioExpressionImageData: Buffer = await got(miiStudioExpressionUrl).buffer();
+		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
 		await uploadCDNAsset('pn-cdn', `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
 	}
 
-	const miiStudioBodyUrl: string = mii.studioUrl({
+	const miiStudioBodyUrl = mii.studioUrl({
 		type: 'all_body',
 		width: 270,
 		instanceCount: 1,
 	});
-	const miiStudioBodyImageData: Buffer = await got(miiStudioBodyUrl).buffer();
+	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
 	await uploadCDNAsset('pn-cdn', `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 });
 
@@ -290,4 +290,4 @@ PNIDSchema.method('clearPermission', function clearPermission(flag: PNIDPermissi
 	this.permissions &= ~flag;
 });
 
-export const PNID: PNIDModel = model<IPNID, PNIDModel>('PNID', PNIDSchema);
+export const PNID = model<IPNID, PNIDModel>('PNID', PNIDSchema);

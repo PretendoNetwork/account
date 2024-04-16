@@ -4,9 +4,8 @@ import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
 import { getPNIDByPID } from '@/database';
 import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail } from '@/util';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [POST]
@@ -14,7 +13,7 @@ const router: express.Router = express.Router();
  * Description: Verifies a provided email address is valid
  */
 router.post('/validate/email', async (request: express.Request, response: express.Response): Promise<void> => {
-	const email: string = request.body.email;
+	const email = request.body.email;
 
 	if (!email) {
 		response.send(xmlbuilder.create({
@@ -30,7 +29,7 @@ router.post('/validate/email', async (request: express.Request, response: expres
 		return;
 	}
 
-	const domain: string = email.split('@')[1];
+	const domain = email.split('@')[1];
 
 	dns.resolveMx(domain, (error: NodeJS.ErrnoException | null) => {
 		if (error) {
@@ -54,10 +53,10 @@ router.post('/validate/email', async (request: express.Request, response: expres
  * Description: Verifies a users email via 6 digit code
  */
 router.put('/email_confirmation/:pid/:code', async (request: express.Request, response: express.Response): Promise<void> => {
-	const code: string = request.params.code;
-	const pid: number = Number(request.params.pid);
+	const code = request.params.code;
+	const pid = Number(request.params.pid);
 
-	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
+	const pnid = await getPNIDByPID(pid);
 
 	if (!pnid) {
 		response.status(400).send(xmlbuilder.create({
@@ -84,7 +83,7 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 		return;
 	}
 
-	const validatedDate: string = moment().format('YYYY-MM-DDTHH:MM:SS');
+	const validatedDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 
 	pnid.email.reachable = true;
 	pnid.email.validated = true;
@@ -103,9 +102,9 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
  * Description: Resends a users confirmation email
  */
 router.get('/resend_confirmation', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pid: number = Number(request.headers['x-nintendo-pid']);
+	const pid = Number(request.headers['x-nintendo-pid']);
 
-	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
+	const pnid = await getPNIDByPID(pid);
 
 	if (!pnid) {
 		// TODO - Unsure if this is the right error
@@ -133,9 +132,9 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
  * NOTE: On NN this was a temp password that expired after 24 hours. We do not do that
  */
 router.get('/forgotten_password/:pid', async (request: express.Request, response: express.Response): Promise<void> => {
-	const pid: number = Number(request.params.pid);
+	const pid = Number(request.params.pid);
 
-	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(pid);
+	const pnid = await getPNIDByPID(pid);
 
 	if (!pnid) {
 		// TODO - Better errors

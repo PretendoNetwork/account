@@ -1,10 +1,9 @@
 import { Status, ServerError } from 'nice-grpc';
 import {GetNEXDataRequest,GetNEXDataResponse, DeepPartial } from '@pretendonetwork/grpc/account/get_nex_data_rpc';
 import { NEXAccount } from '@/models/nex-account';
-import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 
 export async function getNEXData(request: GetNEXDataRequest): Promise<DeepPartial<GetNEXDataResponse>> {
-	const nexAccount: HydratedNEXAccountDocument | null = await NEXAccount.findOne({ pid: request.pid });
+	const nexAccount = await NEXAccount.findOne({ pid: request.pid });
 
 	if (!nexAccount) {
 		throw new ServerError(

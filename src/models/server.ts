@@ -18,4 +18,4 @@ const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 
 ServerSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 
-export const Server: ServerModel = model<IServer, ServerModel>('Server', ServerSchema);
+export const Server = model<IServer, ServerModel>('Server', ServerSchema);

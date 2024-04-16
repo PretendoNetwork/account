@@ -5,18 +5,17 @@ import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
 import { getPNIDByPID } from '@/database';
 import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { Token } from '@/types/common/token';
-import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
-// This sucks
-const PASSWORD_WORD_OR_NUMBER_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*\d).*/;
-const PASSWORD_WORD_OR_PUNCTUATION_REGEX: RegExp = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
-const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX: RegExp = /(?=.*\d)(?=.*[_\-.]).*/;
-const PASSWORD_REPEATED_CHARACTER_REGEX: RegExp = /(.)\1\1/;
+// * This sucks
+const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
+const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
+const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
+const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
 
 export async function resetPassword(request: ResetPasswordRequest): Promise<Empty> {
-	const password: string = request.password.trim();
-	const passwordConfirm: string = request.passwordConfirm.trim();
-	const token: string = request.token.trim();
+	const password = request.password.trim();
+	const passwordConfirm = request.passwordConfirm.trim();
+	const token = request.token.trim();
 
 	if (!token) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Missing token');
@@ -24,7 +23,7 @@ export async function resetPassword(request: ResetPasswordRequest): Promise<Empt
 
 	let unpackedToken: Token;
 	try {
-		const decryptedToken: Buffer = await decryptToken(Buffer.from(token, 'base64'));
+		const decryptedToken = await decryptToken(Buffer.from(token, 'base64'));
 		unpackedToken = unpackToken(decryptedToken);
 	} catch (error) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
@@ -34,7 +33,7 @@ export async function resetPassword(request: ResetPasswordRequest): Promise<Empt
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Token expired');
 	}
 
-	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(unpackedToken.pid);
+	const pnid = await getPNIDByPID(unpackedToken.pid);
 
 	if (!pnid) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token. No user found');
@@ -68,8 +67,8 @@ export async function resetPassword(request: ResetPasswordRequest): Promise<Empt
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Passwords do not match');
 	}
 
-	const primaryPasswordHash: string = nintendoPasswordHash(password, pnid.pid);
-	const passwordHash: string = await bcrypt.hash(primaryPasswordHash, 10);
+	const primaryPasswordHash = nintendoPasswordHash(password, pnid.pid);
+	const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
 
 	pnid.password = passwordHash;
 

@@ -41,7 +41,7 @@ const CTR_LFCS_B_PUB = Buffer.from([
 	0xAF, 0x07, 0xEB, 0x9C, 0xBF, 0xA9, 0xC9
 ]);
 
-// Signature options
+// * Signature options
 const SIGNATURE_SIZES = {
 	RSA_4096_SHA1: <SignatureSize>{
 		SIZE: 0x200,
@@ -77,7 +77,7 @@ class NintendoCertificate {
 	issuer: string;
 	keyType: number;
 	certificateName: string;
-	ngKeyId: number;
+	ngKeyID: number;
 	publicKey: Buffer;
 	valid: boolean;
 	publicKeyData: Buffer;
@@ -91,7 +91,7 @@ class NintendoCertificate {
 		this.issuer = '';
 		this.keyType = 0;
 		this.certificateName = '';
-		this.ngKeyId = 0;
+		this.ngKeyID = 0;
 		this.publicKey = Buffer.alloc(0);
 		this.valid = false;
 		this.publicKeyData = Buffer.alloc(0);
@@ -120,7 +120,7 @@ class NintendoCertificate {
 			// * Assume regular certificate
 			this.signatureType = this._certificate.readUInt32BE(0x00);
 
-			const signatureTypeSizes: SignatureSize = this._signatureTypeSizes(this.signatureType);
+			const signatureTypeSizes = this._signatureTypeSizes(this.signatureType);
 
 			this._certificateBody = this._certificate.subarray(0x4 + signatureTypeSizes.SIZE + signatureTypeSizes.PADDING_SIZE);
 
@@ -128,7 +128,7 @@ class NintendoCertificate {
 			this.issuer = this._certificate.subarray(0x80, 0xC0).toString().split('\0')[0];
 			this.keyType = this._certificate.readUInt32BE(0xC0);
 			this.certificateName = this._certificate.subarray(0xC4, 0x104).toString().split('\0')[0];
-			this.ngKeyId = this._certificate.readUInt32BE(0x104);
+			this.ngKeyID = this._certificate.readUInt32BE(0x104);
 			this.publicKeyData = this._certificate.subarray(0x108);
 
 			if (this.issuer === 'Root-CA00000003-MS00000012') {
@@ -180,7 +180,7 @@ class NintendoCertificate {
 	}
 
 	_verifySignatureRSA4096(): void {
-		const publicKey: NodeRSA = new NodeRSA();
+		const publicKey = new NodeRSA();
 
 		publicKey.importKey({
 			n: this.publicKeyData.subarray(0x0, 0x200),
@@ -191,7 +191,7 @@ class NintendoCertificate {
 	}
 
 	_verifySignatureRSA2048(): void {
-		const publicKey: NodeRSA = new NodeRSA();
+		const publicKey = new NodeRSA();
 
 		publicKey.importKey({
 			n: this.publicKeyData.subarray(0x0, 0x100),
@@ -201,13 +201,13 @@ class NintendoCertificate {
 		this.valid = publicKey.verify(this._certificateBody, this.signature);
 	}
 
-	// Huge thanks to Myria for helping get ECDSA working
-	// with Nodes native crypto module and getting the keys
-	// from bytes to PEM!
-	// https://github.com/Myriachan
+	// * Huge thanks to Myria for helping get ECDSA working
+	// * with Nodes native crypto module and getting the keys
+	// * from bytes to PEM!
+	// * https://github.com/Myriachan
 	_verifySignatureECDSA(): void {
-		const pem: string = this.consoleType === 'wiiu' ? WIIU_DEVICE_PUB_PEM : CTR_DEVICE_PUB_PEM;
-		const key: crypto.VerifyPublicKeyInput = {
+		const pem = this.consoleType === 'wiiu' ? WIIU_DEVICE_PUB_PEM : CTR_DEVICE_PUB_PEM;
+		const key = {
 			key: pem,
 			dsaEncoding: 'ieee-p1363' as crypto.DSAEncoding
 		};
@@ -216,7 +216,7 @@ class NintendoCertificate {
 	}
 
 	_verifySignatureLFCS(): void {
-		const publicKey: NodeRSA = new NodeRSA();
+		const publicKey = new NodeRSA();
 
 		publicKey.importKey({
 			n: CTR_LFCS_B_PUB,

@@ -1,12 +1,11 @@
 import { Status, ServerError } from 'nice-grpc';
 import { GetUserDataRequest, GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
 import { getPNIDByPID } from '@/database';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 
 export async function getUserData(request: GetUserDataRequest): Promise<GetUserDataResponse> {
-	const pnid: HydratedPNIDDocument | null = await getPNIDByPID(request.pid);
+	const pnid = await getPNIDByPID(request.pid);
 
 	if (!pnid) {
 		throw new ServerError(

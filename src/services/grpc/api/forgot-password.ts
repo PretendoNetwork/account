@@ -7,7 +7,7 @@ import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 export async function forgotPassword(request: ForgotPasswordRequest): Promise<Empty> {
-	const input: string = request.emailAddressOrUsername.trim();
+	const input = request.emailAddressOrUsername.trim();
 
 	if (!input) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing input');

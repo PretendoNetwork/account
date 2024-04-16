@@ -3,11 +3,10 @@ import { GetUserDataResponse, DeepPartial } from '@pretendonetwork/grpc/api/get_
 import { config } from '@/config-manager';
 import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
-import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 export async function getUserData(_request: Empty, context: CallContext & AuthenticationCallContextExt): Promise<DeepPartial<GetUserDataResponse>> {
 	// * This is asserted in authentication-middleware, we know this is never null
-	const pnid: HydratedPNIDDocument = context.pnid!;
+	const pnid = context.pnid!;
 
 	return {
 		deleted: pnid.deleted,

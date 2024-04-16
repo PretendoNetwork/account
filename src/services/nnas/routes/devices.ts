@@ -1,7 +1,7 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 /**
  * [GET]
