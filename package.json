@@ -7,8 +7,9 @@
     "lint": "npx eslint .",
     "build": "npm run lint && npm run clean && npx tsc && npx tsc-alias && npm run copy-static",
     "clean": "rimraf ./dist",
-    "copy-static": "npm run copy-assets && npm run copy-timezones",
+    "copy-static": "npm run copy-assets && npm run copy-timezones && npm run copy-views",
     "copy-assets": "cp -r ./src/assets ./dist/assets",
+    "copy-views": "cp -r ./src/views ./dist/views",
     "copy-timezones": "cp ./src/services/nnas/timezones.json ./dist/services/nnas/timezones.json",
     "start": "node .",
     "start:dev": "NODE_ENV=development node ."
@@ -35,6 +36,7 @@
     "crc": "^4.3.2",
     "dicer": "^0.2.5",
     "dotenv": "^16.0.3",
+    "ejs": "^3.1.10",
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
     "express-rate-limit": "^6.7.0",

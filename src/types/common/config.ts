@@ -46,4 +46,5 @@ export interface Config {
 	stripe?: {
 		secret_key: string;
 	};
+	server_environment: string;
 }

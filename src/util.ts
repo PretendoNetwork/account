@@ -95,7 +95,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 	return final;
 }
 
-export function decryptToken(token: Buffer): Buffer {
+export function decryptToken(token: Buffer, key?: string): Buffer {
 	let encryptedBody: Buffer;
 	let expectedChecksum = 0;
 
@@ -107,8 +107,12 @@ export function decryptToken(token: Buffer): Buffer {
 		encryptedBody = token.subarray(4);
 	}
 
+	if (!key) {
+		key = config.aes_key;
+	}
+
 	const iv = Buffer.alloc(16);
-	const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(config.aes_key, 'hex'), iv);
+	const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
 
 	const decrypted = Buffer.concat([
 		decipher.update(encryptedBody),
