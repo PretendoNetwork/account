@@ -41,7 +41,11 @@
                 </div>
                 <div class="group">
                     <h2>Country</h2>
-                    <p class="content" id="country"><%= PNID.country %></p>
+					<select name="country" id="country" onclick="warning()">
+                        <% for (let region of regionsList) { %>
+                        <option value="<%= region.iso_code %>" <% if (PNID.country === region.iso_code) { %>selected<% } %>><%= region.name %></option>
+                        <% } %>
+                    </select>
                 </div>
                 <div class="group">
                     <h2>Region</h2>
@@ -138,9 +142,17 @@
         </form>
         <% if (notice) { %>
         <script>
-                alert('<%= notice %>');
+                wiiuDialog.alert('<%= notice %>', 'OK');
         </script>
         <% } %>
+		<script>
+			var seen = false;
+			function warning() {
+				if(seen) return;
+				seen = true;
+				wiiuDialog.alert('Warning: Changing your country may cause unexpected results. You may need to re-link your PNID for the changes to apply. \n\nFor more information, see:\nhttps://pretendo.network/docs/errors/PAS-727-0001', 'I Understand');
+			}
+		</script>
     </body>
 
 </html>

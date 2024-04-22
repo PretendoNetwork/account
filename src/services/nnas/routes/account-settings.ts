@@ -22,6 +22,7 @@ const accountSettingsSchema = z.object({
 	gender: z.enum(['M', 'F']),
 	tz_name: z.string(),
 	region: z.coerce.number(),
+	country: z.string(),
 	email: z.string().email(),
 	server_selection: z.enum(['prod', 'test', 'dev']),
 	marketing_flag: z.enum(['true', 'false']).transform((value) => value === 'true'),
@@ -74,7 +75,8 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 			face,
 			notice,
 			accountLevel,
-			regions: region ? region.regions: []
+			regions: region ? region.regions: [],
+			regionsList
 		});
 	}
 	catch (error: any) {
@@ -160,6 +162,7 @@ router.post('/update', async function (request: express.Request, response: expre
 
 		pnid.gender = person.data.gender;
 		pnid.region = region;
+		pnid.country = person.data.country;
 		pnid.timezone.name = timezoneName;
 		pnid.timezone.offset = Number(timezone.utc_offset);
 		pnid.flags.marketing = person.data.marketing_flag;
