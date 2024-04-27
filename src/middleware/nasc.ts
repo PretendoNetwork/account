@@ -96,6 +96,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	if (pid) {
 		nexAccount = await NEXAccount.findOne({ pid });
 
+		// TODO - 102 is a DEVICE ban. Is there an error for ACCOUNT bans?
 		if (!nexAccount || nexAccount.access_level < 0) {
 			response.status(200).send(nascError('102').toString());
 			return;
@@ -132,7 +133,8 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		}
 
 		if (device.serial !== serialNumber) {
-			response.status(200).send(nascError('102').toString());
+			// * 150 is a custom error code
+			response.status(200).send(nascError('150').toString());
 			return;
 		}
 	}
@@ -214,8 +216,8 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 
 				await session.abortTransaction();
 
-				// * 3DS expects 200 even on error
-				response.status(200).send(nascError('102').toString());
+				// * 151 is a custom error code
+				response.status(200).send(nascError('151').toString());
 				return;
 			} finally {
 				// * This runs regardless of failure
