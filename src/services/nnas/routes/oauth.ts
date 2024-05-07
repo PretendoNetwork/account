@@ -114,6 +114,20 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		}
 	}
 
+	if (pnid.deleted) {
+		// * 0112 is the "account deleted" error, but unsure if this unlinks the PNID from the user?
+		// * 0143 is the "The link to this Nintendo Network ID has been temporarliy removed" error,
+		// * maybe that is a better error to use here?
+		response.status(400).send(xmlbuilder.create({
+			error: {
+				code: '0112',
+				message: pnid.username
+			}
+		}).end());
+
+		return;
+	}
+
 	// * This are set/validated in consoleStatusVerificationMiddleware
 	// * It is always set, despite what Express might think
 	if (request.device?.model === 'wup') {

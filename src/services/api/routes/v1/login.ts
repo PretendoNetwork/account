@@ -99,6 +99,16 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		}
 	}
 
+	if (pnid.deleted) {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'User not found'
+		});
+
+		return;
+	}
+
 	const accessTokenOptions = {
 		system_type: 0x3, // * API
 		token_type: 0x1, // * OAuth Access
