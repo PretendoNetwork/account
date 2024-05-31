@@ -11,33 +11,33 @@ const router = express.Router();
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
     const input = request.body?.input;
     const hCaptchaResponse = request.body.hCaptchaResponse?.trim();
-    
+
     if (!disabledFeatures.captcha) {
-		if (!hCaptchaResponse || hCaptchaResponse === "") {
-			response.status(400).json({
-				app: "api",
-				status: 400,
-				error: "Must fill in captcha",
-			});
+        if (!hCaptchaResponse || hCaptchaResponse === "") {
+            response.status(400).json({
+                app: "api",
+                status: 400,
+                error: "Must fill in captcha",
+            });
 
-			return;
-		}
+            return;
+        }
 
-		const captchaVerify = await hcaptcha.verify(
-			config.hcaptcha.secret,
-			hCaptchaResponse
-		);
+        const captchaVerify = await hcaptcha.verify(
+            config.hcaptcha.secret,
+            hCaptchaResponse
+        );
 
-		if (!captchaVerify.success) {
-			response.status(400).json({
-				app: "api",
-				status: 400,
-				error: "Captcha verification failed",
-			});
+        if (!captchaVerify.success) {
+            response.status(400).json({
+                app: "api",
+                status: 400,
+                error: "Captcha verification failed",
+            });
 
-			return;
-		}
-	}
+            return;
+        }
+    }
 
 	if (!input || input.trim() === '') {
 		response.status(400).json({
