@@ -39,32 +39,32 @@ router.post('/', async (request: express.Request, response: express.Response): P
         }
     }
 
-	if (!input || input.trim() === '') {
-		response.status(400).json({
-			app: 'api',
-			status: 400,
-			error: 'Invalid or missing input'
-		});
+    if (!input || input.trim() === '') {
+        response.status(400).json({
+            app: 'api',
+            status: 400,
+            error: 'Invalid or missing input'
+        });
 
-		return;
-	}
+        return;
+    }
 
-	let pnid: HydratedPNIDDocument | null;
+    let pnid: HydratedPNIDDocument | null;
 
-	if (validator.isEmail(input)) {
-		pnid = await getPNIDByEmailAddress(input);
-	} else {
-		pnid = await getPNIDByUsername(input);
-	}
+    if (validator.isEmail(input)) {
+        pnid = await getPNIDByEmailAddress(input);
+    } else {
+        pnid = await getPNIDByUsername(input);
+    }
 
-	if (pnid) {
-		await sendForgotPasswordEmail(pnid);
-	}
+    if (pnid) {
+        await sendForgotPasswordEmail(pnid);
+    }
 
-	response.json({
-		app: 'api',
-		status: 200
-	});
+    response.json({
+        app: 'api',
+        status: 200
+    });
 });
 
 export default router;
