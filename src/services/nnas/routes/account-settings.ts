@@ -16,7 +16,7 @@ import { Country, Region } from '@/types/services/nnas/regions';
 import timezones from '@/services/nnas/timezones.json';
 import regionsList from '@/services/nnas/regions.json';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
 const accountSettingsSchema = z.object({
 	gender: z.enum(['M', 'F']),
@@ -36,13 +36,15 @@ const accountSettingsSchema = z.object({
  */
 router.get('/ui/profile', async function (request: express.Request, response: express.Response): Promise<void> {
 	const server: HydratedServerDocument | null = await getServerByClientID('3f3928cc6f780638d360f0485cef973f', config.server_environment);
-	const token: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-service-token');
+	const token = getValueFromHeaders(request.headers, 'x-nintendo-service-token');
+
 	if (!server || !token) {
 		response.sendStatus(504);
 		return;
 	}
+
 	const aes_key: string = server?.aes_key;
-	const decryptedToken: Buffer = decryptToken(Buffer.from(token, 'base64'), aes_key);
+	const decryptedToken = decryptToken(Buffer.from(token, 'base64'), aes_key);
 
 	const tokenContents: Token = unpackToken(decryptedToken);
 
@@ -54,8 +56,8 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 			return;
 		}
 
-		const countryCode: string = PNID.country;
-		const language: string = PNID.language;
+		const countryCode = PNID.country;
+		const language = PNID.language;
 
 		const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
@@ -65,9 +67,9 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 		const miiFaces = ['normal_face', 'smile_open_mouth', 'sorrow', 'surprise_open_mouth', 'wink_left', 'frustrated'];
 		const face = miiFaces[crypto.randomInt(5)];
 
-		const notice: string | undefined = request.query.notice ? request.query.notice.toString() : undefined;
+		const notice = request.query.notice ? request.query.notice.toString() : undefined;
 
-		const accountLevel: string[] = ['Standard', 'Tester', 'Moderator', 'Developer'];
+		const accountLevel = ['Standard', 'Tester', 'Moderator', 'Developer'];
 
 		response.render('index.ejs', {
 			PNID,
@@ -78,8 +80,7 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 			regions: region ? region.regions: [],
 			regionsList
 		});
-	}
-	catch (error: any) {
+	} catch (error: any) {
 		LOG_ERROR(error);
 		response.sendStatus(504);
 		return;
@@ -97,7 +98,9 @@ router.get('/mii/:pid/:face', async function (request: express.Request, response
 		response.sendStatus(404);
 		return;
 	}
-	const miiImage: Buffer = await got(`${config.cdn.base_url}/mii/${request.params.pid}/${request.params.face}.png`).buffer();
+
+	const miiImage = await got(`${config.cdn.base_url}/mii/${request.params.pid}/${request.params.face}.png`).buffer();
+
 	response.set('Content-Type', 'image/png');
 	response.send(miiImage);
 });
@@ -108,15 +111,15 @@ router.get('/mii/:pid/:face', async function (request: express.Request, response
  */
 router.post('/update', async function (request: express.Request, response: express.Response): Promise<void> {
 	const server: HydratedServerDocument | null = await getServerByClientID('3f3928cc6f780638d360f0485cef973f', config.server_environment);
-	const token: string | undefined = getValueFromHeaders(request.headers, 'x-nintendo-service-token');
+	const token = getValueFromHeaders(request.headers, 'x-nintendo-service-token');
+
 	if (!server || !token) {
 		response.sendStatus(504);
 		return;
 	}
 
-	const aesKey: string = server?.aes_key;
-	const decryptedToken: Buffer = decryptToken(Buffer.from(token, 'base64'), aesKey);
-
+	const aesKey = server?.aes_key;
+	const decryptedToken = decryptToken(Buffer.from(token, 'base64'), aesKey);
 	const tokenContents: Token = unpackToken(decryptedToken);
 
 	try {
@@ -137,7 +140,7 @@ router.post('/update', async function (request: express.Request, response: expre
 			return;
 		}
 
-		const timezoneName: string = (person.data.tz_name && !!Object.keys(person.data.tz_name).length) ? person.data.tz_name : pnid.timezone.name;
+		const timezoneName = (person.data.tz_name && !!Object.keys(person.data.tz_name).length) ? person.data.tz_name : pnid.timezone.name;
 
 		const regionLanguages: RegionLanguages = timezones[pnid.country as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[pnid.language] ? regionLanguages[pnid.language] : Object.values(regionLanguages)[0];
@@ -152,7 +155,7 @@ router.post('/update', async function (request: express.Request, response: expre
 		}
 
 		const regionObject: Region | undefined = country.regions.find((region) => region.id === person.data.region);
-		const region: number = regionObject ? regionObject.id : pnid.region;
+		const region = regionObject ? regionObject.id : pnid.region;
 
 		if (!timezone) {
 			response.status(404);
@@ -169,7 +172,7 @@ router.post('/update', async function (request: express.Request, response: expre
 		pnid.flags.off_device = person.data.off_device_flag;
 
 		if (person.data.server_selection) {
-			const environment: string = person.data.server_selection;
+			const environment = person.data.server_selection;
 
 			if (environment === 'test' && pnid.access_level < 1) {
 				response.status(400);

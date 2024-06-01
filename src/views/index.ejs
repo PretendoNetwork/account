@@ -2,96 +2,96 @@
 <html lang="en">
 
 <head>
-    <title>Account Settings</title>
-    <link rel="stylesheet" type="text/css" href="/v1/account-settings/css/index.css">
-    </head>
-    <body>
-        <form action=" /v1/account-settings/update" method="post">
-            <header>
-                <h1>Pretendo Network ID Settings</h1>
-                <button id="close" class="fixed-bottom-button left" onclick="wiiuBrowser.jumpToBaristaAccount();">Close</button>
-                <input  id="save" class="fixed-bottom-button" type="submit" value="Submit">
-            </header>
-            <div class="account-info">
-                <img src="/v1/account-settings/mii/<%= PNID.pid %>/<%= face %>">
-                <h2 class="content"><%= PNID.mii.name %></h2>
-                <h3 class="content"><%= PNID.username %></h3>
-                <h3 class="content">
-                    <% if (PNID.access_level === -1) { %>
-                        <p class="tier-name access-level-banned">Banned</p>
-                    <% } else if (PNID.connections.stripe.tier_level) { %>
-                        <p class="tier-name tier-level-<%= PNID.connections.stripe.tier_level %>"><%= PNID.connections.stripe.tier_name %></p>
-                    <% } else { %>
-                        <p class="tier-name access-level-<%= PNID.access_level %>"><%= accountLevel[PNID.access_level] %></p>
-                    <% } %>
-                </h3>
-            </div>
-            <div class="body-content">
-                <h1>User Settings</h1>
-                <div class="group">
-                    <h2>Birth Date</h2>
-                    <p class="content"><%= PNID.birthdate %></p>
-                </div>
-                <div class="group">
-                    <h2>Gender</h2>
-                    <select name="gender" id="gender">
-                    <option value="M" <% if (PNID.gender === 'M') { %>selected<% } %>>Male</option>
-                    <option value="F" <% if (PNID.gender === 'F') { %>selected<% } %>>Female</option>
-                    </select>
-                </div>
-                <div class="group">
-                    <h2>Country</h2>
+	<title>Account Settings</title>
+	<link rel="stylesheet" type="text/css" href="/v1/account-settings/css/index.css">
+	</head>
+	<body>
+		<form action=" /v1/account-settings/update" method="post">
+			<header>
+				<h1>Pretendo Network ID Settings</h1>
+				<button id="close" class="fixed-bottom-button left" onclick="wiiuBrowser.jumpToBaristaAccount();">Close</button>
+				<input  id="save" class="fixed-bottom-button" type="submit" value="Submit">
+			</header>
+			<div class="account-info">
+				<img src="/v1/account-settings/mii/<%= PNID.pid %>/<%= face %>">
+				<h2 class="content"><%= PNID.mii.name %></h2>
+				<h3 class="content"><%= PNID.username %></h3>
+				<h3 class="content">
+					<% if (PNID.access_level === -1) { %>
+						<p class="tier-name access-level-banned">Banned</p>
+					<% } else if (PNID.connections.stripe.tier_level) { %>
+						<p class="tier-name tier-level-<%= PNID.connections.stripe.tier_level %>"><%= PNID.connections.stripe.tier_name %></p>
+					<% } else { %>
+						<p class="tier-name access-level-<%= PNID.access_level %>"><%= accountLevel[PNID.access_level] %></p>
+					<% } %>
+				</h3>
+			</div>
+			<div class="body-content">
+				<h1>User Settings</h1>
+				<div class="group">
+					<h2>Birth Date</h2>
+					<p class="content"><%= PNID.birthdate %></p>
+				</div>
+				<div class="group">
+					<h2>Gender</h2>
+					<select name="gender" id="gender">
+					<option value="M" <% if (PNID.gender === 'M') { %>selected<% } %>>Male</option>
+					<option value="F" <% if (PNID.gender === 'F') { %>selected<% } %>>Female</option>
+					</select>
+				</div>
+				<div class="group">
+					<h2>Country</h2>
 					<select name="country" id="country" onclick="warning()">
-                        <% for (let region of regionsList) { %>
-                        <option value="<%= region.iso_code %>" <% if (PNID.country === region.iso_code) { %>selected<% } %>><%= region.name %></option>
-                        <% } %>
-                    </select>
-                </div>
-                <div class="group">
-                    <h2>Region</h2>
-                    <select name="region" id="region">
-                        <% for (let region of regions) { %>
-                        <option value="<%= region.id %>" <% if (PNID.region === region.id) { %>selected<% } %>><%= region.name %></option>
-                        <% } %>
-                    </select>
-                </div>
-                <div class="group">
-                    <h2>Timezone</h2>
-                    <select name="tz_name" id="gender">
-                        <% for (let timezone of regionTimezones) { %>
-                        <option value="<%= timezone.area %>" <% if (PNID.timezone.name === timezone.area) { %>selected<% } %>><%= timezone.area %></option>
-                        <% } %>
-                    </select>
-                </div>
-                <h1>Email</h1>
-                <div class="group">
-                    <input name="email" type="text" class="content" value="<%= PNID.email.address %>"></input>
-                </div>
-                <div class="group">
-                    <% if(PNID.email.validated) { %>
-                        <span>Verified</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 256 256"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"></path></svg>
-                    <% } else { %>
-                        <span>Email Not Verified</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 256 256"><path d="M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"></path></svg>
-                    <% } %>
-                </div>
-                <h1>Other Settings</h1>
-                <div class="group">
-                    <h2>Server Environment</h2>
-                    <div class="radio server-selection" id="server">
-                        <input type="radio" id="prod" name="server_selection" value="prod" <% if (PNID.server_access_level === 'prod') { %>checked=""<% } %>>
-                        <label for="prod">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
-                                <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
-                                <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                            </svg>
-                            <h2>Production</h2>
-                        </label>
+						<% for (let region of regionsList) { %>
+						<option value="<%= region.iso_code %>" <% if (PNID.country === region.iso_code) { %>selected<% } %>><%= region.name %></option>
+						<% } %>
+					</select>
+				</div>
+				<div class="group">
+					<h2>Region</h2>
+					<select name="region" id="region">
+						<% for (let region of regions) { %>
+						<option value="<%= region.id %>" <% if (PNID.region === region.id) { %>selected<% } %>><%= region.name %></option>
+						<% } %>
+					</select>
+				</div>
+				<div class="group">
+					<h2>Timezone</h2>
+					<select name="tz_name" id="gender">
+						<% for (let timezone of regionTimezones) { %>
+						<option value="<%= timezone.area %>" <% if (PNID.timezone.name === timezone.area) { %>selected<% } %>><%= timezone.area %></option>
+						<% } %>
+					</select>
+				</div>
+				<h1>Email</h1>
+				<div class="group">
+					<input name="email" type="text" class="content" value="<%= PNID.email.address %>"></input>
+				</div>
+				<div class="group">
+					<% if(PNID.email.validated) { %>
+						<span>Verified</span>
+						<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 256 256"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"></path></svg>
+					<% } else { %>
+						<span>Email Not Verified</span>
+						<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 256 256"><path d="M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"></path></svg>
+					<% } %>
+				</div>
+				<h1>Other Settings</h1>
+				<div class="group">
+					<h2>Server Environment</h2>
+					<div class="radio server-selection" id="server">
+						<input type="radio" id="prod" name="server_selection" value="prod" <% if (PNID.server_access_level === 'prod') { %>checked=""<% } %>>
+						<label for="prod">
+							<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+								<polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+								<polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+								<polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+								<polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+								<line x1="12" y1="22.08" x2="12" y2="12"></line>
+							</svg>
+							<h2>Production</h2>
+						</label>
 						<% if(PNID.access_level >= 1) { %>
 						<input type="radio" id="beta" name="server_selection" value="test" <% if (PNID.server_access_level === 'test') { %> checked="" <% } %> <% if(PNID.access_level < 1) { %> disabled <% } %> >
 						<label for="beta">
@@ -110,49 +110,49 @@
 							<h2>Dev</h2>
 						</label>
 						<% } %>
-                    </div>
-                </div>
-                <div class="group">
-                    <h2>Email Notifications</h2>
-                    <div class="radio server-selection" id="server">
-                        <input type="radio" id="true" name="marketing_flag" value="true" <% if (PNID.flags.marketing) { %>checked=""<% } %>>
-                        <label for="marketing_flag">
-                            <h2>Receive</h2>
-                        </label>
-                            <input type="radio" id="false" name="marketing_flag" value="false" <% if (!PNID.flags.marketing) { %>checked=""<% } %>>
-                        <label for="marketing_flag">
-                            <h2>Do Not Receive</h2>
-                        </label>
-                    </div>
-                </div>
-                <div class="group">
-                    <h2>Non-Nintendo Device Setting</h2>
-                    <div class="radio server-selection" id="server">
-                        <input type="radio" id="true" name="off_device_flag" value="true" <% if (PNID.flags.off_device) { %>checked=""<% } %>>
-                        <label for="off_device_flag">
-                            <h2>Allow</h2>
-                        </label>
-                            <input type="radio" id="false" name="off_device_flag" value="false" <% if (!PNID.flags.off_device) { %>checked=""<% } %>>
-                        <label for="off_device_flag">
-                            <h2>Deny</h2>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </form>
-        <% if (notice) { %>
-        <script>
-                wiiuDialog.alert('<%= notice %>', 'OK');
-        </script>
-        <% } %>
+					</div>
+				</div>
+				<div class="group">
+					<h2>Email Notifications</h2>
+					<div class="radio server-selection" id="server">
+						<input type="radio" id="true" name="marketing_flag" value="true" <% if (PNID.flags.marketing) { %>checked=""<% } %>>
+						<label for="marketing_flag">
+							<h2>Receive</h2>
+						</label>
+							<input type="radio" id="false" name="marketing_flag" value="false" <% if (!PNID.flags.marketing) { %>checked=""<% } %>>
+						<label for="marketing_flag">
+							<h2>Do Not Receive</h2>
+						</label>
+					</div>
+				</div>
+				<div class="group">
+					<h2>Non-Nintendo Device Setting</h2>
+					<div class="radio server-selection" id="server">
+						<input type="radio" id="true" name="off_device_flag" value="true" <% if (PNID.flags.off_device) { %>checked=""<% } %>>
+						<label for="off_device_flag">
+							<h2>Allow</h2>
+						</label>
+							<input type="radio" id="false" name="off_device_flag" value="false" <% if (!PNID.flags.off_device) { %>checked=""<% } %>>
+						<label for="off_device_flag">
+							<h2>Deny</h2>
+						</label>
+					</div>
+				</div>
+			</div>
+		</form>
+		<% if (notice) { %>
+		<script>
+				wiiuDialog.alert('<%= notice %>', 'OK');
+		</script>
+		<% } %>
 		<script>
 			var seen = false;
 			function warning() {
 				if(seen) return;
 				seen = true;
-				wiiuDialog.alert('Warning: Changing your country may cause unexpected results. You may need to re-link your PNID for the changes to apply. \n\nFor more information, see:\nhttps://pretendo.network/docs/errors/PAS-727-0001', 'I Understand');
+				wiiuDialog.alert('Warning: Changing your country may cause unexpected results. You may need to re-link your PNID for the changes to apply. \n\nFor more information, see:\nhttps://preten.do/PAS-727-0001', 'I Understand');
 			}
 		</script>
-    </body>
+	</body>
 
 </html>

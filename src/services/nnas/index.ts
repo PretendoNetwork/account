@@ -21,7 +21,7 @@ import settings from '@/services/nnas/routes/account-settings';
 // * Router to handle the subdomain restriction
 const nnas = express.Router();
 
-// Static routes for the user information app
+// * Static routes for the user information app
 async function setCSSHeader(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	response.set('Content-Type', 'text/css');
 	return next();
