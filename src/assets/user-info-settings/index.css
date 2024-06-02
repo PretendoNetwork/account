@@ -20,7 +20,6 @@ button:active,
 
 header {
 	position: relative;
-	background: #37A985;
 	color: #FFF;
 	height: 70px;
 	line-height: 70px;
@@ -42,8 +41,8 @@ input[type="submit"] {
 	font-family: Poppins, Arial, Helvetica, sans-serif;
 	color: #45297A;
 	min-width: 200px;
-	box-sizing: content-box;
 	-webkit-box-sizing: content-box;
+	box-sizing: content-box;
 	-webkit-box-align: center;
 	-webkit-box-pack: center;
 	min-height: 60px;
@@ -58,7 +57,7 @@ input[type="submit"] {
 }
 
 .body-content {
-	margin: 30px 60px 0 200px;
+	margin: 30px 60px 0 220px;
 }
 
 div.group h2 {
@@ -82,6 +81,8 @@ div.group > * {
 
 div.group > p.content,
 div.group > input[type="text"],
+div.group > input[type="date"],
+div.group > textarea,
 div.group > select {
 	background: #FFF;
 	color: #6A6C75;
@@ -93,17 +94,18 @@ div.group > select {
 	width: 100%;
 	height: 58px;
 	box-sizing: border-box;
-	appearance: none;
-	-webkit-appearance: none;
 	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
 	text-indent: 1px;
 	text-overflow: '';
 	line-height: 38px;
-	user-select: none;
+	resize: none;
 }
 
-div.group > input[type="text"] {
-	color: #000;
+div.group > input[type="text"],
+div.group > input[type="date"] {
+	color: #9D6FF3;
 }
 
 div.group > select {
@@ -126,20 +128,22 @@ div.group > svg {
 	border: none;
 	height: 40px;
 	width: 40px;
-	box-sizing: border-box;
-	user-select: none;
 	padding: 0px;
 	margin-bottom: -10px;
 	margin-left: 5px;
+	-webkit-box-sizing: border-box;
+	-webkit-user-select: none;
+	box-sizing: border-box;
+	user-select: none;
 }
 
 .account-info {
 	float: left;
-	width: 200px;
-	box-sizing: content-box;
+	width: 220px;
 	-webkit-box-sizing: content-box;
 	-webkit-box-align: center;
 	-webkit-box-pack: center;
+	box-sizing: content-box;
 }
 
 .account-info > img {
@@ -149,7 +153,7 @@ div.group > svg {
 	overflow: hidden;
 	border-radius: 100%;
 	background: #E4DBF2;
-	margin: 30px 30px 0 35px;
+	margin: 30px 30px 0 46px;
 	box-shadow: 0-1px 2px rgba(0, 0, 0, 0.4);
 }
 
@@ -208,7 +212,7 @@ div.group > svg {
 }
 
 .account-info .tier-name {
-	margin: 12px auto;
+	margin: 5px auto;
 	line-height: 1.2em;
 	border-radius: 1.2em;
 	border-width: 2px;
@@ -233,7 +237,7 @@ div.radio {
 .server-selection input {
 	opacity: 0;
 	position: absolute;
-	width: 200px;
+	width: 130px;
 	height: 70px;
 	cursor: pointer;
 }
@@ -241,9 +245,10 @@ div.radio {
 div.radio label {
 	display: inline-block;
 	color: #6A6C75;
-	min-width: 200px;
-	box-sizing: content-box;
+	padding: 0 10px;
+	min-width: 110px;
 	-webkit-box-sizing: content-box;
+	box-sizing: content-box;
 	-webkit-box-align: center;
 	-webkit-box-pack: center;
 	text-align: center;
@@ -254,6 +259,11 @@ div.radio label {
 	margin: 5px;
 	font-weight: normal;
 	font-size: 15px;
+	-o-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	-ms-border-radius: 10px;
+	border-radius: 10px;
 }
 
 div.radio label h2 {

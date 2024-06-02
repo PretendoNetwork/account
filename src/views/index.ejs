@@ -30,7 +30,7 @@
 				<h1>User Settings</h1>
 				<div class="group">
 					<h2>Birth Date</h2>
-					<p class="content"><%= PNID.birthdate %></p>
+					<input name="birthdate" type="date" class="content" value="<%= PNID.birthdate %>" min="1900-01-01" max="2024-06-01" pattern="[0-9\-]{10}" maxlength="10" onchange="dateValidation(this)"/>
 				</div>
 				<div class="group">
 					<h2>Gender</h2>
@@ -41,7 +41,7 @@
 				</div>
 				<div class="group">
 					<h2>Country</h2>
-					<select name="country" id="country" onclick="warning()">
+					<select name="country" id="country" onclick="countryChangeWarning()">
 						<% for (let region of regionsList) { %>
 						<option value="<%= region.iso_code %>" <% if (PNID.country === region.iso_code) { %>selected<% } %>><%= region.name %></option>
 						<% } %>
@@ -90,7 +90,7 @@
 								<polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
 								<line x1="12" y1="22.08" x2="12" y2="12"></line>
 							</svg>
-							<h2>Production</h2>
+							<h2>Prod</h2>
 						</label>
 						<% if(PNID.access_level >= 1) { %>
 						<input type="radio" id="beta" name="server_selection" value="test" <% if (PNID.server_access_level === 'test') { %> checked="" <% } %> <% if(PNID.access_level < 1) { %> disabled <% } %> >
@@ -104,8 +104,11 @@
 						<% if(PNID.access_level === 3) { %>
 						<input type="radio" id="dev" name="server_selection" value="dev" <% if (PNID.server_access_level === 'dev') { %> checked="" <% } %> <% if(PNID.access_level < 3) { %> disabled <% } %> >
 						<label for="dev">
-							<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<polygon points="2,21 22,21 14,11.5 14,5 10,3 10,11.5"></polygon>
+							<svg xmlns="http://www.w3.org/2000/svg"" width="30" height="30" viewBox="0 0 256 256">
+								<path d="M109.77,97,83.82,52a8,8,0,0,0-11.55-2.54A95.94,95.94,0,0,0,32,119.14,8.1,8.1,0,0,0,40,128H92" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/>
+								<path d="M146.23,97l26-44.94a8,8,0,0,1,11.55-2.54A95.94,95.94,0,0,1,224,119.14a8.1,8.1,0,0,1-8,8.86H164" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/>
+								<path d="M146,159.18l25.83,44.73a8,8,0,0,1-3.56,11.26,96.24,96.24,0,0,1-80.54,0,8,8,0,0,1-3.56-11.26L110,159.18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/>
+								<circle cx="128" cy="128" r="12"/>
 							</svg>
 							<h2>Dev</h2>
 						</label>
@@ -119,7 +122,7 @@
 						<label for="marketing_flag">
 							<h2>Receive</h2>
 						</label>
-							<input type="radio" id="false" name="marketing_flag" value="false" <% if (!PNID.flags.marketing) { %>checked=""<% } %>>
+						<input type="radio" id="false" name="marketing_flag" value="false" style="width: 195px;" <% if (!PNID.flags.marketing) { %>checked=""<% } %>>
 						<label for="marketing_flag">
 							<h2>Do Not Receive</h2>
 						</label>
@@ -146,11 +149,41 @@
 		</script>
 		<% } %>
 		<script>
-			var seen = false;
-			function warning() {
-				if(seen) return;
-				seen = true;
+			var seenCountry = false, seenBirthday = false;
+			function countryChangeWarning() {
+				if(seenCountry) return;
+				seenCountry = true;
 				wiiuDialog.alert('Warning: Changing your country may cause unexpected results. You may need to re-link your PNID for the changes to apply. \n\nFor more information, see:\nhttps://preten.do/PAS-727-0001', 'I Understand');
+			}
+
+			function birthdayChangeWarning() {
+				if(seenBirthday) return;
+				seenBirthday = true;
+				wiiuDialog.alert('Warning: Changing your birthday may cause unexpected results. You may need to re-link your PNID for the changes to apply. \n\nFor more information, see:\nhttps://preten.do/PAS-727-0002', 'I Understand');
+			}
+
+			function dateValidation(element) {
+				birthdayChangeWarning();
+				if (!isValidDate(element.value)) {
+					element.value = '<%= PNID.birthdate %>';
+					wiiuDialog.alert('Invalid date. Please use YYYY-MM-DD.', 'OK');
+				}
+			}
+
+			function isValidDate(s) {
+				var bits = s.split('-');
+				var y = bits[0],
+					m = bits[1],
+					d = bits[2];
+				//* Assume not leap year by default (note zero index for Jan)
+				var daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+				//* If evenly divisible by 4 and not evenly divisible by 100,
+				//* or is evenly divisible by 400, then a leap year
+				if ((!(y % 4) && y % 100) || !(y % 400)) {
+					daysInMonth[1] = 29;
+				}
+				return !(/\D/.test(String(d))) && d > 0 && d <= daysInMonth[--m]
 			}
 		</script>
 	</body>

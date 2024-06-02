@@ -1,6 +1,7 @@
 import { GenderTypes } from '@/types/common/gender-types';
 
 export interface AccountSettings {
+	birthdate: string;
 	gender: GenderTypes;
 	tz_name: string;
 	region: number;

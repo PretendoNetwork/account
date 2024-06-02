@@ -19,6 +19,7 @@ import regionsList from '@/services/nnas/regions.json';
 const router = express.Router();
 
 const accountSettingsSchema = z.object({
+	birthdate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 	gender: z.enum(['M', 'F']),
 	tz_name: z.string(),
 	region: z.coerce.number(),
@@ -99,10 +100,18 @@ router.get('/mii/:pid/:face', async function (request: express.Request, response
 		return;
 	}
 
-	const miiImage = await got(`${config.cdn.base_url}/mii/${request.params.pid}/${request.params.face}.png`).buffer();
+	try {
+		const url = `${config.cdn.base_url}/mii/${request.params.pid}/${request.params.face}.png`;
+		console.log(url);
+		const miiImage = await got(url).buffer();
 
-	response.set('Content-Type', 'image/png');
-	response.send(miiImage);
+		response.set('Content-Type', 'image/png');
+		response.send(miiImage);
+	} catch (error: any) {
+		LOG_ERROR(error);
+		response.sendStatus(404);
+		return;
+	}
 });
 
 /**
@@ -163,6 +172,7 @@ router.post('/update', async function (request: express.Request, response: expre
 			return;
 		}
 
+		pnid.birthdate = person.data.birthdate;
 		pnid.gender = person.data.gender;
 		pnid.region = region;
 		pnid.country = person.data.country;
