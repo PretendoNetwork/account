@@ -1,9 +1,9 @@
 import express from 'express';
 import validator from 'validator';
-import hcaptcha from "hcaptcha";
+import hcaptcha from 'hcaptcha';
 import { getPNIDByEmailAddress, getPNIDByUsername } from '@/database';
 import { sendForgotPasswordEmail } from '@/util';
-import { config, disabledFeatures } from "@/config-manager";
+import { config, disabledFeatures } from '@/config-manager';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
@@ -11,59 +11,59 @@ const router = express.Router();
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
 	const input = request.body?.input;
 	const hCaptchaResponse = request.body.hCaptchaResponse?.trim();
-	
+
 	if (!disabledFeatures.captcha) {
-	    if (!hCaptchaResponse || hCaptchaResponse === "") {
-	        response.status(400).json({
-	            app: "api",
-	            status: 400,
-	            error: "Must fill in captcha",
-	        });
-	
-	        return;
-	    }
+		if (!hCaptchaResponse || hCaptchaResponse === '') {
+			response.status(400).json({
+				app: 'api',
+				status: 400,
+				error: 'Must fill in captcha',
+			});
 
-	    const captchaVerify = await hcaptcha.verify(
-	        config.hcaptcha.secret,
-	        hCaptchaResponse
-	    );
+			return;
+		}
 
-	    if (!captchaVerify.success) {
-	        response.status(400).json({
-	            app: "api",
-	            status: 400,
-	            error: "Captcha verification failed",
-	        });
+		const captchaVerify = await hcaptcha.verify(
+			config.hcaptcha.secret,
+			hCaptchaResponse
+		);
 
-	        return;
-	    }
+		if (!captchaVerify.success) {
+			response.status(400).json({
+				app: 'api',
+				status: 400,
+				error: 'Captcha verification failed',
+			});
+
+			return;
+		}
 	}
 
 	if (!input || input.trim() === '') {
-	    response.status(400).json({
-	        app: 'api',
-	        status: 400,
-	        error: 'Invalid or missing input'
-	    });
-	
-	    return;
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Invalid or missing input'
+		});
+
+		return;
 	}
 
 	let pnid: HydratedPNIDDocument | null;
 
 	if (validator.isEmail(input)) {
-	    pnid = await getPNIDByEmailAddress(input);
+		pnid = await getPNIDByEmailAddress(input);
 	} else {
-	    pnid = await getPNIDByUsername(input);
+		pnid = await getPNIDByUsername(input);
 	}
 
 	if (pnid) {
-	    await sendForgotPasswordEmail(pnid);
+		await sendForgotPasswordEmail(pnid);
 	}
 
 	response.json({
-	    app: 'api',
-	    status: 200
+		app: 'api',
+		status: 200
 	});
 });
 
