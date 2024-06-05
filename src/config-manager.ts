@@ -150,7 +150,7 @@ if (!config.s3.secret) {
 }
 
 if (!config.server_environment) {
-	LOG_WARN('Failed to find server environment. To change the environment, set the PN_ACT_CONFIG_SERVER_ENVIRONMENT environment variable');
+	LOG_WARN('Failed to find server environment. To change the environment, set the PN_ACT_CONFIG_SERVER_ENVIRONMENT environment variable. Defaulting to prod');
 	config.server_environment = 'prod';
 }
 
