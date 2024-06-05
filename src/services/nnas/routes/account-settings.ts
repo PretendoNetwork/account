@@ -181,7 +181,7 @@ router.post('/update', async function (request: express.Request, response: expre
 		pnid.flags.marketing = person.data.marketing_flag;
 		pnid.flags.off_device = person.data.off_device_flag;
 
-		if (person.data.server_selection) {
+		if (person.data.server_selection && pnid.access_level > 0 && pnid.access_level < 4) {
 			const environment = person.data.server_selection;
 
 			if (environment === 'test' && pnid.access_level < 1) {
