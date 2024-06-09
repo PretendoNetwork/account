@@ -611,10 +611,12 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 
 	pnid.gender = gender;
 	pnid.region = region;
+	pnid.country = countryCode;
+	pnid.language = language;
 	pnid.timezone.name = timezoneName;
 	pnid.timezone.offset = Number(timezone.utc_offset);
-	pnid.timezone.marketing = marketingFlag;
-	pnid.timezone.off_device = offDeviceFlag;
+	pnid.flags.marketing = marketingFlag;
+	pnid.flags.off_device = offDeviceFlag;
 
 	await pnid.save();
 
