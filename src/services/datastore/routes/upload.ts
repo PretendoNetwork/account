@@ -3,10 +3,9 @@ import crypto from 'node:crypto';
 import express from 'express';
 import Dicer from 'dicer';
 import { uploadCDNAsset } from '@/util';
+import { config } from '@/config-manager';
 
 const router = express.Router();
-
-const signatureSecret = fs.readFileSync(`${__dirname}/../../../../certs/nex/datastore/secret.key`);
 
 function multipartParser(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	const RE_BOUNDARY = /^multipart\/.+?(?:; boundary=(?:(?:"(.+)")|(?:([^\s]+))))$/i;
@@ -86,7 +85,7 @@ router.post('/upload', multipartParser, async (request: express.Request, respons
 
 	const data = `${pid}${bucket}${key}${date}`;
 
-	const hmac = crypto.createHmac('sha256', signatureSecret).update(data).digest('hex');
+	const hmac = crypto.createHmac('sha256', config.datastore.signature_secret).update(data).digest('hex');
 
 	console.log(hmac, signature);
 

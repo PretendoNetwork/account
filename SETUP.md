@@ -75,6 +75,7 @@ Configurations are loaded through environment variables. `.env` files are suppor
 | `PN_ACT_CONFIG_CDN_BASE_URL`                  | URL for serving CDN contents (usually the same as s3 endpoint)                                   | No       |
 | `PN_ACT_CONFIG_WEBSITE_BASE`                  | Website URL                                                                                      | Yes      |
 | `PN_ACT_CONFIG_AES_KEY`                       | AES-256 key used for encrypting tokens                                                           | No       |
+| `PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET`    | HMAC secret key (16 bytes in hex format) used to sign uploaded DataStore files                   | No       |
 | `PN_ACT_CONFIG_GRPC_MASTER_API_KEY_ACCOUNT`   | Master API key to interact with the account gRPC service                                         | No       |
 | `PN_ACT_CONFIG_GRPC_MASTER_API_KEY_API`       | Master API key to interact with the API gRPC service                                             | No       |
 | `PN_ACT_CONFIG_GRPC_PORT`                     | gRPC server port                                                                                 | No       |

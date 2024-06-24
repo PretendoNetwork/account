@@ -13,6 +13,8 @@ export const disabledFeatures = {
 	s3: false
 };
 
+const hexadecimalStringRegex = /^[0-9a-f]+$/i;
+
 LOG_INFO('Loading config');
 
 let mongooseConnectOptions: mongoose.ConnectOptions = {};
@@ -71,7 +73,10 @@ export const config: Config = {
 		},
 		port: Number(process.env.PN_ACT_CONFIG_GRPC_PORT || ''),
 	},
-	server_environment: process.env.PN_ACT_CONFIG_SERVER_ENVIRONMENT || ''
+	server_environment: process.env.PN_ACT_CONFIG_SERVER_ENVIRONMENT || '',
+	datastore: {
+		signature_secret: process.env.PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET || ''
+	}
 };
 
 if (process.env.PN_ACT_CONFIG_STRIPE_SECRET_KEY) {
@@ -194,4 +199,13 @@ if (!config.grpc.port) {
 
 if (!config.stripe?.secret_key) {
 	LOG_WARN('Failed to find Stripe api key! If a PNID is deleted with an active subscription, the subscription will *NOT* be canceled! Set the PN_ACT_CONFIG_STRIPE_SECRET_KEY environment variable to enable');
+}
+
+if (!config.datastore.signature_secret) {
+	LOG_ERROR('Datastore signature secret key is not set. Set the PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET environment variable');
+	process.exit(0);
+}
+if (config.datastore.signature_secret.length !== 32 || !hexadecimalStringRegex.test(config.datastore.signature_secret)) {
+	LOG_ERROR('Datastore signature secret key must be a 32-character hexadecimal string.');
+	process.exit(0);
 }
