@@ -37,7 +37,7 @@ ARG app_dir
 RUN mkdir -p ${app_dir}/logs
 RUN chown node:node ${app_dir}/logs
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 USER node
 
 COPY package.json .
