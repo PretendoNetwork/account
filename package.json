@@ -82,8 +82,6 @@
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.35.0",
     "ndarray": "^1.0.19",
-    "prompt": "^1.0.0",
-    "typescript": "^4.9.5",
-    "yesno": "^0.4.0"
+    "typescript": "^4.9.5"
   }
 }
