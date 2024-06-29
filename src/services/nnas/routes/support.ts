@@ -131,7 +131,7 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
  * Description: Sends a users confirmation email
  */
 router.get('/send_confirmation/pin/:email', async (request: express.Request, response: express.Response): Promise<void> => {
-	const email = String(request.params.email)
+	const email = request.params.email;
 
 	const pnid = await getPNIDByEmailAddress(email);
 
