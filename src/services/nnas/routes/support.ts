@@ -2,7 +2,7 @@ import dns from 'node:dns';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
-import { getPNIDByPID } from '@/database';
+import { getPNIDByEmailAddress, getPNIDByPID } from '@/database';
 import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail } from '@/util';
 
 const router = express.Router();
@@ -105,6 +105,35 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
 	const pid = Number(request.headers['x-nintendo-pid']);
 
 	const pnid = await getPNIDByPID(pid);
+
+	if (!pnid) {
+		// TODO - Unsure if this is the right error
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0130',
+					message: 'PID has not been registered yet'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	await sendConfirmationEmail(pnid);
+
+	response.status(200).send('');
+});
+
+/**
+ * [GET]
+ * Replacement for: https://account.nintendo.net/v1/api/support/send_confirmation/pin/:email
+ * Description: Sends a users confirmation email
+ */
+router.get('/send_confirmation/pin/:email', async (request: express.Request, response: express.Response): Promise<void> => {
+	const email = String(request.params.email)
+
+	const pnid = await getPNIDByEmailAddress(email);
 
 	if (!pnid) {
 		// TODO - Unsure if this is the right error
