@@ -3,6 +3,9 @@ process.on('uncaughtException', (err, origin) => {
 	console.log(err);
 	console.log(origin);
 });
+process.on('SIGTERM', () => {
+	process.exit(0);
+});
 
 import express from 'express';
 import morgan from 'morgan';

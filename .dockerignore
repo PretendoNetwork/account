@@ -1,6 +1,5 @@
 .git
-config.json
-logs
-certs
-cdn
+.env
 node_modules
+dist
+logs

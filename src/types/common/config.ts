@@ -47,4 +47,7 @@ export interface Config {
 		secret_key: string;
 	};
 	server_environment: string;
+	datastore: {
+		signature_secret: string;
+	};
 }

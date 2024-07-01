@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import redis from 'redis';
+import * as redis from 'redis';
 import { config, disabledFeatures } from '@/config-manager';
 
 let client: redis.RedisClientType;
