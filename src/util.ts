@@ -219,6 +219,18 @@ export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IP
 	await sendMail(options);
 }
 
+export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void>  {
+	const options = {
+		to: pnid.email.address,
+		subject: '[Pretendo Network] Email address confirmed for Parental Controls',
+		username: pnid.username,
+		paragraph: 'your email address has been confirmed for use with Parental Controls.',
+		text: `Dear ${pnid.username}, \r\n\r\nYour email address has been confirmed for use with Parental Controls.`
+	};
+
+	await sendMail(options);
+}
+
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const tokenOptions = {
 		system_type: 0xF, // * API

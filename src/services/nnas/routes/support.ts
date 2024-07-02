@@ -3,7 +3,7 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
 import { getPNIDByEmailAddress, getPNIDByPID } from '@/database';
-import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail } from '@/util';
+import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail, sendEmailConfirmedParentalControlsEmail } from '@/util';
 
 const router = express.Router();
 
@@ -128,7 +128,7 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
 /**
  * [GET]
  * Replacement for: https://account.nintendo.net/v1/api/support/send_confirmation/pin/:email
- * Description: Sends a users confirmation email
+ * Description: Sends a users confirmation email that their email has been registered for parental controls
  */
 router.get('/send_confirmation/pin/:email', async (request: express.Request, response: express.Response): Promise<void> => {
 	const email = request.params.email;
@@ -149,7 +149,7 @@ router.get('/send_confirmation/pin/:email', async (request: express.Request, res
 		return;
 	}
 
-	await sendConfirmationEmail(pnid);
+	await sendEmailConfirmedParentalControlsEmail(pnid);
 
 	response.status(200).send('');
 });
