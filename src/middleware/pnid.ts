@@ -14,7 +14,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	const parts = authHeader.split(' ');
 	const type = parts[0];
 	let token = parts[1];
-	let pnid: HydratedPNIDDocument | null;
+	let pnid: HydratedPNIDDocument | null = null;
 
 	if (request.isCemu) {
 		token = Buffer.from(token, 'hex').toString('base64');
@@ -22,8 +22,9 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 
 	if (type === 'Basic') {
 		pnid = await getPNIDByBasicAuth(token);
-	} else {
-		pnid = await getPNIDByTokenAuth(token);
+	} else if (type === 'Bearer') {
+		// TODO - This "accepted types list" is mostly a hack. Change this
+		pnid = await getPNIDByTokenAuth(token, [1, 2]);
 	}
 
 	if (!pnid) {
