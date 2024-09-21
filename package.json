@@ -4,15 +4,13 @@
   "description": "",
   "main": "./dist/server.js",
   "scripts": {
-    "lint": "npx eslint .",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "build": "npm run lint && npm run clean && npx tsc && npx tsc-alias && npm run copy-static",
     "clean": "rimraf ./dist",
-    "copy-static": "npm run copy-assets && npm run copy-timezones && npm run copy-views",
-    "copy-assets": "cp -r ./src/assets ./dist/assets",
-    "copy-views": "cp -r ./src/views ./dist/views",
-    "copy-timezones": "cp ./src/services/nnas/timezones.json ./dist/services/nnas/timezones.json",
+    "copy-static": "copyfiles -e \"src/**/*.ts\" -u 1 \"src/**/*\" dist",
     "start": "node .",
-    "start:dev": "NODE_ENV=development node ."
+    "start:dev": "cross-env NODE_ENV=development node ."
   },
   "repository": {
     "type": "git",
@@ -80,6 +78,8 @@
     "@types/validator": "^13.7.14",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
+    "copyfiles": "^2.4.1",
+    "cross-env": "^7.0.3",
     "eslint": "^8.35.0",
     "ndarray": "^1.0.19",
     "typescript": "^4.9.5"
