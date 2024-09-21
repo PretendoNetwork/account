@@ -1,5 +1,4 @@
 import express from 'express';
-import subdomain from 'express-subdomain';
 import cors from 'cors';
 import APIMiddleware from '@/middleware/api';
 import { LOG_INFO } from '@/logger';
@@ -29,7 +28,7 @@ api.use('/v1/user', V1.USER);
 const router = express.Router();
 
 // * Create subdomains
-LOG_INFO('[USER API] Creating \'api\' subdomain');
-router.use(subdomain('api', api));
+LOG_INFO('[USER API] Registering \'api\' router');
+router.use(api);
 
 export default router;
