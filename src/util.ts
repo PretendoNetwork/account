@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { IncomingHttpHeaders } from 'node:http';
-import aws from 'aws-sdk';
+import { ObjectCannedACL, S3 } from '@aws-sdk/client-s3';
 import fs from 'fs-extra';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -15,13 +15,16 @@ import { Token } from '@/types/common/token';
 import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import { SafeQs } from '@/types/common/safe-qs';
 
-let s3: aws.S3;
+let s3: S3;
 
 if (!disabledFeatures.s3) {
-	s3 = new aws.S3({
-		endpoint: new aws.Endpoint(config.s3.endpoint),
-		accessKeyId: config.s3.key,
-		secretAccessKey: config.s3.secret
+	s3 = new S3({
+		endpoint: config.s3.endpoint,
+
+		credentials: {
+			accessKeyId: config.s3.key,
+			secretAccessKey: config.s3.secret,
+		},
 	});
 }
 
@@ -150,7 +153,7 @@ export function fullUrl(request: express.Request): string {
 	return `${protocol}://${host}${opath}`;
 }
 
-export async function uploadCDNAsset(bucket: string, key: string, data: Buffer, acl: string): Promise<void> {
+export async function uploadCDNAsset(bucket: string, key: string, data: Buffer, acl: ObjectCannedACL): Promise<void> {
 	if (disabledFeatures.s3) {
 		await writeLocalCDNFile(key, data);
 	} else {
@@ -159,7 +162,7 @@ export async function uploadCDNAsset(bucket: string, key: string, data: Buffer, 
 			Key: key,
 			Bucket: bucket,
 			ACL: acl
-		}).promise();
+		});
 	}
 }
 
