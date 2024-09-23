@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import APIMiddleware from '@/middleware/api';
-import { LOG_INFO } from '@/logger';
+import { formatHostnames, LOG_INFO } from '@/logger';
 
 import { V1 } from '@/services/api/routes';
+import { config } from '@/config-manager';
+import { restrictHostnames } from '@/middleware/host-limit';
 
 // * Router to handle the subdomain restriction
 const api = express.Router();
@@ -27,8 +29,8 @@ api.use('/v1/user', V1.USER);
 // * Main router for endpoints
 const router = express.Router();
 
-// * Create subdomains
-LOG_INFO('[USER API] Registering \'api\' router');
-router.use(api);
+// * Create domains
+LOG_INFO(`[USER API] Registering api router with domains: ${formatHostnames(config.domains.api)}`);
+router.use(restrictHostnames(config.domains.api, api));
 
 export default router;
