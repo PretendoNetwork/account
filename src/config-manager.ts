@@ -109,7 +109,9 @@ for (const service of domainServices) {
 	const validDomains: string[] = [];
 	const invalidDomains: string[] = [];
 
-	for (const domain of config.domains[service]) {
+	const uniqueDomains = [...new Set(config.domains[service])];
+
+	for (const domain of uniqueDomains) {
 		isValidHostname(domain) ? validDomains.push(domain) : invalidDomains.push(domain);
 	}
 
