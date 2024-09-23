@@ -19,7 +19,7 @@ const userSchema = z.object({
 
 /**
  * [GET]
- * Implementation of for: https://api.pretendo.cc/v1/user
+ * Implementation of for: https://api.brocatech.com/v1/user
  * Description: Gets PNID details about the current user
  */
 router.get('/', async (request: express.Request, response: express.Response): Promise<void> => {
@@ -69,7 +69,7 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 
 /**
  * [POST]
- * Implementation of for: https://api.pretendo.cc/v1/user
+ * Implementation of for: https://api.brocatech.com/v1/user
  * Description: Updates PNID certain details about the current user
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {

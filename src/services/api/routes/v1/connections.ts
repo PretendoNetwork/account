@@ -9,7 +9,7 @@ const VALID_CONNECTION_TYPES = [
 
 /**
  * [POST]
- * Implementation of for: https://api.pretendo.cc/v1/connections/add/TYPE
+ * Implementation of for: https://api.brocatech.com/v1/connections/add/TYPE
  * Description: Adds an account connection to the users PNID
  */
 router.post('/add/:type', async (request: express.Request, response: express.Response): Promise<void> => {
@@ -62,7 +62,7 @@ router.post('/add/:type', async (request: express.Request, response: express.Res
 
 /**
  * [DELETE]
- * Implementation of for: https://api.pretendo.cc/v1/connections/remove/TYPE
+ * Implementation of for: https://api.brocatech.com/v1/connections/remove/TYPE
  * Description: Removes an account connection from the users PNID
  */
 router.delete('/remove/:type', async (request: express.Request, response: express.Response): Promise<void> => {

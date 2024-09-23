@@ -32,7 +32,7 @@ const DEFAULT_MII_DATA = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZg
 
 /**
  * [POST]
- * Implementation of: https://api.pretendo.cc/v1/register
+ * Implementation of: https://api.brocatech.com/v1/register
  * Description: Creates a new user PNID
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {

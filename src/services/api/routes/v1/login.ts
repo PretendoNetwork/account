@@ -9,7 +9,7 @@ const router = express.Router();
 
 /**
  * [POST]
- * Implementation of for: https://api.pretendo.cc/v1/login
+ * Implementation of for: https://api.brocatech.com/v1/login
  * Description: Generates an access token for an API user
  * TODO: Replace this with a more robust OAuth2 implementation
  */

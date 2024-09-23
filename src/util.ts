@@ -198,10 +198,10 @@ export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNI
 		subject: '[Pretendo Network] Please confirm your email address',
 		username: pnid.username,
 		confirmation: {
-			href: `https://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token}`,
+			href: `https://api.brocatech.com/v1/email/verify?token=${pnid.identification.email_token}`,
 			code: pnid.identification.email_code
 		},
-		text: `Hello ${pnid.username}! \r\n\r\nYour Pretendo Network ID activation is almost complete. Please click the link to confirm your e-mail address and complete the activation process: \r\nhttps://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token} \r\n\r\nYou may also enter the following 6-digit code on your console: ${pnid.identification.email_code}`
+		text: `Hello ${pnid.username}! \r\n\r\nYour Pretendo Network ID activation is almost complete. Please click the link to confirm your e-mail address and complete the activation process: \r\nhttps://api.brocatech.com/v1/email/verify?token=${pnid.identification.email_token} \r\n\r\nYou may also enter the following 6-digit code on your console: ${pnid.identification.email_code}`
 	};
 
 	await sendMail(options);
