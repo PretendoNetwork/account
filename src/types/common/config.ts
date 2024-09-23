@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+export const domainServices = ['api', 'assets', 'cbvc', 'conntest', 'datastore', 'nasc', 'nnas', 'cdn'] as const;
+export type DomainService = typeof domainServices[number];
+
 export interface Config {
 	http: {
 		port: number;
@@ -30,7 +33,10 @@ export interface Config {
 		secret: string;
 	};
 	cdn: {
-		subdomain: string;
+		/** 
+		 * @deprecated Use `domains.cdn` instead
+		 */
+		subdomain?: string;
 		disk_path: string;
 		base_url: string;
 	};
@@ -50,4 +56,5 @@ export interface Config {
 	datastore: {
 		signature_secret: string;
 	};
+	domains: Record<DomainService, string[]>;
 }
