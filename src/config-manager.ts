@@ -123,6 +123,8 @@ for (const service of domainServices) {
 	if (invalidDomains.length) {
 		LOG_WARN(`Invalid domain(s) skipped for ${service}: ${formatHostnames(invalidDomains)}`);
 	}
+
+	config.domains[service] = validDomains;
 }
 
 if (!config.http.port) {
