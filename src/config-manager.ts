@@ -86,7 +86,7 @@ export const config: Config = {
 		datastore: (process.env.PN_ACT_CONFIG_DOMAINS_DATASTORE || 'datastore.pretendo.cc').split(','),
 		cdn: (process.env.PN_ACT_CONFIG_DOMAINS_CDN || '').split(',').filter(d => d),
 		nasc: (process.env.PN_ACT_CONFIG_DOMAINS_NASC || 'nasc.pretendo.cc').split(','),
-		nnas: (process.env.PN_ACT_CONFIG_DOMAINS_NNAS || 'account.pretendo.cc').split(','),
+		nnas: (process.env.PN_ACT_CONFIG_DOMAINS_NNAS || 'c.account.pretendo.cc,account.pretendo.cc').split(','),
 	}
 };
 
