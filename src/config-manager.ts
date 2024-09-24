@@ -1,9 +1,9 @@
 import fs from 'fs-extra';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { LOG_INFO, LOG_WARN, LOG_ERROR, formatHostnames } from '@/logger';
-import { Config, domainServices } from '@/types/common/config';
 import isValidHostname from 'is-valid-hostname';
+import { LOG_INFO, LOG_WARN, LOG_ERROR, formatHostnames } from '@/logger';
+import { type Config, domainServices } from '@/types/common/config';
 
 dotenv.config();
 
