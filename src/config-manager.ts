@@ -84,7 +84,7 @@ export const config: Config = {
 		cbvc: (process.env.PN_ACT_CONFIG_DOMAINS_CBVC || 'cbvc.cdn.pretendo.cc').split(','),
 		conntest: (process.env.PN_ACT_CONFIG_DOMAINS_CONNTEST || 'conntest.pretendo.cc').split(','),
 		datastore: (process.env.PN_ACT_CONFIG_DOMAINS_DATASTORE || 'datastore.pretendo.cc').split(','),
-		cdn: (process.env.PN_ACT_CONFIG_DOMAINS_CDN || '').split(',').filter(d => d),
+		cdn: (process.env.PN_ACT_CONFIG_DOMAINS_CDN || '').split(','),
 		nasc: (process.env.PN_ACT_CONFIG_DOMAINS_NASC || 'nasc.pretendo.cc').split(','),
 		nnas: (process.env.PN_ACT_CONFIG_DOMAINS_NNAS || 'c.account.pretendo.cc,account.pretendo.cc').split(','),
 	}
