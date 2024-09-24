@@ -18,8 +18,8 @@ if (disabledFeatures.s3) {
 	localcdn.use(get);
 
 	// * Create domains
-	LOG_INFO(`[LOCAL-CDN] Creating cdn router with domains: ${formatHostnames(config.domains.cdn)}`);
-	router.use(restrictHostnames(config.domains.cdn, localcdn));
+	LOG_INFO(`[LOCAL-CDN] Creating cdn router with domains: ${formatHostnames(config.domains.local_cdn)}`);
+	router.use(restrictHostnames(config.domains.local_cdn, localcdn));
 } else {
 	LOG_INFO('[LOCAL-CDN] s3 enabled, skipping local CDN');
 }

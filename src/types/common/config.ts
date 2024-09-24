@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 
-export const domainServices = ['api', 'assets', 'cbvc', 'conntest', 'datastore', 'nasc', 'nnas', 'cdn'] as const;
+export const domainServices = ['api', 'assets', 'cbvc', 'conntest', 'datastore', 'nasc', 'nnas', 'local_cdn'] as const;
 export type DomainService = typeof domainServices[number];
+
+export const optionalDomainServices: DomainService[] = ['local_cdn'];
 
 export interface Config {
 	http: {

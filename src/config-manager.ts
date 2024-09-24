@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import isValidHostname from 'is-valid-hostname';
 import { LOG_INFO, LOG_WARN, LOG_ERROR, formatHostnames } from '@/logger';
-import { type Config, domainServices } from '@/types/common/config';
+import { type Config, domainServices, optionalDomainServices } from '@/types/common/config';
 
 dotenv.config();
 
@@ -85,7 +85,7 @@ export const config: Config = {
 		cbvc: (process.env.PN_ACT_CONFIG_DOMAINS_CBVC || 'cbvc.cdn.pretendo.cc').split(','),
 		conntest: (process.env.PN_ACT_CONFIG_DOMAINS_CONNTEST || 'conntest.pretendo.cc').split(','),
 		datastore: (process.env.PN_ACT_CONFIG_DOMAINS_DATASTORE || 'datastore.pretendo.cc').split(','),
-		cdn: (process.env.PN_ACT_CONFIG_DOMAINS_CDN || '').split(','),
+		local_cdn: (process.env.PN_ACT_CONFIG_DOMAINS_LOCAL_CDN || '').split(','),
 		nasc: (process.env.PN_ACT_CONFIG_DOMAINS_NASC || 'nasc.pretendo.cc').split(','),
 		nnas: (process.env.PN_ACT_CONFIG_DOMAINS_NNAS || 'c.account.pretendo.cc,account.pretendo.cc').split(','),
 	}
@@ -99,7 +99,7 @@ if (process.env.PN_ACT_CONFIG_STRIPE_SECRET_KEY) {
 
 // * Add the old config option for backwards compatibility
 if (config.cdn.subdomain) {
-	config.domains.cdn.push(config.cdn.subdomain);
+	config.domains.local_cdn.push(config.cdn.subdomain);
 }
 
 let configValid = true;
@@ -116,7 +116,7 @@ for (const service of domainServices) {
 		isValidHostname(domain) ? validDomains.push(domain) : invalidDomains.push(domain);
 	}
 
-	if (validDomains.length === 0) {
+	if (validDomains.length === 0 && !optionalDomainServices.includes(service)) {
 		LOG_ERROR(`No valid domains found for ${service}. Set the PN_ACT_CONFIG_DOMAINS_${service.toUpperCase()} environment variable to a valid domain`);
 		configValid = false;
 	}
@@ -201,8 +201,8 @@ if (!config.server_environment) {
 }
 
 if (disabledFeatures.s3) {
-	if (config.domains.cdn.length === 0) {
-		LOG_ERROR('S3 file storage is disabled and no CDN subdomain was set. Set the PN_ACT_CONFIG_DOMAINS_CDN environment variable');
+	if (config.domains.local_cdn.length === 0) {
+		LOG_ERROR('S3 file storage is disabled and no CDN domain was set. Set the PN_ACT_CONFIG_DOMAINS_LOCAL_CDN environment variable');
 		configValid = false;
 	}
 
@@ -211,11 +211,13 @@ if (disabledFeatures.s3) {
 		configValid = false;
 	}
 
-	LOG_WARN(`S3 file storage disabled. Using disk-based file storage. Please ensure cdn.base_url config or PN_ACT_CONFIG_CDN_BASE env variable is set to point to this server with the subdomain being ${config.cdn.subdomain}`);
+	if (configValid) {
+		LOG_WARN(`S3 file storage disabled. Using disk-based file storage. Please ensure cdn.base_url config or PN_ACT_CONFIG_CDN_BASE env variable is set to point to this server with the domain being one of ${formatHostnames(config.domains.local_cdn)}`);
 
-	if (disabledFeatures.redis) {
-		LOG_WARN('Both S3 and Redis are disabled. Large CDN files will use the in-memory cache, which may result in high memory use. Please enable S3 if you\'re running a production server.');
-	}
+		if (disabledFeatures.redis) {
+			LOG_WARN('Both S3 and Redis are disabled. Large CDN files will use the in-memory cache, which may result in high memory use. Please enable S3 if you\'re running a production server.');
+		}
+	}	
 }
 
 if (!config.aes_key) {
@@ -251,7 +253,6 @@ if (!config.datastore.signature_secret) {
 		configValid = false;
 	}
 }
-
 
 if (!configValid) {
 	LOG_ERROR('Config is invalid. Exiting');
