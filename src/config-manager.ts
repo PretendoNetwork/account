@@ -11,7 +11,8 @@ export const disabledFeatures = {
 	redis: false,
 	email: false,
 	captcha: false,
-	s3: false
+	s3: false,
+	datastore: false
 };
 
 const hexadecimalStringRegex = /^[0-9a-f]+$/i;
@@ -242,13 +243,15 @@ if (!config.stripe?.secret_key) {
 }
 
 if (!config.datastore.signature_secret) {
-	LOG_ERROR('Datastore signature secret key is not set. Set the PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET environment variable');
-	configValid = false;
+	LOG_WARN('Datastore signature secret key is not set. Disabling feature. To enable feature set the PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET environment variable');
+	disabledFeatures.datastore = true;
+} else {
+	if (config.datastore.signature_secret.length !== 32 || !hexadecimalStringRegex.test(config.datastore.signature_secret)) {
+		LOG_ERROR('Datastore signature secret key must be a 32-character hexadecimal string.');
+		configValid = false;
+	}
 }
-if (config.datastore.signature_secret.length !== 32 || !hexadecimalStringRegex.test(config.datastore.signature_secret)) {
-	LOG_ERROR('Datastore signature secret key must be a 32-character hexadecimal string.');
-	configValid = false;
-}
+
 
 if (!configValid) {
 	LOG_ERROR('Config is invalid. Exiting');

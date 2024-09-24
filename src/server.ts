@@ -26,7 +26,7 @@ import api from '@/services/api';
 import localcdn from '@/services/local-cdn';
 import assets from '@/services/assets';
 
-import { config } from '@/config-manager';
+import { config, disabledFeatures } from '@/config-manager';
 
 const app = express();
 
@@ -48,10 +48,13 @@ app.use(conntest);
 app.use(cbvc);
 app.use(nnas);
 app.use(nasc);
-app.use(datastore);
 app.use(api);
 app.use(localcdn);
 app.use(assets);
+
+if (!disabledFeatures.datastore) {
+	app.use(datastore);
+}
 
 // * 404 handler
 LOG_INFO('Creating 404 status handler');
