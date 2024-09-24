@@ -96,7 +96,7 @@ if (process.env.PN_ACT_CONFIG_STRIPE_SECRET_KEY) {
 	};
 }
 
-// Add the old config option for backwards compatibility
+// * Add the old config option for backwards compatibility
 if (config.cdn.subdomain) {
 	config.domains.cdn.push(config.cdn.subdomain);
 }
