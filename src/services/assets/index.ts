@@ -2,8 +2,9 @@
 
 import path from 'node:path';
 import express from 'express';
-import subdomain from 'express-subdomain';
-import { LOG_INFO } from '@/logger';
+import { LOG_INFO, formatHostnames } from '@/logger';
+import { config } from '@/config-manager';
+import { restrictHostnames } from '@/middleware/host-limit';
 
 // * Router to handle the subdomain restriction
 const assets = express.Router();
@@ -15,8 +16,8 @@ assets.use(express.static(path.join(__dirname, '../../assets')));
 // * Main router for endpoints
 const router = express.Router();
 
-// * Create subdomains
-LOG_INFO('[conntest] Creating \'assets\' subdomain');
-router.use(subdomain('assets', assets));
+// * Create domains
+LOG_INFO(`[assets] Creating assets router with domains: ${formatHostnames(config.domains.assets)}`);
+router.use(restrictHostnames(config.domains.assets, assets));
 
 export default router;

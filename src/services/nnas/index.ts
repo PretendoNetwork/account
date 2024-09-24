@@ -2,11 +2,10 @@
 
 import path from 'node:path';
 import express from 'express';
-import subdomain from 'express-subdomain';
 import clientHeaderCheck from '@/middleware/client-header';
 import cemuMiddleware from '@/middleware/cemu';
 import pnidMiddleware from '@/middleware/pnid';
-import { LOG_INFO } from '@/logger';
+import { LOG_INFO, formatHostnames } from '@/logger';
 
 import admin from '@/services/nnas/routes/admin';
 import content from '@/services/nnas/routes/content';
@@ -17,6 +16,8 @@ import people from '@/services/nnas/routes/people';
 import provider from '@/services/nnas/routes/provider';
 import support from '@/services/nnas/routes/support';
 import settings from '@/services/nnas/routes/account-settings';
+import { config } from '@/config-manager';
+import { restrictHostnames } from '@/middleware/host-limit';
 
 // * Router to handle the subdomain restriction
 const nnas = express.Router();
@@ -61,11 +62,8 @@ nnas.use('/v1/api/support', support);
 // * Main router for endpoints
 const router = express.Router();
 
-// * Create subdomains
-LOG_INFO('[NNAS] Creating \'account\' subdomain');
-router.use(subdomain('account', nnas));
-
-LOG_INFO('[NNAS] Creating \'c.account\' subdomain');
-router.use(subdomain('c.account', nnas));
+// * Create domains
+LOG_INFO(`[NNAS] Creating nnas router with domains: ${formatHostnames(config.domains.nnas)}`);
+router.use(restrictHostnames(config.domains.nnas, nnas));
 
 export default router;
