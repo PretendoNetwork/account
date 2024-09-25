@@ -1,8 +1,9 @@
 import fs from 'fs-extra';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { LOG_INFO, LOG_WARN, LOG_ERROR } from '@/logger';
-import { Config } from '@/types/common/config';
+import isValidHostname from 'is-valid-hostname';
+import { LOG_INFO, LOG_WARN, LOG_ERROR, formatHostnames } from '@/logger';
+import { type Config, domainServices, optionalDomainServices } from '@/types/common/config';
 
 dotenv.config();
 
@@ -10,7 +11,8 @@ export const disabledFeatures = {
 	redis: false,
 	email: false,
 	captcha: false,
-	s3: false
+	s3: false,
+	datastore: false
 };
 
 const hexadecimalStringRegex = /^[0-9a-f]+$/i;
@@ -60,7 +62,7 @@ export const config: Config = {
 		secret: process.env.PN_ACT_CONFIG_HCAPTCHA_SECRET || ''
 	},
 	cdn: {
-		subdomain: process.env.PN_ACT_CONFIG_CDN_SUBDOMAIN || '',
+		subdomain: process.env.PN_ACT_CONFIG_CDN_SUBDOMAIN,
 		disk_path: process.env.PN_ACT_CONFIG_CDN_DISK_PATH || '',
 		base_url: process.env.PN_ACT_CONFIG_CDN_BASE_URL || ''
 	},
@@ -76,6 +78,16 @@ export const config: Config = {
 	server_environment: process.env.PN_ACT_CONFIG_SERVER_ENVIRONMENT || '',
 	datastore: {
 		signature_secret: process.env.PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET || ''
+	},
+	domains: {
+		api: (process.env.PN_ACT_CONFIG_DOMAINS_API || 'api.brocatech.com').split(','),
+		assets: (process.env.PN_ACT_CONFIG_DOMAINS_ASSETS || 'assets.brocatech.com').split(','),
+		cbvc: (process.env.PN_ACT_CONFIG_DOMAINS_CBVC || 'cbvc.cdn.brocatech.com').split(','),
+		conntest: (process.env.PN_ACT_CONFIG_DOMAINS_CONNTEST || 'conntest.brocatech.com').split(','),
+		datastore: (process.env.PN_ACT_CONFIG_DOMAINS_DATASTORE || 'datastore.brocatech.com').split(','),
+		local_cdn: (process.env.PN_ACT_CONFIG_DOMAINS_LOCAL_CDN || '').split(','),
+		nasc: (process.env.PN_ACT_CONFIG_DOMAINS_NASC || 'nasc.brocatech.com').split(','),
+		nnas: (process.env.PN_ACT_CONFIG_DOMAINS_NNAS || 'c.account.brocatech.com,account.brocatech.com').split(','),
 	}
 };
 
@@ -85,21 +97,50 @@ if (process.env.PN_ACT_CONFIG_STRIPE_SECRET_KEY) {
 	};
 }
 
+// * Add the old config option for backwards compatibility
+if (config.cdn.subdomain) {
+	config.domains.local_cdn.push(config.cdn.subdomain);
+}
+
+let configValid = true;
+
 LOG_INFO('Config loaded, checking integrity');
+
+for (const service of domainServices) {
+	const validDomains: string[] = [];
+	const invalidDomains: string[] = [];
+
+	const uniqueDomains = [...new Set(config.domains[service])];
+
+	for (const domain of uniqueDomains) {
+		isValidHostname(domain) ? validDomains.push(domain) : invalidDomains.push(domain);
+	}
+
+	if (validDomains.length === 0 && !optionalDomainServices.includes(service)) {
+		LOG_ERROR(`No valid domains found for ${service}. Set the PN_ACT_CONFIG_DOMAINS_${service.toUpperCase()} environment variable to a valid domain`);
+		configValid = false;
+	}
+
+	if (invalidDomains.length) {
+		LOG_WARN(`Invalid domain(s) skipped for ${service}: ${formatHostnames(invalidDomains)}`);
+	}
+
+	config.domains[service] = validDomains;
+}
 
 if (!config.http.port) {
 	LOG_ERROR('Failed to find HTTP port. Set the PN_ACT_CONFIG_HTTP_PORT environment variable');
-	process.exit(0);
+	configValid = false;
 }
 
 if (!config.mongoose.connection_string) {
 	LOG_ERROR('Failed to find MongoDB connection string. Set the PN_ACT_CONFIG_MONGO_CONNECTION_STRING environment variable');
-	process.exit(0);
+	configValid = false;
 }
 
 if (!config.cdn.base_url) {
 	LOG_ERROR('Failed to find asset CDN base URL. Set the PN_ACT_CONFIG_CDN_BASE_URL environment variable');
-	process.exit(0);
+	configValid = false;
 }
 
 if (!config.redis.client.url) {
@@ -130,7 +171,7 @@ if (!config.email.from) {
 if (!disabledFeatures.email) {
 	if (!config.website_base) {
 		LOG_ERROR('Email sending is enabled and no website base was configured. Set the PN_ACT_CONFIG_WEBSITE_BASE environment variable');
-		process.exit(0);
+		configValid = false;
 	}
 }
 
@@ -140,17 +181,17 @@ if (!config.hcaptcha.secret) {
 }
 
 if (!config.s3.endpoint) {
-	LOG_WARN('Failed to find s3 endpoint config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ENDPOINT environment variable');
+	LOG_WARN('Failed to find S3 endpoint config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ENDPOINT environment variable');
 	disabledFeatures.s3 = true;
 }
 
 if (!config.s3.key) {
-	LOG_WARN('Failed to find s3 access key config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ACCESS_KEY environment variable');
+	LOG_WARN('Failed to find S3 access key config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ACCESS_KEY environment variable');
 	disabledFeatures.s3 = true;
 }
 
 if (!config.s3.secret) {
-	LOG_WARN('Failed to find s3 secret key config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ACCESS_SECRET environment variable');
+	LOG_WARN('Failed to find S3 secret key config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ACCESS_SECRET environment variable');
 	disabledFeatures.s3 = true;
 }
 
@@ -160,41 +201,43 @@ if (!config.server_environment) {
 }
 
 if (disabledFeatures.s3) {
-	if (!config.cdn.subdomain) {
-		LOG_ERROR('s3 file storage is disabled and no CDN subdomain was set. Set the PN_ACT_CONFIG_CDN_SUBDOMAIN environment variable');
-		process.exit(0);
+	if (config.domains.local_cdn.length === 0) {
+		LOG_ERROR('S3 file storage is disabled and no CDN domain was set. Set the PN_ACT_CONFIG_DOMAINS_LOCAL_CDN environment variable');
+		configValid = false;
 	}
 
 	if (!config.cdn.disk_path) {
-		LOG_ERROR('s3 file storage is disabled and no CDN disk path was set. Set the PN_ACT_CONFIG_CDN_DISK_PATH environment variable');
-		process.exit(0);
+		LOG_ERROR('S3 file storage is disabled and no CDN disk path was set. Set the PN_ACT_CONFIG_CDN_DISK_PATH environment variable');
+		configValid = false;
 	}
 
-	LOG_WARN(`s3 file storage disabled. Using disk-based file storage. Please ensure cdn.base_url config or PN_ACT_CONFIG_CDN_BASE env variable is set to point to this server with the subdomain being ${config.cdn.subdomain}`);
+	if (configValid) {
+		LOG_WARN(`S3 file storage disabled. Using disk-based file storage. Please ensure cdn.base_url config or PN_ACT_CONFIG_CDN_BASE env variable is set to point to this server with the domain being one of ${formatHostnames(config.domains.local_cdn)}`);
 
-	if (disabledFeatures.redis) {
-		LOG_WARN('Both s3 and Redis are disabled. Large CDN files will use the in-memory cache, which may result in high memory use. Please enable s3 if you\'re running a production server.');
-	}
+		if (disabledFeatures.redis) {
+			LOG_WARN('Both S3 and Redis are disabled. Large CDN files will use the in-memory cache, which may result in high memory use. Please enable S3 if you\'re running a production server.');
+		}
+	}	
 }
 
 if (!config.aes_key) {
 	LOG_ERROR('Token AES key is not set. Set the PN_ACT_CONFIG_AES_KEY environment variable to your AES-256-CBC key');
-	process.exit(0);
+	configValid = false;
 }
 
 if (!config.grpc.master_api_keys.account) {
 	LOG_ERROR('Master gRPC API key for the account service is not set. Set the PN_ACT_CONFIG_GRPC_MASTER_API_KEY_ACCOUNT environment variable');
-	process.exit(0);
+	configValid = false;
 }
 
 if (!config.grpc.master_api_keys.api) {
 	LOG_ERROR('Master gRPC API key for the api service is not set. Set the PN_ACT_CONFIG_GRPC_MASTER_API_KEY_API environment variable');
-	process.exit(0);
+	configValid = false;
 }
 
 if (!config.grpc.port) {
 	LOG_ERROR('Failed to find gRPC port. Set the PN_ACT_CONFIG_GRPC_PORT environment variable');
-	process.exit(0);
+	configValid = false;
 }
 
 if (!config.stripe?.secret_key) {
@@ -202,10 +245,16 @@ if (!config.stripe?.secret_key) {
 }
 
 if (!config.datastore.signature_secret) {
-	LOG_ERROR('Datastore signature secret key is not set. Set the PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET environment variable');
-	process.exit(0);
+	LOG_WARN('Datastore signature secret key is not set. Disabling feature. To enable feature set the PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET environment variable');
+	disabledFeatures.datastore = true;
+} else {
+	if (config.datastore.signature_secret.length !== 32 || !hexadecimalStringRegex.test(config.datastore.signature_secret)) {
+		LOG_ERROR('Datastore signature secret key must be a 32-character hexadecimal string.');
+		configValid = false;
+	}
 }
-if (config.datastore.signature_secret.length !== 32 || !hexadecimalStringRegex.test(config.datastore.signature_secret)) {
-	LOG_ERROR('Datastore signature secret key must be a 32-character hexadecimal string.');
+
+if (!configValid) {
+	LOG_ERROR('Config is invalid. Exiting');
 	process.exit(0);
 }

@@ -1,8 +1,9 @@
 // * handles conntest endpoints
 
 import express from 'express';
-import subdomain from 'express-subdomain';
-import { LOG_INFO } from '@/logger';
+import { LOG_INFO, formatHostnames } from '@/logger';
+import { restrictHostnames } from '@/middleware/host-limit';
+import { config } from '@/config-manager';
 
 // * Router to handle the subdomain restriction
 const conntest = express.Router();
@@ -29,8 +30,8 @@ This is test.html page
 // * Main router for endpoints
 const router = express.Router();
 
-// * Create subdomains
-LOG_INFO('[conntest] Creating \'conntest\' subdomain');
-router.use(subdomain('conntest', conntest));
+// * Create domains
+LOG_INFO(`[conntest] Creating conntest router with domains: ${formatHostnames(config.domains.conntest)}`);
+router.use(restrictHostnames(config.domains.conntest, conntest));
 
 export default router;

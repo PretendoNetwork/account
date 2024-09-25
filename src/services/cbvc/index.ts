@@ -1,14 +1,15 @@
 // * handles CBVC (CTR Browser Version Check?) endpoints
 
 import express from 'express';
-import subdomain from 'express-subdomain';
-import { LOG_INFO } from '@/logger';
+import { LOG_INFO, formatHostnames } from '@/logger';
+import { config } from '@/config-manager';
+import { restrictHostnames } from '@/middleware/host-limit';
 
 // * Router to handle the subdomain restriction
 const cbvc = express.Router();
 
 // * Setup route
-LOG_INFO('[cbvc] Applying imported routes');
+LOG_INFO('[CBVC] Applying imported routes');
 cbvc.get('/:consoleType/:unknown/:region', (request: express.Request, response: express.Response): void => {
 	response.set('Content-Type', 'text/plain');
 
@@ -24,8 +25,8 @@ cbvc.get('/:consoleType/:unknown/:region', (request: express.Request, response: 
 // * Main router for endpoints
 const router = express.Router();
 
-// * Create subdomains
-LOG_INFO('[cbvc] Creating \'cbvc\' subdomain');
-router.use(subdomain('cbvc.cdn', cbvc));
+// * Create domains
+LOG_INFO(`[CBVC] Creating cbvc router with domains: ${formatHostnames(config.domains.cbvc)}`);
+router.use(restrictHostnames(config.domains.cbvc, cbvc));
 
 export default router;

@@ -45,3 +45,7 @@ export function LOG_INFO(input: string): void {
 
 	console.log(`${input}`.cyan.bold);
 }
+
+export function formatHostnames(hostnames: string[]): string {
+	return hostnames.map(d => `'${d}'`).join(', ');
+}
