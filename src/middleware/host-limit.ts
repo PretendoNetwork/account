@@ -5,7 +5,7 @@ export function restrictHostnames<TFn extends express.Router>(
 	fn: TFn
 ): (request: express.Request, response: express.Response, next: () => void) => void | TFn {
 	return (request: express.Request, response: express.Response, next: () => void) => {
-		if (!allowedHostnames.includes(request.hostname)) {
+		if (allowedHostnames.includes(request.hostname)) {
 			return fn(request, response, next);
 		}
 
