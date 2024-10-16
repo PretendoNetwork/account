@@ -30,6 +30,8 @@ export interface Config {
 		endpoint: string;
 		key: string;
 		secret: string;
+		region: string;
+		forcePathStyle: boolean;
 	};
 	hcaptcha: {
 		secret: string;

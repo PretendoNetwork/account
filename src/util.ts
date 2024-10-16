@@ -20,6 +20,8 @@ let s3: S3;
 if (!disabledFeatures.s3) {
 	s3 = new S3({
 		endpoint: config.s3.endpoint,
+		forcePathStyle: config.s3.forcePathStyle,
+		region: config.s3.region,
 
 		credentials: {
 			accessKeyId: config.s3.key,
