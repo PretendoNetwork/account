@@ -345,15 +345,16 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		await pnid.save({ session });
 
 		await session.commitTransaction();
-	} catch (error) {
+	} catch (error: any) {
 		LOG_ERROR('[POST] /v1/register: ' + error);
+		if (error.stack) console.error(error.stack)
 
 		await session.abortTransaction();
 
-		response.status(400).json({
+		response.status(500).json({
 			app: 'api',
-			status: 400,
-			error: 'Password must have combination of letters, numbers, and/or punctuation characters'
+			status: 500,
+			error: 'Internal server error'
 		});
 
 		return;
