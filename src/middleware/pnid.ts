@@ -1,7 +1,7 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getValueFromHeaders } from '@/util';
-import { getPNIDByBasicAuth, getPNIDByTokenAuth } from '@/database';
+import { getPNIDByBasicAuth, getPNIDByNNASAccessToken } from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
@@ -24,7 +24,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		pnid = await getPNIDByBasicAuth(token);
 	} else if (type === 'Bearer') {
 		// TODO - This "accepted types list" is mostly a hack. Change this
-		pnid = await getPNIDByTokenAuth(token, [1, 2]);
+		pnid = await getPNIDByNNASAccessToken(token);
 	}
 
 	if (!pnid) {

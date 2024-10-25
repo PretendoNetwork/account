@@ -1,6 +1,6 @@
 import express from 'express';
 import { getValueFromHeaders } from '@/util';
-import { getPNIDByTokenAuth } from '@/database';
+import { getPNIDByAPIAccessToken } from '@/database';
 
 async function APIMiddleware(request: express.Request, _response: express.Response, next: express.NextFunction): Promise<void> {
 	const authHeader = getValueFromHeaders(request.headers, 'authorization');
@@ -11,7 +11,7 @@ async function APIMiddleware(request: express.Request, _response: express.Respon
 
 	try {
 		const token = authHeader.split(' ')[1];
-		const pnid = await getPNIDByTokenAuth(token);
+		const pnid = await getPNIDByAPIAccessToken(token);
 
 		request.pnid = pnid;
 	} catch (error) {

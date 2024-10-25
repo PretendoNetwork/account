@@ -104,14 +104,105 @@ export async function getPNIDByBasicAuth(token: string): Promise<HydratedPNIDDoc
 	return pnid;
 }
 
-export async function getPNIDByTokenAuth(token: string, allowedTypes?: number[]): Promise<HydratedPNIDDocument | null> {
+export async function getPNIDByNNASAccessToken(token: string): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	try {
 		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
 		const unpackedToken = unpackToken(decryptedToken);
 
-		if (allowedTypes && !allowedTypes.includes(unpackedToken.system_type)) {
+		// * Return if the system type isn't Wii U (NNAS) and the token type isn't "OAuth Access"
+		if (unpackedToken.system_type !== 1 || unpackedToken.token_type !== 1) {
+			return null;
+		}
+
+		const pnid = await getPNIDByPID(unpackedToken.pid);
+
+		if (pnid) {
+			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
+
+			if (Math.floor(Date.now() / 1000) > expireTime) {
+				return null;
+			}
+		}
+
+		return pnid;
+	} catch (error: any) {
+		// TODO - Handle error
+		LOG_ERROR(error);
+		return null;
+	}
+}
+
+export async function getPNIDByNNASRefreshToken(token: string): Promise<HydratedPNIDDocument | null> {
+	verifyConnected();
+
+	try {
+		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
+		const unpackedToken = unpackToken(decryptedToken);
+
+		// * Return if the system type isn't Wii U (NNAS) and the token type isn't "OAuth Refresh"
+		if (unpackedToken.system_type !== 1 || unpackedToken.token_type !== 2) {
+			return null;
+		}
+
+		const pnid = await getPNIDByPID(unpackedToken.pid);
+
+		if (pnid) {
+			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
+
+			if (Math.floor(Date.now() / 1000) > expireTime) {
+				return null;
+			}
+		}
+
+		return pnid;
+	} catch (error: any) {
+		// TODO - Handle error
+		LOG_ERROR(error);
+		return null;
+	}
+}
+
+export async function getPNIDByAPIAccessToken(token: string): Promise<HydratedPNIDDocument | null> {
+	verifyConnected();
+
+	try {
+		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
+		const unpackedToken = unpackToken(decryptedToken);
+
+		// * Return if the system type isn't API (REST and gRPC) and the token type isn't "OAuth Access"
+		if (unpackedToken.system_type !== 3 || unpackedToken.token_type !== 1) {
+			return null;
+		}
+
+		const pnid = await getPNIDByPID(unpackedToken.pid);
+
+		if (pnid) {
+			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
+
+			if (Math.floor(Date.now() / 1000) > expireTime) {
+				return null;
+			}
+		}
+
+		return pnid;
+	} catch (error: any) {
+		// TODO - Handle error
+		LOG_ERROR(error);
+		return null;
+	}
+}
+
+export async function getPNIDByAPIRefreshToken(token: string): Promise<HydratedPNIDDocument | null> {
+	verifyConnected();
+
+	try {
+		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
+		const unpackedToken = unpackToken(decryptedToken);
+
+		// * Return if the system type isn't API (REST and gRPC) and the token type isn't "OAuth Refresh"
+		if (unpackedToken.system_type !== 3 || unpackedToken.token_type !== 2) {
 			return null;
 		}
 
