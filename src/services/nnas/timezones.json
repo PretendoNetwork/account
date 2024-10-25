@@ -1983,7 +1983,7 @@
             {
                 "area": "America/Nassau",
                 "language": "en",
-                "name": "Eastern Time (US &amp; Canada)",
+                "name": "Eastern Time (US & Canada)",
                 "utc_offset": "-18000",
                 "order": "0"
             }
@@ -2171,14 +2171,14 @@
             {
                 "area": "America/Dawson",
                 "language": "en",
-                "name": "Pacific Time (US &amp; Canada)",
+                "name": "Pacific Time (US & Canada)",
                 "utc_offset": "-28800",
                 "order": "1"
             },
             {
                 "area": "America/Cambridge_Bay",
                 "language": "en",
-                "name": "Mountain Time (US &amp; Canada)",
+                "name": "Mountain Time (US & Canada)",
                 "utc_offset": "-25200",
                 "order": "2"
             },
@@ -2192,7 +2192,7 @@
             {
                 "area": "America/Rainy_River",
                 "language": "en",
-                "name": "Central Time (US &amp; Canada)",
+                "name": "Central Time (US & Canada)",
                 "utc_offset": "-21600",
                 "order": "4"
             },
@@ -2213,7 +2213,7 @@
             {
                 "area": "America/Iqaluit",
                 "language": "en",
-                "name": "Eastern Time (US &amp; Canada)",
+                "name": "Eastern Time (US & Canada)",
                 "utc_offset": "-18000",
                 "order": "7"
             },
@@ -5038,7 +5038,7 @@
             {
                 "area": "America/Grand_Turk",
                 "language": "en",
-                "name": "Eastern Time (US &amp; Canada)",
+                "name": "Eastern Time (US & Canada)",
                 "utc_offset": "-14400",
                 "order": "3"
             },
@@ -12519,7 +12519,7 @@
             {
                 "area": "America/Grand_Turk",
                 "language": "en",
-                "name": "Eastern Time (US &amp; Canada)",
+                "name": "Eastern Time (US & Canada)",
                 "utc_offset": "-14400",
                 "order": "0"
             }
@@ -13049,14 +13049,14 @@
             {
                 "area": "America/Los_Angeles",
                 "language": "en",
-                "name": "Pacific Time (US &amp; Canada)",
+                "name": "Pacific Time (US & Canada)",
                 "utc_offset": "-28800",
                 "order": "5"
             },
             {
                 "area": "America/Boise",
                 "language": "en",
-                "name": "Mountain Time (US &amp; Canada)",
+                "name": "Mountain Time (US & Canada)",
                 "utc_offset": "-25200",
                 "order": "6"
             },
@@ -13070,7 +13070,7 @@
             {
                 "area": "America/Chicago",
                 "language": "en",
-                "name": "Central Time (US &amp; Canada)",
+                "name": "Central Time (US & Canada)",
                 "utc_offset": "-21600",
                 "order": "8"
             },
@@ -13091,7 +13091,7 @@
             {
                 "area": "America/New_York",
                 "language": "en",
-                "name": "Eastern Time (US &amp; Canada)",
+                "name": "Eastern Time (US & Canada)",
                 "utc_offset": "-18000",
                 "order": "11"
             },
