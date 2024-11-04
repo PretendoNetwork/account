@@ -183,7 +183,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 				expires_in: 3600
 			}
 		}
-	}).end());
+	}).commentBefore('WARNING! DO NOT SHARE ANYTHING IN THIS REQUEST OR RESPONSE WITH UNTRUSTED USERS! IT CAN BE USED TO IMPERSONATE YOU AND YOUR CONSOLE, POTENTIALLY GETTING YOU BANNED!').end()); // TODO - This is ugly
 });
 
 export default router;
