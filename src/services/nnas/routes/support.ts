@@ -127,6 +127,13 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
 		return;
 	}
 
+	// * If the email is already confirmed don't bother continuing
+	if (pnid.email.validated) {
+		// TODO - Is there an actual error for this case?
+		response.status(200).send('');
+		return;
+	}
+
 	await sendConfirmationEmail(pnid);
 
 	response.status(200).send('');
