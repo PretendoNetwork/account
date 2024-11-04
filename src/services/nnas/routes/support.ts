@@ -71,6 +71,13 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 		return;
 	}
 
+	// * If the email is already confirmed don't bother continuing
+	if (pnid.email.validated) {
+		// TODO - Is there an actual error for this case?
+		response.status(200).send('');
+		return;
+	}
+
 	if (pnid.identification.email_code !== code) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
