@@ -56,7 +56,9 @@ export const config: Config = {
 	s3: {
 		endpoint: process.env.PN_ACT_CONFIG_S3_ENDPOINT || '',
 		key: process.env.PN_ACT_CONFIG_S3_ACCESS_KEY || '',
-		secret: process.env.PN_ACT_CONFIG_S3_ACCESS_SECRET || ''
+		secret: process.env.PN_ACT_CONFIG_S3_ACCESS_SECRET || '',
+		region: process.env.PN_ACT_CONFIG_S3_REGION || '',
+		forcePathStyle: process.env.PN_ACT_CONFIG_S3_FORCE_PATH_STYLE === 'true'
 	},
 	hcaptcha: {
 		secret: process.env.PN_ACT_CONFIG_HCAPTCHA_SECRET || ''
@@ -192,6 +194,11 @@ if (!config.s3.key) {
 
 if (!config.s3.secret) {
 	LOG_WARN('Failed to find S3 secret key config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_ACCESS_SECRET environment variable');
+	disabledFeatures.s3 = true;
+}
+
+if (!config.s3.region) {
+	LOG_WARN('Failed to find S3 region config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_REGION environment variable');
 	disabledFeatures.s3 = true;
 }
 
