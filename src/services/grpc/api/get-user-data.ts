@@ -1,7 +1,7 @@
 import { CallContext } from 'nice-grpc';
 import { GetUserDataResponse, DeepPartial } from '@pretendonetwork/grpc/api/get_user_data_rpc';
 import { config } from '@/config-manager';
-import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
+import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
 
 export async function getUserData(_request: Empty, context: CallContext & AuthenticationCallContextExt): Promise<DeepPartial<GetUserDataResponse>> {

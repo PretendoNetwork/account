@@ -1,12 +1,10 @@
 import { Status, ServerError, CallContext } from 'nice-grpc';
 import { SetStripeConnectionDataRequest } from '@pretendonetwork/grpc/api/set_stripe_connection_data_rpc';
 import { PNID } from '@/models/pnid';
-import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
+import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
 
 type StripeMongoUpdateScheme = {
-	access_level?: number;
-	server_access_level?: string;
 	'connections.stripe.customer_id'?: string;
 	'connections.stripe.subscription_id'?: string;
 	'connections.stripe.price_id'?: string;
@@ -28,14 +26,6 @@ export async function setStripeConnectionData(request: SetStripeConnectionDataRe
 	}
 
 	// * These checks allow for null/0 values in order to reset data if needed
-
-	if (request.accessLevel !== undefined) {
-		updateData.access_level = request.accessLevel;
-	}
-
-	if (request.serverAccessLevel !== undefined) {
-		updateData.server_access_level = request.serverAccessLevel;
-	}
 
 	if (request.subscriptionId !== undefined) {
 		updateData['connections.stripe.subscription_id'] = request.subscriptionId;
