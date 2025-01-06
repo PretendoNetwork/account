@@ -54,7 +54,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
-	if (pnid.email.address !== email) {
+	if (email != undefined && pnid.email.address !== email) {
 		response.status(401).send(xmlbuilder.create({
 			errors: {
 				error: {
