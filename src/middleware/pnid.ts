@@ -53,6 +53,19 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
+	if (pnid.email.address !== email) {
+		response.status(401).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '1105',
+					message: 'Email address, username, or password, is not valid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	if (pnid.deleted) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
