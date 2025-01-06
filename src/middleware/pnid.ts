@@ -6,6 +6,7 @@ import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	const authHeader = getValueFromHeaders(request.headers, 'authorization');
+	const email = getValueFromHeaders(request.headers, 'x-nintendo-email');
 
 	if (!authHeader || !(authHeader.startsWith('Bearer') || authHeader.startsWith('Basic'))) {
 		return next();
