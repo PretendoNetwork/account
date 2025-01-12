@@ -144,8 +144,8 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
-					code: '0122',
-					message: 'Device has been banned by game server'
+					code: '0108',
+					message: 'Account has been banned'
 				}
 			}
 		}).end());
