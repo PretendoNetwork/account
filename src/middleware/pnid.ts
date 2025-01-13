@@ -70,8 +70,8 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
-					code: '0122',
-					message: 'Device has been banned by game server'
+					code: '0108',
+					message: 'Account has been banned'
 				}
 			}
 		}).end());
