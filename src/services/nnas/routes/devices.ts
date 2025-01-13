@@ -22,7 +22,7 @@ router.get('/@current/status', async (request: express.Request, response: expres
  */
 router.put('/@current/inactivate', async (request: express.Request, response: express.Response): Promise<void> => {
 	// TODO - Finish this
-	response.status(200).send('')
+	response.status(200).send('');
 });
 
 export default router;
