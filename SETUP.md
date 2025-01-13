@@ -72,7 +72,7 @@ Configurations are loaded through environment variables. `.env` files are suppor
 | `PN_ACT_CONFIG_REDIS_URL`                     | Redis URL                                                                                        | Yes      |
 | `PN_ACT_CONFIG_EMAIL_SES_REGION`              | Amazon SES Region                                                                                | Yes      |
 | `PN_ACT_CONFIG_EMAIL_SES_ACCESS_KEY`          | Amazon SES Access Key                                                                            | Yes      |
-| `PN_ACT_CONFIG_EMAIL_SES_ACCESS_SECRET`       | Amazon SES Access Secret                                                                         | Yes      |
+| `PN_ACT_CONFIG_EMAIL_SES_SECRET_KEY`          | Amazon SES Access Secret                                                                         | Yes      |
 | `PN_ACT_CONFIG_EMAIL_FROM`                    | Email "from" address                                                                             | Yes      |
 | `PN_ACT_CONFIG_S3_ENDPOINT`                   | s3 server endpoint                                                                               | Yes      |
 | `PN_ACT_CONFIG_S3_ACCESS_KEY`                 | s3 secret key                                                                                    | Yes      |
