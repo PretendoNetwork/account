@@ -20,7 +20,7 @@ router.get('/@current/status', async (request: express.Request, response: expres
  * Replacement for: https://account.nintendo.net/v1/api/devices/@current/inactivate
  * Description: Used for factory resets, unsure what it exactly does, maybe unlinks the account?
  */
-router.put('/@current/inactivate', async (request: express.request, response: express.Response): Promise<void> => {
+router.put('/@current/inactivate', async (request: express.Request, response: express.Response): Promise<void> => {
 	// TODO - Finish this
 	response.status(200).send('')
 });
