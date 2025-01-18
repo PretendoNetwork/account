@@ -54,6 +54,7 @@ export const config: Config = {
 		from: process.env.PN_ACT_CONFIG_EMAIL_FROM || ''
 	},
 	s3: {
+		bucket: process.env.PN_ACT_CONFIG_S3_BUCKET || '',
 		endpoint: process.env.PN_ACT_CONFIG_S3_ENDPOINT || '',
 		key: process.env.PN_ACT_CONFIG_S3_ACCESS_KEY || '',
 		secret: process.env.PN_ACT_CONFIG_S3_ACCESS_SECRET || '',
@@ -180,6 +181,11 @@ if (!disabledFeatures.email) {
 if (!config.hcaptcha.secret) {
 	LOG_WARN('Failed to find captcha secret config. Disabling feature. To enable feature set the PN_ACT_CONFIG_HCAPTCHA_SECRET environment variable');
 	disabledFeatures.captcha = true;
+}
+
+if (!config.s3.bucket) {
+	LOG_WARN('Failed to find S3 bucket config. Disabling feature. To enable feature set the PN_ACT_CONFIG_S3_BUCKET environment variable');
+	disabledFeatures.s3 = true;
 }
 
 if (!config.s3.endpoint) {

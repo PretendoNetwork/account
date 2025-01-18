@@ -27,6 +27,7 @@ export interface Config {
 		from: string;
 	};
 	s3: {
+		bucket: string;
 		endpoint: string;
 		key: string;
 		secret: string;
