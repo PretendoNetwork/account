@@ -198,8 +198,8 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 
 	const userMiiKey = `mii/${this.pid}`;
 
-	await uploadCDNAsset(`${config.s3.bucket}`, `${userMiiKey}/standard.tga`, tga, 'public-read');
-	await uploadCDNAsset(`${config.s3.bucket}`, `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
+	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/standard.tga`, tga, 'public-read');
+	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
 
 	const expressions = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
 	for (const expression of expressions) {
@@ -210,7 +210,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 			instanceCount: 1,
 		});
 		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
-		await uploadCDNAsset(`${config.s3.bucket}`, `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
+		await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
 	}
 
 	const miiStudioBodyUrl = mii.studioUrl({
@@ -219,7 +219,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 		instanceCount: 1,
 	});
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
-	await uploadCDNAsset(`${config.s3.bucket}`, `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
+	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 });
 
 PNIDSchema.method('scrub', async function scrub() {
