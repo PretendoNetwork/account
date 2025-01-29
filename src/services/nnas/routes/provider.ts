@@ -98,7 +98,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	const serviceTokenBuffer = generateToken(server.aes_key, tokenOptions);
 	let serviceToken = serviceTokenBuffer ? serviceTokenBuffer.toString('base64') : '';
 
 	if (request.isCemu) {
@@ -221,7 +221,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const nexTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	const nexTokenBuffer = generateToken(server.aes_key, tokenOptions);
 	let nexToken = nexTokenBuffer ? nexTokenBuffer.toString('base64') : '';
 
 	if (request.isCemu) {

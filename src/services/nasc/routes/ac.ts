@@ -75,7 +75,7 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 
 	// TODO - Handle null tokens
 
-	const nexTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	const nexTokenBuffer = generateToken(server.aes_key, tokenOptions);
 	const nexToken = nintendoBase64Encode(nexTokenBuffer || '');
 
 	return new URLSearchParams({
@@ -99,7 +99,7 @@ async function processServiceTokenRequest(server: HydratedServerDocument, pid: n
 
 	// TODO - Handle null tokens
 
-	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	const serviceTokenBuffer = generateToken(server.aes_key, tokenOptions);
 	const serviceToken = nintendoBase64Encode(serviceTokenBuffer || '');
 
 	return new URLSearchParams({
