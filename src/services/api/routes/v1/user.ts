@@ -62,6 +62,10 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 		connections: {
 			discord: {
 				id: pnid.connections.discord.id
+			},
+			stripe: {
+				tier_name: pnid.connections.stripe.tier_name,
+				tier_level: pnid.connections.stripe.tier_level
 			}
 		}
 	});
