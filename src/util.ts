@@ -53,7 +53,12 @@ export function nintendoBase64Encode(decoded: string | Buffer): string {
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
-export function generateOAuthTokens(systemType: number, pnid: HydratedPNIDDocument) {
+type OAuthTokenGenerationResponse = {
+	accessToken: string;
+	accessTokenExpiresInSecs: number;
+	refreshToken: string;
+};
+export function generateOAuthTokens(systemType: number, pnid: HydratedPNIDDocument): OAuthTokenGenerationResponse {
 	const accessTokenExpiresInSecs = 60 * 60; // * 1 hour
 
 	const accessTokenOptions = {

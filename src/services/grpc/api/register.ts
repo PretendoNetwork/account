@@ -230,7 +230,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 	await sendConfirmationEmail(pnid);
 
 	try {
-		const systemType = 0x3 // * API
+		const systemType = 0x3; // * API
 		const { accessToken, refreshToken, accessTokenExpiresInSecs } = generateOAuthTokens(systemType, pnid);
 
 		return {
@@ -238,7 +238,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 			tokenType: 'Bearer',
 			expiresIn: accessTokenExpiresInSecs,
 			refreshToken: refreshToken
-		}
+		};
 	} catch {
 		throw new ServerError(Status.INTERNAL, 'Could not generate OAuth tokens');
 	}

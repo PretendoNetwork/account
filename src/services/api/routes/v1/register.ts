@@ -367,7 +367,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	await sendConfirmationEmail(pnid);
 
 	try {
-		const systemType = 0x3 // * API
+		const systemType = 0x3; // * API
 		const { accessToken, refreshToken, accessTokenExpiresInSecs } = generateOAuthTokens(systemType, pnid);
 
 		response.json({
