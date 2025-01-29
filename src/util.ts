@@ -12,7 +12,7 @@ import { sendMail } from '@/mailer';
 import { config, disabledFeatures } from '@/config-manager';
 import { TokenOptions } from '@/types/common/token-options';
 import { Token } from '@/types/common/token';
-import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
+import { HydratedPNIDDocument, IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import { SafeQs } from '@/types/common/safe-qs';
 
 let s3: S3;
@@ -52,6 +52,39 @@ export function nintendoBase64Encode(decoded: string | Buffer): string {
 	const encoded = Buffer.from(decoded).toString('base64');
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
+
+export function generateOAuthTokens(systemType: number, pnid: HydratedPNIDDocument) {
+	const accessTokenExpiresInSecs = 60 * 60; // * 1 hour
+
+	const accessTokenOptions = {
+		system_type: systemType,
+		token_type: 0x1, // * OAuth Access
+		pid: pnid.pid,
+		access_level: pnid.access_level,
+		expire_time: BigInt(Date.now() + (accessTokenExpiresInSecs * 1000)) // * 1 hour
+	};
+
+	const refreshTokenOptions = {
+		system_type: systemType,
+		token_type: 0x2, // * OAuth Refresh
+		pid: pnid.pid,
+		access_level: pnid.access_level,
+		expire_time: BigInt(Date.now() + (30 * 24 * 60 * 60 * 1000)) // * 30 days
+	};
+
+	const accessToken = generateToken(config.aes_key, accessTokenOptions)?.toString('hex');
+	const refreshToken = generateToken(config.aes_key, refreshTokenOptions)?.toString('hex');
+
+	if (!accessToken) throw new Error('Failed to generate access token');
+	if (!refreshToken) throw new Error('Failed to generate refresh token');
+
+	return {
+		accessToken,
+		accessTokenExpiresInSecs,
+		refreshToken
+	};
+}
+
 
 export function generateToken(key: string, options: TokenOptions): Buffer | null {
 	let dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
@@ -234,7 +267,7 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // * Only valid for 24 hours
 	};
 
-	const tokenBuffer = await generateToken(config.aes_key, tokenOptions);
+	const tokenBuffer = generateToken(config.aes_key, tokenOptions);
 	const passwordResetToken = tokenBuffer ? tokenBuffer.toString('hex') : '';
 
 	// TODO - Handle null token

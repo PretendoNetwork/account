@@ -8,7 +8,7 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { nintendoPasswordHash, sendConfirmationEmail, generateOAuthTokens } from '@/util';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -229,36 +229,17 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 
 	await sendConfirmationEmail(pnid);
 
-	const accessTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x1, // * OAuth Access
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
+	try {
+		const systemType = 0x3 // * API
+		const { accessToken, refreshToken, accessTokenExpiresInSecs } = generateOAuthTokens(systemType, pnid);
 
-	const refreshTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x2, // * OAuth Refresh
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
-	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
-
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const refreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
-
-	// TODO - Handle null tokens
-
-	return {
-		accessToken: accessToken,
-		tokenType: 'Bearer',
-		expiresIn: 3600,
-		refreshToken: refreshToken
-	};
+		return {
+			accessToken: accessToken,
+			tokenType: 'Bearer',
+			expiresIn: accessTokenExpiresInSecs,
+			refreshToken: refreshToken
+		}
+	} catch {
+		throw new ServerError(Status.INTERNAL, 'Could not generate OAuth tokens');
+	}
 }

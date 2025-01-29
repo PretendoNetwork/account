@@ -7,7 +7,7 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { nintendoPasswordHash, sendConfirmationEmail, generateOAuthTokens } from '@/util';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -366,38 +366,23 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 	await sendConfirmationEmail(pnid);
 
-	const accessTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x1, // * OAuth Access
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
+	try {
+		const systemType = 0x3 // * API
+		const { accessToken, refreshToken, accessTokenExpiresInSecs } = generateOAuthTokens(systemType, pnid);
 
-	const refreshTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x2, // * OAuth Refresh
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
-	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
-
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const refreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
-
-	// TODO - Handle null tokens
-
-	response.json({
-		access_token: accessToken,
-		token_type: 'Bearer',
-		expires_in: 3600,
-		refresh_token: refreshToken
-	});
+		response.json({
+			access_token: accessToken,
+			token_type: 'Bearer',
+			expires_in: accessTokenExpiresInSecs,
+			refresh_token: refreshToken
+		});
+	} catch {
+		response.status(500).json({
+			app: 'api',
+			status: 500,
+			error: 'Internal server error'
+		});
+	}
 });
 
 export default router;

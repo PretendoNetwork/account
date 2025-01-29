@@ -2,8 +2,7 @@ import { Status, ServerError } from 'nice-grpc';
 import { LoginRequest, LoginResponse, DeepPartial } from '@pretendonetwork/grpc/api/login_rpc';
 import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
-import { nintendoPasswordHash, generateToken} from '@/util';
-import { config } from '@/config-manager';
+import { nintendoPasswordHash, generateOAuthTokens} from '@/util';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 export async function login(request: LoginRequest): Promise<DeepPartial<LoginResponse>> {
@@ -54,36 +53,17 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 		throw new ServerError(Status.UNAUTHENTICATED, 'Account has been deleted');
 	}
 
-	const accessTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x1, // * OAuth Access
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
+	try {
+		const systemType = 0x3; // * API
+		const { accessToken, refreshToken, accessTokenExpiresInSecs } = generateOAuthTokens(systemType, pnid);
 
-	const refreshTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x2, // * OAuth Refresh
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
-	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
-
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
-
-	// TODO - Handle null tokens
-
-	return {
-		accessToken: accessToken,
-		tokenType: 'Bearer',
-		expiresIn: 3600,
-		refreshToken: newRefreshToken
-	};
+		return {
+			accessToken: accessToken,
+			tokenType: 'Bearer',
+			expiresIn: accessTokenExpiresInSecs,
+			refreshToken: refreshToken
+		};
+	} catch {
+		throw new ServerError(Status.INTERNAL, 'Could not generate OAuth tokens');
+	}
 }

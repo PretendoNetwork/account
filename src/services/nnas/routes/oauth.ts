@@ -4,8 +4,7 @@ import bcrypt from 'bcrypt';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
 import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
-import { generateToken } from '@/util';
-import { config } from '@/config-manager';
+import { generateOAuthTokens } from '@/util';
 import { Device } from '@/models/device';
 
 const router = express.Router();
@@ -153,37 +152,22 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		return;
 	}
 
-	const accessTokenOptions = {
-		system_type: 0x1, // * WiiU
-		token_type: 0x1, // * OAuth Access
-		pid: pnid.pid,
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
+	try {
+		const systemType = 0x1; // * WiiU
+		const { accessToken, refreshToken, accessTokenExpiresInSecs } = generateOAuthTokens(systemType, pnid);
 
-	const refreshTokenOptions = {
-		system_type: 0x1, // * WiiU
-		token_type: 0x2, // * OAuth Refresh
-		pid: pnid.pid,
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
-	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
-
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
-
-	// TODO - Handle null tokens
-
-	response.send(xmlbuilder.create({
-		OAuth20: {
-			access_token: {
-				token: accessToken,
-				refresh_token: newRefreshToken,
-				expires_in: 3600
+		response.send(xmlbuilder.create({
+			OAuth20: {
+				access_token: {
+					token: accessToken,
+					refresh_token: refreshToken,
+					expires_in: accessTokenExpiresInSecs
+				}
 			}
-		}
-	}).commentBefore('WARNING! DO NOT SHARE ANYTHING IN THIS REQUEST OR RESPONSE WITH UNTRUSTED USERS! IT CAN BE USED TO IMPERSONATE YOU AND YOUR CONSOLE, POTENTIALLY GETTING YOU BANNED!').end()); // TODO - This is ugly
+		}).commentBefore('WARNING! DO NOT SHARE ANYTHING IN THIS REQUEST OR RESPONSE WITH UNTRUSTED USERS! IT CAN BE USED TO IMPERSONATE YOU AND YOUR CONSOLE, POTENTIALLY GETTING YOU BANNED!').end()); // TODO - This is ugly
+	} catch {
+		response.status(500);
+	}
 });
 
 export default router;
