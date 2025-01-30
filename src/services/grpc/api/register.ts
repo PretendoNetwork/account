@@ -230,8 +230,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 	await sendConfirmationEmail(pnid);
 
 	try {
-		const systemType = 0x3; // * API
-		const tokenGeneration = generateOAuthTokens(systemType, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
+		const tokenGeneration = generateOAuthTokens('API', pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
 		return {
 			accessToken: tokenGeneration.accessToken,

@@ -4,6 +4,7 @@ import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { NEXAccount } from '@/models/nex-account';
 import { TokenOptions } from '@/types/common/token';
+import { serverDeviceToSystemType } from '@/models/server';
 
 const router = express.Router();
 
@@ -90,8 +91,20 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
+	const systemType = serverDeviceToSystemType[server.device];
+	if (!systemType) {
+		response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '1021',
+					message: 'The requested game server was not found'
+				}
+			}
+		}).end());
+	}
+
 	const tokenOptions: TokenOptions = {
-		system_type: server.device,
+		system_type: systemType,
 		token_type: 'SERVICE',
 		pid: pnid.pid,
 		access_level: pnid.access_level,
@@ -213,8 +226,20 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
+	const systemType = serverDeviceToSystemType[server.device];
+	if (!systemType) {
+		response.send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '1021',
+					message: 'The requested game server was not found'
+				}
+			}
+		}).end());
+	}
+
 	const tokenOptions: TokenOptions = {
-		system_type: server.device,
+		system_type: systemType,
 		token_type: 'NEX',
 		pid: pnid.pid,
 		access_level: pnid.access_level,

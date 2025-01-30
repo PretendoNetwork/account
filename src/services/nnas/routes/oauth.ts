@@ -153,8 +153,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 	}
 
 	try {
-		const systemType = 0x1; // * WiiU
-		const tokenGeneration = generateOAuthTokens(systemType, pnid);
+		const tokenGeneration = generateOAuthTokens('WIIU', pnid);
 
 		response.send(xmlbuilder.create({
 			OAuth20: {

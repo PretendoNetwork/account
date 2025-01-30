@@ -66,7 +66,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
 	const tokenOptions: TokenOptions = {
-		system_type: 0x2, // * 3DS
+		system_type: '3DS',
 		token_type: 'NEX',
 		pid: pid,
 		access_level: 0,
@@ -90,7 +90,7 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 
 async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
 	const tokenOptions: TokenOptions = {
-		system_type: 0x2, // * 3DS
+		system_type: '3DS',
 		token_type: 'SERVICE',
 		pid: pid,
 		access_level: 0,

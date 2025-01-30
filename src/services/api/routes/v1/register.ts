@@ -365,10 +365,9 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	}
 
 	await sendConfirmationEmail(pnid);
-	
+
 	try {
-		const systemType = 0x3; // * API
-		const tokenGeneration = generateOAuthTokens(systemType, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
+		const tokenGeneration = generateOAuthTokens('API', pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
 		response.json({
 			access_token: tokenGeneration.accessToken,

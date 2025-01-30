@@ -54,8 +54,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 	}
 
 	try {
-		const systemType = 0x3; // * API
-		const tokenGeneration = generateOAuthTokens(systemType, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
+		const tokenGeneration = generateOAuthTokens('API', pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
 		return {
 			accessToken: tokenGeneration.accessToken,

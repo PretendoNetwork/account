@@ -5,15 +5,28 @@ export const TokenTypes = {
 	SERVICE: 4,
 	PASSWORD_RESET: 5
 } as const;
+export type TokenType = keyof typeof TokenTypes;
 
-export function getTokenTypeFromValue(type: number): keyof typeof TokenTypes | undefined {
-	const keys = Object.keys(TokenTypes) as (keyof typeof TokenTypes)[];
+export function getTokenTypeFromValue(type: number): TokenType | undefined {
+	const keys = Object.keys(TokenTypes) as TokenType[];
 	return keys.find((key) => TokenTypes[key] === type);
 }
 
+export const SystemTypes = {
+	'WIIU': 1,
+	'3DS': 2,
+	'API': 3
+} as const;
+export type SystemType = keyof typeof SystemTypes;
+
+export function getSystemTypeFromValue(type: number): SystemType | undefined {
+	const keys = Object.keys(SystemTypes) as SystemType[];
+	return keys.find((key) => SystemTypes[key] === type);
+}
+
 export interface Token {
-	system_type: number;
-	token_type: keyof typeof TokenTypes;
+	system_type: SystemType;
+	token_type: TokenType;
 	pid: number;
 	access_level?: number;
 	title_id?: bigint;
