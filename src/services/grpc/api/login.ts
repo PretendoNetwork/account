@@ -15,38 +15,27 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid grant type');
 	}
 
-	if (grantType === 'password' && !username) {
-		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing username');
-	}
-
-	if (grantType === 'password' && !password) {
-		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing password');
-	}
-
-	if (grantType === 'refresh_token' && !refreshToken) {
-		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');
-	}
-
 	let pnid: HydratedPNIDDocument | null;
 
 	if (grantType === 'password') {
-		pnid = await getPNIDByUsername(username!); // * We know username will never be null here
+		if (!username) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing username');
+		if (!password) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing password');
 
-		if (!pnid) {
-			throw new ServerError(Status.INVALID_ARGUMENT, 'User not found');
-		}
+		pnid = await getPNIDByUsername(username); // * We know username will never be null here
 
-		const hashedPassword = nintendoPasswordHash(password!, pnid.pid); // * We know password will never be null here
+		if (!pnid) throw new ServerError(Status.INVALID_ARGUMENT, 'User not found');
+
+		const hashedPassword = nintendoPasswordHash(password, pnid.pid); // * We know password will never be null here
 
 		if (!bcrypt.compareSync(hashedPassword, pnid.password)) {
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Password is incorrect');
 		}
 	} else {
-		pnid = await getPNIDByAPIRefreshToken(refreshToken!); // * We know refreshToken will never be null here
+		if (!refreshToken) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');
 
-		if (!pnid) {
-			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');
-		}
+		pnid = await getPNIDByAPIRefreshToken(refreshToken); // * We know refreshToken will never be null here
+
+		if (!pnid) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');
 	}
 
 	if (pnid.deleted) {
