@@ -365,16 +365,16 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	}
 
 	await sendConfirmationEmail(pnid);
-
+	
 	try {
 		const systemType = 0x3; // * API
-		const { accessToken, refreshToken, accessTokenExpiresInSecs } = generateOAuthTokens(systemType, pnid);
+		const tokenGeneration = generateOAuthTokens(systemType, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
 		response.json({
-			access_token: accessToken,
+			access_token: tokenGeneration.accessToken,
 			token_type: 'Bearer',
-			expires_in: accessTokenExpiresInSecs,
-			refresh_token: refreshToken
+			expires_in: tokenGeneration.expiresInSecs.access,
+			refresh_token: tokenGeneration.refreshToken
 		});
 	} catch {
 		response.status(500).json({

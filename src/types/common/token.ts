@@ -22,3 +22,25 @@ export interface Token {
 
 // ? Separated so additional non-token fields can be added in the future
 export type TokenOptions = Token
+
+export type OAuthTokenGenerationResponse = {
+	accessToken: string;
+	refreshToken: string;
+	expiresInSecs: {
+		access: number;
+		refresh: number;
+	}
+};
+
+export type OAuthTokenOptions = {
+	/** 
+	 * The number of seconds the access token will be valid for, defaults to 1 hour
+	 * @default 60 * 60
+	 */ 
+	accessExpiresIn?: number;
+	/** 
+	 * The number of seconds the refresh token will be valid for, defaults to 14 days
+	 * @default 14 * 24 * 60 * 60
+	 */
+	refreshExpiresIn?: number;
+}

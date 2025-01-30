@@ -154,14 +154,14 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 
 	try {
 		const systemType = 0x1; // * WiiU
-		const { accessToken, refreshToken, accessTokenExpiresInSecs } = generateOAuthTokens(systemType, pnid);
+		const tokenGeneration = generateOAuthTokens(systemType, pnid);
 
 		response.send(xmlbuilder.create({
 			OAuth20: {
 				access_token: {
-					token: accessToken,
-					refresh_token: refreshToken,
-					expires_in: accessTokenExpiresInSecs
+					token: tokenGeneration.accessToken,
+					refresh_token: tokenGeneration.refreshToken,
+					expires_in: tokenGeneration.expiresInSecs.access
 				}
 			}
 		}).commentBefore('WARNING! DO NOT SHARE ANYTHING IN THIS REQUEST OR RESPONSE WITH UNTRUSTED USERS! IT CAN BE USED TO IMPERSONATE YOU AND YOUR CONSOLE, POTENTIALLY GETTING YOU BANNED!').end()); // TODO - This is ugly

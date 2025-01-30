@@ -231,13 +231,13 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 
 	try {
 		const systemType = 0x3; // * API
-		const { accessToken, refreshToken, accessTokenExpiresInSecs } = generateOAuthTokens(systemType, pnid);
+		const tokenGeneration = generateOAuthTokens(systemType, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
 		return {
-			accessToken: accessToken,
+			accessToken: tokenGeneration.accessToken,
 			tokenType: 'Bearer',
-			expiresIn: accessTokenExpiresInSecs,
-			refreshToken: refreshToken
+			expiresIn: tokenGeneration.expiresInSecs.access,
+			refreshToken: tokenGeneration.refreshToken
 		};
 	} catch {
 		throw new ServerError(Status.INTERNAL, 'Could not generate OAuth tokens');

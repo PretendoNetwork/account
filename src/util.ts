@@ -10,7 +10,7 @@ import crc32 from 'buffer-crc32';
 import crc from 'crc';
 import { sendMail } from '@/mailer';
 import { config, disabledFeatures } from '@/config-manager';
-import { getTokenTypeFromValue, Token, TokenOptions, TokenTypes } from '@/types/common/token';
+import { getTokenTypeFromValue, OAuthTokenGenerationResponse, OAuthTokenOptions, Token, TokenOptions, TokenTypes } from '@/types/common/token';
 import { HydratedPNIDDocument, IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import { SafeQs } from '@/types/common/safe-qs';
 
@@ -52,13 +52,9 @@ export function nintendoBase64Encode(decoded: string | Buffer): string {
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
-type OAuthTokenGenerationResponse = {
-	accessToken: string;
-	accessTokenExpiresInSecs: number;
-	refreshToken: string;
-};
-export function generateOAuthTokens(systemType: number, pnid: HydratedPNIDDocument): OAuthTokenGenerationResponse {
-	const accessTokenExpiresInSecs = 60 * 60; // * 1 hour
+export function generateOAuthTokens(systemType: number, pnid: HydratedPNIDDocument, options?: OAuthTokenOptions): OAuthTokenGenerationResponse {
+	const accessTokenExpiresInSecs = options?.accessExpiresIn ?? 60 * 60; // * 1 hour
+	const refreshTokenExpiresInSecs = options?.refreshExpiresIn ?? 24 * 60 * 60; // * 24 hours
 
 	const accessTokenOptions: TokenOptions = {
 		system_type: systemType,
@@ -73,7 +69,7 @@ export function generateOAuthTokens(systemType: number, pnid: HydratedPNIDDocume
 		token_type: 'OAUTH_REFRESH',
 		pid: pnid.pid,
 		access_level: pnid.access_level,
-		expire_time: BigInt(Date.now() + (30 * 24 * 60 * 60 * 1000)) // * 30 days
+		expire_time: BigInt(Date.now() + (refreshTokenExpiresInSecs * 1000)) // * 30 days
 	};
 
 	const accessToken = generateToken(config.aes_key, accessTokenOptions)?.toString('hex');
@@ -84,8 +80,11 @@ export function generateOAuthTokens(systemType: number, pnid: HydratedPNIDDocume
 
 	return {
 		accessToken,
-		accessTokenExpiresInSecs,
-		refreshToken
+		refreshToken,
+		expiresInSecs: {
+			access: accessTokenExpiresInSecs,
+			refresh: refreshTokenExpiresInSecs
+		}
 	};
 }
 
