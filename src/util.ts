@@ -10,8 +10,7 @@ import crc32 from 'buffer-crc32';
 import crc from 'crc';
 import { sendMail } from '@/mailer';
 import { config, disabledFeatures } from '@/config-manager';
-import { TokenOptions } from '@/types/common/token-options';
-import { Token } from '@/types/common/token';
+import { getTokenTypeFromValue, Token, TokenOptions, TokenTypes } from '@/types/common/token';
 import { HydratedPNIDDocument, IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import { SafeQs } from '@/types/common/safe-qs';
 
@@ -61,17 +60,17 @@ type OAuthTokenGenerationResponse = {
 export function generateOAuthTokens(systemType: number, pnid: HydratedPNIDDocument): OAuthTokenGenerationResponse {
 	const accessTokenExpiresInSecs = 60 * 60; // * 1 hour
 
-	const accessTokenOptions = {
+	const accessTokenOptions: TokenOptions = {
 		system_type: systemType,
-		token_type: 0x1, // * OAuth Access
+		token_type: 'OAUTH_ACCESS',
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		expire_time: BigInt(Date.now() + (accessTokenExpiresInSecs * 1000)) // * 1 hour
 	};
 
-	const refreshTokenOptions = {
+	const refreshTokenOptions: TokenOptions = {
 		system_type: systemType,
-		token_type: 0x2, // * OAuth Refresh
+		token_type: 'OAUTH_REFRESH',
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		expire_time: BigInt(Date.now() + (30 * 24 * 60 * 60 * 1000)) // * 30 days
@@ -94,12 +93,14 @@ export function generateOAuthTokens(systemType: number, pnid: HydratedPNIDDocume
 export function generateToken(key: string, options: TokenOptions): Buffer | null {
 	let dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
+	const tokenType = TokenTypes[options.token_type];
+
 	dataBuffer.writeUInt8(options.system_type, 0x0);
-	dataBuffer.writeUInt8(options.token_type, 0x1);
+	dataBuffer.writeUInt8(tokenType, 0x1);
 	dataBuffer.writeUInt32LE(options.pid, 0x2);
 	dataBuffer.writeBigUInt64LE(options.expire_time, 0x6);
 
-	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
+	if ((options.token_type !== 'OAUTH_ACCESS' && options.token_type !== 'OAUTH_REFRESH') || options.system_type === 0x3) {
 		// * Access and refresh tokens have smaller bodies due to size constraints
 		// * The API does not have this restraint, however
 		if (options.title_id === undefined || options.access_level === undefined) {
@@ -125,7 +126,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 
 	let final = encrypted;
 
-	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
+	if ((options.token_type !== 'OAUTH_ACCESS' && options.token_type !== 'OAUTH_REFRESH') || options.system_type === 0x3) {
 		// * Access and refresh tokens don't get a checksum due to size constraints
 		const checksum = crc32(dataBuffer);
 
@@ -170,14 +171,21 @@ export function decryptToken(token: Buffer, key?: string): Buffer {
 }
 
 export function unpackToken(token: Buffer): Token {
+	const tokenTypeNum = token.readUInt8(0x1);
+	const tokenType = getTokenTypeFromValue(tokenTypeNum);
+
+	if (!tokenType) {
+		throw new Error('Invalid token type');
+	}
+
 	const unpacked: Token = {
 		system_type: token.readUInt8(0x0),
-		token_type: token.readUInt8(0x1),
+		token_type: tokenType,
 		pid: token.readUInt32LE(0x2),
 		expire_time: token.readBigUInt64LE(0x6)
 	};
 
-	if (unpacked.token_type !== 0x1 && unpacked.token_type !== 0x2) {
+	if (unpacked.token_type !== 'OAUTH_ACCESS' && unpacked.token_type !== 'OAUTH_REFRESH') {
 		unpacked.title_id = token.readBigUInt64LE(0xE);
 		unpacked.access_level = token.readInt8(0x16);
 	}
@@ -263,9 +271,9 @@ export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IP
 }
 
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
-	const tokenOptions = {
+	const tokenOptions: TokenOptions = {
 		system_type: 0xF, // * API
-		token_type: 0x5, // * Password reset
+		token_type: 'PASSWORD_RESET',
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),

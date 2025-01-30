@@ -3,6 +3,7 @@ import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { NEXAccount } from '@/models/nex-account';
+import { TokenOptions } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -89,9 +90,9 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	const tokenOptions = {
+	const tokenOptions: TokenOptions = {
 		system_type: server.device,
-		token_type: 0x4, // * Service token
+		token_type: 'SERVICE',
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),
@@ -212,9 +213,9 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	const tokenOptions = {
+	const tokenOptions: TokenOptions = {
 		system_type: server.device,
-		token_type: 0x3, // * nex token,
+		token_type: 'NEX',
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),
