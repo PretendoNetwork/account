@@ -1,6 +1,6 @@
 import { Status, ServerError, CallContext } from 'nice-grpc';
 import { SetDiscordConnectionDataRequest } from '@pretendonetwork/grpc/api/set_discord_connection_data_rpc';
-import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
+import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
 
 export async function setDiscordConnectionData(request: SetDiscordConnectionDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<Empty>{
