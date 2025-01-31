@@ -212,14 +212,15 @@ export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile 
 }
 
 export async function getServerByGameServerID(gameServerID: string, accessMode: string): Promise<HydratedServerDocument | null> {
-	const searchModes = accessModeOrder[accessMode] || ['prod'];
+	const searchModes = accessModeOrder[accessMode] ?? accessModeOrder.prod; // Default to prod if invalid mode
+
+	const servers = await Server.find({
+		game_server_id: gameServerID,
+		access_mode: { $in: searchModes }
+	})
 
 	for (const mode of searchModes) {
-		const server = await Server.findOne({
-			game_server_id: gameServerID,
-			access_mode: mode
-		});
-
+		const server = servers.find(s => s.access_mode === mode);
 		if (server) return server;
 	}
 
@@ -227,14 +228,15 @@ export async function getServerByGameServerID(gameServerID: string, accessMode: 
 }
 
 export async function getServerByTitleID(titleID: string, accessMode: string): Promise<HydratedServerDocument | null> {
-	const searchModes = accessModeOrder[accessMode] || ['prod'];
+	const searchModes = accessModeOrder[accessMode] ?? accessModeOrder.prod;
+
+	const servers = await Server.find({
+		title_ids: titleID,
+		access_mode: { $in: searchModes }
+	})
 
 	for (const mode of searchModes) {
-		const server = await Server.findOne({
-			title_ids: titleID,
-			access_mode: mode
-		});
-
+		const server = servers.find(s => s.access_mode === mode);
 		if (server) return server;
 	}
 
@@ -242,20 +244,20 @@ export async function getServerByTitleID(titleID: string, accessMode: string): P
 }
 
 export async function getServerByClientID(clientID: string, accessMode: string): Promise<HydratedServerDocument | null> {
-	const searchModes = accessModeOrder[accessMode] || ['prod'];
+	const searchModes = accessModeOrder[accessMode] ?? accessModeOrder.prod;
+
+	const servers = await Server.find({
+		client_id: clientID,
+		access_mode: { $in: searchModes }
+	})
 
 	for (const mode of searchModes) {
-		const server = await Server.findOne({
-			client_id: clientID,
-			access_mode: mode
-		});
-
+		const server = servers.find(s => s.access_mode === mode);
 		if (server) return server;
 	}
 
 	return null;
 }
-
 
 export async function addPNIDConnection(pnid: HydratedPNIDDocument, data: ConnectionData, type: string): Promise<ConnectionResponse | undefined> {
 	if (type === 'discord') {
