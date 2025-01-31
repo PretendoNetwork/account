@@ -217,7 +217,7 @@ export async function getServerByGameServerID(gameServerID: string, accessMode: 
 	const servers = await Server.find({
 		game_server_id: gameServerID,
 		access_mode: { $in: searchModes }
-	})
+	});
 
 	for (const mode of searchModes) {
 		const server = servers.find(s => s.access_mode === mode);
@@ -233,7 +233,7 @@ export async function getServerByTitleID(titleID: string, accessMode: string): P
 	const servers = await Server.find({
 		title_ids: titleID,
 		access_mode: { $in: searchModes }
-	})
+	});
 
 	for (const mode of searchModes) {
 		const server = servers.find(s => s.access_mode === mode);
@@ -249,7 +249,7 @@ export async function getServerByClientID(clientID: string, accessMode: string):
 	const servers = await Server.find({
 		client_id: clientID,
 		access_mode: { $in: searchModes }
-	})
+	});
 
 	for (const mode of searchModes) {
 		const server = servers.find(s => s.access_mode === mode);
