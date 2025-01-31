@@ -22,6 +22,12 @@ const discordConnectionSchema = joi.object({
 	id: joi.string()
 });
 
+const accessModeOrder: Record<string, string[]> = {
+	prod: ['prod'],
+	test: ['test', 'prod'],
+	dev: ['dev', 'test', 'prod']
+};
+
 let _connection: mongoose.Connection;
 
 export async function connect(): Promise<void> {
@@ -206,26 +212,52 @@ export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile 
 }
 
 export async function getServerByGameServerID(gameServerID: string, accessMode: string): Promise<HydratedServerDocument | null> {
-	return await Server.findOne({
+	const searchModes = accessModeOrder[accessMode] ?? accessModeOrder.prod; // Default to prod if invalid mode
+
+	const servers = await Server.find({
 		game_server_id: gameServerID,
-		access_mode: accessMode
+		access_mode: { $in: searchModes }
 	});
+
+	for (const mode of searchModes) {
+		const server = servers.find(s => s.access_mode === mode);
+		if (server) return server;
+	}
+
+	return null;
 }
 
 export async function getServerByTitleID(titleID: string, accessMode: string): Promise<HydratedServerDocument | null> {
-	return await Server.findOne({
+	const searchModes = accessModeOrder[accessMode] ?? accessModeOrder.prod;
+
+	const servers = await Server.find({
 		title_ids: titleID,
-		access_mode: accessMode
+		access_mode: { $in: searchModes }
 	});
+
+	for (const mode of searchModes) {
+		const server = servers.find(s => s.access_mode === mode);
+		if (server) return server;
+	}
+
+	return null;
 }
 
 export async function getServerByClientID(clientID: string, accessMode: string): Promise<HydratedServerDocument | null> {
-	return await Server.findOne({
-		client_id: clientID,
-		access_mode: accessMode
-	});
-}
+	const searchModes = accessModeOrder[accessMode] ?? accessModeOrder.prod;
 
+	const servers = await Server.find({
+		client_id: clientID,
+		access_mode: { $in: searchModes }
+	});
+
+	for (const mode of searchModes) {
+		const server = servers.find(s => s.access_mode === mode);
+		if (server) return server;
+	}
+
+	return null;
+}
 
 export async function addPNIDConnection(pnid: HydratedPNIDDocument, data: ConnectionData, type: string): Promise<ConnectionResponse | undefined> {
 	if (type === 'discord') {
