@@ -8,7 +8,7 @@ import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail
 
 // * Middleware to ensure the input device is valid
 // TODO - Make this available for more routes? This could be useful elsewhere
-async function validateDeviceIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction) {
+async function validateDeviceIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	const deviceID = request.header('x-nintendo-device-id');
 	const serial = request.header('x-nintendo-serial-number');
 
