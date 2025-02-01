@@ -101,6 +101,8 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 				}
 			}
 		}).end());
+		
+		return;
 	}
 
 	const tokenOptions: TokenOptions = {
@@ -236,6 +238,8 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 				}
 			}
 		}).end());
+
+		return;
 	}
 
 	const tokenOptions: TokenOptions = {
