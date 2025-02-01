@@ -4,7 +4,7 @@ import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { NEXAccount } from '@/models/nex-account';
 import { TokenOptions } from '@/types/common/token';
-import { serverDeviceToSystemType } from '@/models/server';
+import { serverDeviceToSystemType } from '@/types/common/token';
 
 const router = express.Router();
 

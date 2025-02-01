@@ -21,11 +21,11 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 		if (!username) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing username');
 		if (!password) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing password');
 
-		pnid = await getPNIDByUsername(username); // * We know username will never be null here
+		pnid = await getPNIDByUsername(username);
 
 		if (!pnid) throw new ServerError(Status.INVALID_ARGUMENT, 'User not found');
 
-		const hashedPassword = nintendoPasswordHash(password, pnid.pid); // * We know password will never be null here
+		const hashedPassword = nintendoPasswordHash(password, pnid.pid);
 
 		if (!bcrypt.compareSync(hashedPassword, pnid.password)) {
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Password is incorrect');
@@ -33,7 +33,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 	} else {
 		if (!refreshToken) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');
 
-		pnid = await getPNIDByAPIRefreshToken(refreshToken); // * We know refreshToken will never be null here
+		pnid = await getPNIDByAPIRefreshToken(refreshToken);
 
 		if (!pnid) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');
 	}

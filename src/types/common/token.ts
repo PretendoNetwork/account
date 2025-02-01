@@ -19,6 +19,11 @@ export const SystemTypes = {
 } as const;
 export type SystemType = keyof typeof SystemTypes;
 
+export const serverDeviceToSystemType: Record<number, SystemType> = {
+	1: 'WIIU',
+	2: '3DS'
+};
+
 export function getSystemTypeFromValue(type: number): SystemType | undefined {
 	const keys = Object.keys(SystemTypes) as SystemType[];
 	return keys.find((key) => SystemTypes[key] === type);

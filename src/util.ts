@@ -61,7 +61,7 @@ export function generateOAuthTokens(systemType: SystemType, pnid: HydratedPNIDDo
 		token_type: 'OAUTH_ACCESS',
 		pid: pnid.pid,
 		access_level: pnid.access_level,
-		expire_time: BigInt(Date.now() + (accessTokenExpiresInSecs * 1000)) // * 1 hour
+		expire_time: BigInt(Date.now() + (accessTokenExpiresInSecs * 1000))
 	};
 
 	const refreshTokenOptions: TokenOptions = {
@@ -69,7 +69,7 @@ export function generateOAuthTokens(systemType: SystemType, pnid: HydratedPNIDDo
 		token_type: 'OAUTH_REFRESH',
 		pid: pnid.pid,
 		access_level: pnid.access_level,
-		expire_time: BigInt(Date.now() + (refreshTokenExpiresInSecs * 1000)) // * 30 days
+		expire_time: BigInt(Date.now() + (refreshTokenExpiresInSecs * 1000))
 	};
 
 	const accessToken = generateToken(config.aes_key, accessTokenOptions)?.toString('hex');
