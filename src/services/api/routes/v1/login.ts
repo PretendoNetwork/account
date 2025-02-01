@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
+import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
 import { nintendoPasswordHash, generateToken} from '@/util';
 import { config } from '@/config-manager';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
@@ -86,7 +86,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			return;
 		}
 	} else {
-		pnid = await getPNIDByTokenAuth(refreshToken);
+		pnid = await getPNIDByAPIRefreshToken(refreshToken);
 
 		if (!pnid) {
 			response.status(400).json({

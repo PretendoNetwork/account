@@ -9,6 +9,7 @@ function deviceCertificateMiddleware(request: express.Request, _response: expres
 		return next();
 	}
 
+	// TODO - Replace this with https://github.com/PretendoNetwork/nintendo-file-formats
 	request.certificate = new NintendoCertificate(certificate);
 
 	return next();

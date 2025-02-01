@@ -3,7 +3,7 @@ import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
-import { getPNIDByTokenAuth, getPNIDByUsername } from '@/database';
+import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
 import { generateToken } from '@/util';
 import { config } from '@/config-manager';
 import { Device } from '@/models/device';
@@ -88,7 +88,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		}
 
 		try {
-			pnid = await getPNIDByTokenAuth(refreshToken);
+			pnid = await getPNIDByNNASRefreshToken(refreshToken);
 
 			if (!pnid) {
 				response.status(400).send(xmlbuilder.create({
@@ -183,7 +183,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 				expires_in: 3600
 			}
 		}
-	}).end());
+	}).commentBefore('WARNING! DO NOT SHARE ANYTHING IN THIS REQUEST OR RESPONSE WITH UNTRUSTED USERS! IT CAN BE USED TO IMPERSONATE YOU AND YOUR CONSOLE, POTENTIALLY GETTING YOU BANNED!').end()); // TODO - This is ugly
 });
 
 export default router;

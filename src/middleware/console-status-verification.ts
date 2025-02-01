@@ -42,6 +42,21 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		return;
 	}
 
+	const certificateDeviceID = parseInt(request.certificate.certificateName.slice(2).split('-')[0], 16);
+
+	if (deviceID !== certificateDeviceID) {
+		// TODO - Change this to a different error
+		response.status(400).send(xmlbuilder.create({
+			error: {
+				cause: 'Bad Request',
+				code: '1600',
+				message: 'Unable to process request'
+			}
+		}).end());
+
+		return;
+	}
+
 	const serialNumber = getValueFromHeaders(request.headers, 'x-nintendo-serial-number');
 
 	// TODO - Verify serial numbers somehow?
@@ -109,22 +124,13 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		});
 	}
 
-	if (device.serial !== serialNumber) {
-		// TODO - Change this to a different error
-		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
-			}
-		}).end());
-
-		return;
+	// * NASC doesn't have the device ID, so add it here for 3DS consoles
+	if (!device.device_id) {
+		device.device_id = certificateDeviceID;
+		await device.save();
 	}
 
-	const certificateDeviceID = parseInt(request.certificate.certificateName.slice(2).split('-')[0], 16);
-
-	if (deviceID !== certificateDeviceID) {
+	if (device.serial !== serialNumber) {
 		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
 			error: {
