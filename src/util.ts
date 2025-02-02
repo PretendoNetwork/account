@@ -10,7 +10,7 @@ import crc32 from 'buffer-crc32';
 import crc from 'crc';
 import { sendMail } from '@/mailer';
 import { config, disabledFeatures } from '@/config-manager';
-import { getSystemTypeFromValue, getTokenTypeFromValue, OAuthTokenGenerationResponse, OAuthTokenOptions, SystemType, SystemTypes, Token, TokenOptions, TokenTypes } from '@/types/common/token';
+import { OAuthTokenGenerationResponse, OAuthTokenOptions, SystemType, Token, TokenOptions, TokenType } from '@/types/common/token';
 import { HydratedPNIDDocument, IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import { SafeQs } from '@/types/common/safe-qs';
 
@@ -58,7 +58,7 @@ export function generateOAuthTokens(systemType: SystemType, pnid: HydratedPNIDDo
 
 	const accessTokenOptions: TokenOptions = {
 		system_type: systemType,
-		token_type: 'OAUTH_ACCESS',
+		token_type: TokenType.OAUTH_ACCESS,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		expire_time: BigInt(Date.now() + (accessTokenExpiresInSecs * 1000))
@@ -66,7 +66,7 @@ export function generateOAuthTokens(systemType: SystemType, pnid: HydratedPNIDDo
 
 	const refreshTokenOptions: TokenOptions = {
 		system_type: systemType,
-		token_type: 'OAUTH_REFRESH',
+		token_type: TokenType.OAUTH_REFRESH,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		expire_time: BigInt(Date.now() + (refreshTokenExpiresInSecs * 1000))
@@ -92,15 +92,12 @@ export function generateOAuthTokens(systemType: SystemType, pnid: HydratedPNIDDo
 export function generateToken(key: string, options: TokenOptions): Buffer | null {
 	let dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
-	const systemType = SystemTypes[options.system_type];
-	const tokenType = TokenTypes[options.token_type];
-
-	dataBuffer.writeUInt8(systemType, 0x0);
-	dataBuffer.writeUInt8(tokenType, 0x1);
+	dataBuffer.writeUInt8(options.system_type, 0x0);
+	dataBuffer.writeUInt8(options.token_type, 0x1);
 	dataBuffer.writeUInt32LE(options.pid, 0x2);
 	dataBuffer.writeBigUInt64LE(options.expire_time, 0x6);
 
-	if ((options.token_type !== 'OAUTH_ACCESS' && options.token_type !== 'OAUTH_REFRESH') || options.system_type === 'API') {
+	if ((options.token_type !== TokenType.OAUTH_ACCESS && options.token_type !== TokenType.OAUTH_REFRESH) || options.system_type === SystemType.API) {
 		// * Access and refresh tokens have smaller bodies due to size constraints
 		// * The API does not have this restraint, however
 		if (options.title_id === undefined || options.access_level === undefined) {
@@ -126,7 +123,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 
 	let final = encrypted;
 
-	if ((options.token_type !== 'OAUTH_ACCESS' && options.token_type !== 'OAUTH_REFRESH') || options.system_type === 'API') {
+	if ((options.token_type !== TokenType.OAUTH_ACCESS && options.token_type !== TokenType.OAUTH_REFRESH) || options.system_type === SystemType.API) {
 		// * Access and refresh tokens don't get a checksum due to size constraints
 		const checksum = crc32(dataBuffer);
 
@@ -171,23 +168,20 @@ export function decryptToken(token: Buffer, key?: string): Buffer {
 }
 
 export function unpackToken(token: Buffer): Token {
-	const systemTypeNum = token.readUInt8(0x0);
-	const tokenTypeNum = token.readUInt8(0x1);
+	const systemType = token.readUInt8(0x0);
+	const tokenType = token.readUInt8(0x1);
 
-	const systemType = getSystemTypeFromValue(systemTypeNum);
-	const tokenType = getTokenTypeFromValue(tokenTypeNum);
-
-	if (!systemType) throw new Error('Invalid system type');
-	if (!tokenType) throw new Error('Invalid token type');
+	if (!(systemType in Object.values(SystemType))) throw new Error('Invalid system type');
+	if (!(tokenType in Object.values(TokenType))) throw new Error('Invalid token type');
 
 	const unpacked: Token = {
-		system_type: systemType,
-		token_type: tokenType,
+		system_type: systemType as SystemType,
+		token_type: tokenType as TokenType,
 		pid: token.readUInt32LE(0x2),
 		expire_time: token.readBigUInt64LE(0x6)
 	};
 
-	if (unpacked.token_type !== 'OAUTH_ACCESS' && unpacked.token_type !== 'OAUTH_REFRESH') {
+	if (unpacked.token_type !== TokenType.OAUTH_ACCESS && unpacked.token_type !== TokenType.OAUTH_REFRESH) {
 		unpacked.title_id = token.readBigUInt64LE(0xE);
 		unpacked.access_level = token.readInt8(0x16);
 	}
@@ -274,8 +268,8 @@ export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IP
 
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const tokenOptions: TokenOptions = {
-		system_type: 'API',
-		token_type: 'PASSWORD_RESET',
+		system_type: SystemType.API,
+		token_type: TokenType.PASSWORD_RESET,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),

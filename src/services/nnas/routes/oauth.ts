@@ -6,6 +6,7 @@ import consoleStatusVerificationMiddleware from '@/middleware/console-status-ver
 import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
 import { generateOAuthTokens } from '@/util';
 import { Device } from '@/models/device';
+import { SystemType } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -153,7 +154,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 	}
 
 	try {
-		const tokenGeneration = generateOAuthTokens('WIIU', pnid);
+		const tokenGeneration = generateOAuthTokens(SystemType.WIIU, pnid);
 
 		response.send(xmlbuilder.create({
 			OAuth20: {

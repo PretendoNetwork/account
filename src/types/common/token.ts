@@ -1,33 +1,18 @@
-export const TokenTypes = {
+export const TokenType = {
 	OAUTH_ACCESS: 1,
 	OAUTH_REFRESH: 2,
 	NEX: 3,
 	SERVICE: 4,
 	PASSWORD_RESET: 5
 } as const;
-export type TokenType = keyof typeof TokenTypes;
+export type TokenType = typeof TokenType[keyof typeof TokenType];
 
-export function getTokenTypeFromValue(type: number): TokenType | undefined {
-	const keys = Object.keys(TokenTypes) as TokenType[];
-	return keys.find((key) => TokenTypes[key] === type);
-}
-
-export const SystemTypes = {
+export const SystemType = {
 	'WIIU': 1,
 	'3DS': 2,
 	'API': 3
 } as const;
-export type SystemType = keyof typeof SystemTypes;
-
-export const serverDeviceToSystemType: Record<number, SystemType> = {
-	1: 'WIIU',
-	2: '3DS'
-};
-
-export function getSystemTypeFromValue(type: number): SystemType | undefined {
-	const keys = Object.keys(SystemTypes) as SystemType[];
-	return keys.find((key) => SystemTypes[key] === type);
-}
+export type SystemType = typeof SystemType[keyof typeof SystemType];
 
 export interface Token {
 	system_type: SystemType;

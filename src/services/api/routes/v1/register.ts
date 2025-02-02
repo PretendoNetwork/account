@@ -14,6 +14,7 @@ import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
 import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { SystemType } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -367,7 +368,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	await sendConfirmationEmail(pnid);
 
 	try {
-		const tokenGeneration = generateOAuthTokens('API', pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
+		const tokenGeneration = generateOAuthTokens(SystemType.API, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
 		response.json({
 			access_token: tokenGeneration.accessToken,

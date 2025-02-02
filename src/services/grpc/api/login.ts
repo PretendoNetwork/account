@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
 import { nintendoPasswordHash, generateOAuthTokens} from '@/util';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { SystemType } from '@/types/common/token';
 
 export async function login(request: LoginRequest): Promise<DeepPartial<LoginResponse>> {
 	const grantType = request.grantType?.trim();
@@ -43,7 +44,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 	}
 
 	try {
-		const tokenGeneration = generateOAuthTokens('API', pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
+		const tokenGeneration = generateOAuthTokens(SystemType.API, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
 		return {
 			accessToken: tokenGeneration.accessToken,

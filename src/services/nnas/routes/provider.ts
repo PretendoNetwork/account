@@ -3,8 +3,7 @@ import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { NEXAccount } from '@/models/nex-account';
-import { TokenOptions } from '@/types/common/token';
-import { serverDeviceToSystemType } from '@/types/common/token';
+import { SystemType, TokenOptions, TokenType } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -91,23 +90,16 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	const systemType = serverDeviceToSystemType[server.device];
-	if (!systemType) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
-					code: '1021',
-					message: 'The requested game server was not found'
-				}
-			}
-		}).end());
-		
-		return;
+	if (!(server.device in Object.values(SystemType))) {
+		throw new Error('Invalid system type');
 	}
 
+	// * Asserted safely because of the check above
+	const systemType = server.device as SystemType;
+
 	const tokenOptions: TokenOptions = {
-		system_type: systemType,
-		token_type: 'SERVICE',
+		system_type: systemType as SystemType,
+		token_type: TokenType.SERVICE,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),
@@ -228,23 +220,16 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	const systemType = serverDeviceToSystemType[server.device];
-	if (!systemType) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
-					code: '1021',
-					message: 'The requested game server was not found'
-				}
-			}
-		}).end());
-
-		return;
+	if (!(server.device in Object.values(SystemType))) {
+		throw new Error('Invalid system type');
 	}
 
+	// * Asserted safely because of the check above
+	const systemType = server.device as SystemType;
+
 	const tokenOptions: TokenOptions = {
-		system_type: systemType,
-		token_type: 'NEX',
+		system_type: systemType, 
+		token_type: TokenType.NEX,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),

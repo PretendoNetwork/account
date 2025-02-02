@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
 import { nintendoPasswordHash, generateOAuthTokens} from '@/util';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { SystemType } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -109,7 +110,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	}
 
 	try {
-		const tokenGeneration = generateOAuthTokens('API', pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
+		const tokenGeneration = generateOAuthTokens(SystemType.API, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
 		response.json({
 			access_token: tokenGeneration.accessToken,

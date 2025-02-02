@@ -15,6 +15,7 @@ import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { SystemType } from '@/types/common/token';
 
 const PNID_VALID_CHARACTERS_REGEX = /^[\w\-.]*$/;
 const PNID_PUNCTUATION_START_REGEX = /^[_\-.]/;
@@ -230,7 +231,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 	await sendConfirmationEmail(pnid);
 
 	try {
-		const tokenGeneration = generateOAuthTokens('API', pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
+		const tokenGeneration = generateOAuthTokens(SystemType.API, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
 		return {
 			accessToken: tokenGeneration.accessToken,
