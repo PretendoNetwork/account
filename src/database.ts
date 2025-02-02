@@ -13,6 +13,7 @@ import { PNIDProfile } from '@/types/services/nnas/pnid-profile';
 import { ConnectionData } from '@/types/services/api/connection-data';
 import { ConnectionResponse } from '@/types/services/api/connection-response';
 import { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
+import { SystemType, TokenType } from '@/types/common/token';
 
 const connection_string = config.mongoose.connection_string;
 const options = config.mongoose.options;
@@ -112,7 +113,7 @@ export async function getPNIDByNNASAccessToken(token: string): Promise<HydratedP
 		const unpackedToken = unpackToken(decryptedToken);
 
 		// * Return if the system type isn't Wii U (NNAS) and the token type isn't "OAuth Access"
-		if (unpackedToken.system_type !== 1 || unpackedToken.token_type !== 1) {
+		if (unpackedToken.system_type !== SystemType.WIIU || unpackedToken.token_type !== TokenType.OAUTH_ACCESS) {
 			return null;
 		}
 
@@ -142,7 +143,7 @@ export async function getPNIDByNNASRefreshToken(token: string): Promise<Hydrated
 		const unpackedToken = unpackToken(decryptedToken);
 
 		// * Return if the system type isn't Wii U (NNAS) and the token type isn't "OAuth Refresh"
-		if (unpackedToken.system_type !== 1 || unpackedToken.token_type !== 2) {
+		if (unpackedToken.system_type !== SystemType.WIIU || unpackedToken.token_type !== TokenType.OAUTH_ACCESS) {
 			return null;
 		}
 
@@ -172,7 +173,7 @@ export async function getPNIDByAPIAccessToken(token: string): Promise<HydratedPN
 		const unpackedToken = unpackToken(decryptedToken);
 
 		// * Return if the system type isn't API (REST and gRPC) and the token type isn't "OAuth Access"
-		if (unpackedToken.system_type !== 3 || unpackedToken.token_type !== 1) {
+		if (unpackedToken.system_type !== SystemType.API || unpackedToken.token_type !== TokenType.OAUTH_ACCESS) {
 			return null;
 		}
 
@@ -202,7 +203,7 @@ export async function getPNIDByAPIRefreshToken(token: string): Promise<HydratedP
 		const unpackedToken = unpackToken(decryptedToken);
 
 		// * Return if the system type isn't API (REST and gRPC) and the token type isn't "OAuth Refresh"
-		if (unpackedToken.system_type !== 3 || unpackedToken.token_type !== 2) {
+		if (unpackedToken.system_type !== SystemType.API || unpackedToken.token_type !== TokenType.OAUTH_REFRESH) {
 			return null;
 		}
 
