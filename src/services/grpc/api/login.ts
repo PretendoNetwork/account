@@ -1,9 +1,9 @@
 import { Status, ServerError } from 'nice-grpc';
-import { LoginRequest, LoginResponse, DeepPartial } from '@pretendonetwork/grpc/api/login_rpc';
 import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
-import { nintendoPasswordHash, generateToken} from '@/util';
+import { nintendoPasswordHash, generateToken } from '@/util';
 import { config } from '@/config-manager';
+import type { LoginRequest, LoginResponse, DeepPartial } from '@pretendonetwork/grpc/api/login_rpc';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 export async function login(request: LoginRequest): Promise<DeepPartial<LoginResponse>> {

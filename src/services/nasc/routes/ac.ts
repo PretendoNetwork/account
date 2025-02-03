@@ -1,8 +1,8 @@
 import express from 'express';
 import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, generateToken } from '@/util';
 import { getServerByTitleID } from '@/database';
-import { NASCRequestParams } from '@/types/services/nasc/request-params';
-import { HydratedServerDocument } from '@/types/mongoose/server';
+import type { NASCRequestParams } from '@/types/services/nasc/request-params';
+import type { HydratedServerDocument } from '@/types/mongoose/server';
 
 const router = express.Router();
 
@@ -83,7 +83,7 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('001'),
 		token: nexToken,
-		datetime: nintendoBase64Encode(nascDateTime()),
+		datetime: nintendoBase64Encode(nascDateTime())
 	});
 }
 
@@ -108,7 +108,7 @@ async function processServiceTokenRequest(server: HydratedServerDocument, pid: n
 		servicetoken: serviceToken,
 		statusdata: nintendoBase64Encode('Y'),
 		svchost: nintendoBase64Encode('n/a'),
-		datetime: nintendoBase64Encode(nascDateTime()),
+		datetime: nintendoBase64Encode(nascDateTime())
 	});
 }
 

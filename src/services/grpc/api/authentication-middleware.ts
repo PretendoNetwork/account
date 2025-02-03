@@ -1,5 +1,6 @@
-import { Status, ServerMiddlewareCall, CallContext, ServerError } from 'nice-grpc';
+import { Status, ServerError } from 'nice-grpc';
 import { getPNIDByTokenAuth } from '@/database';
+import type { ServerMiddlewareCall, CallContext } from 'nice-grpc';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 // * These paths require that a token be present
@@ -18,7 +19,7 @@ export type AuthenticationCallContextExt = {
 
 export async function* authenticationMiddleware<Request, Response>(
 	call: ServerMiddlewareCall<Request, Response, AuthenticationCallContextExt>,
-	context: CallContext,
+	context: CallContext
 ): AsyncGenerator<Response, Response | void, undefined> {
 	const token = context.metadata.get('X-Token')?.trim();
 

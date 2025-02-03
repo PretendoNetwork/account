@@ -10,7 +10,6 @@ database.connect().then(async function () {
 	});
 
 	for (const server of servers) {
-
 		if (!server.aes_key) {
 			server.aes_key = crypto.randomBytes(32).toString('hex');
 

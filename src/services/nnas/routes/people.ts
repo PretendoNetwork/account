@@ -11,10 +11,9 @@ import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
 import timezones from '@/services/nnas/timezones.json';
-
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
-import { Person } from '@/types/services/nnas/person';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
+import type { Person } from '@/types/services/nnas/person';
 
 const router = express.Router();
 
@@ -89,7 +88,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 	try {
 		nexAccount = new NEXAccount({
-			device_type: 'wiiu',
+			device_type: 'wiiu'
 		});
 
 		await nexAccount.generatePID();
@@ -443,7 +442,6 @@ router.get('/@me/devices/status', async (_request: express.Request, response: ex
 	}).end());
 });
 
-
 /**
  * [PUT]
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/miis/@primary
@@ -657,7 +655,7 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 					type: 'DEFAULT', // * what is this?
 					updated_by: 'USER', // * need to actually update this
 					validated: pnid.email.validated ? 'Y' : 'N',
-					validated_date: pnid.email.validated_date,
+					validated_date: pnid.email.validated_date
 				}
 			}
 		]

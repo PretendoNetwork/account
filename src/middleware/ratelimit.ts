@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
-import express from 'express';
 import ratelimit from 'express-rate-limit';
 import { getValueFromHeaders } from '@/util';
+import type express from 'express';
 
 export default ratelimit({
 	windowMs: 60 * 1000,

@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
-import { IServer, IServerMethods, ServerModel } from '@/types/mongoose/server';
+import type { IServer, IServerMethods, ServerModel } from '@/types/mongoose/server';
 
 const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 	client_id: String,

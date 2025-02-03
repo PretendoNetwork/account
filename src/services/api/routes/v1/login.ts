@@ -1,9 +1,9 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
-import { nintendoPasswordHash, generateToken} from '@/util';
+import { nintendoPasswordHash, generateToken } from '@/util';
 import { config } from '@/config-manager';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
 

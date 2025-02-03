@@ -1,12 +1,12 @@
-import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getValueFromHeaders } from '@/util';
+import type express from 'express';
 
 const VALID_CLIENT_ID_SECRET_PAIRS: Record<string, string> = {
 	// * 'Key' is the client ID, 'Value' is the client secret
-	'a2efa818a34fa16b8afbc8a74eba3eda': 'c91cdb5658bd4954ade78533a339cf9a', // * Possibly WiiU exclusive?
-	'daf6227853bcbdce3d75baee8332b': '3eff548eac636e2bf45bb7b375e7b6b0', // * Possibly 3DS exclusive?
-	'ea25c66c26b403376b4c5ed94ab9cdea': 'd137be62cb6a2b831cad8c013b92fb55', // * Possibly 3DS exclusive?
+	a2efa818a34fa16b8afbc8a74eba3eda: 'c91cdb5658bd4954ade78533a339cf9a', // * Possibly WiiU exclusive?
+	daf6227853bcbdce3d75baee8332b: '3eff548eac636e2bf45bb7b375e7b6b0', // * Possibly 3DS exclusive?
+	ea25c66c26b403376b4c5ed94ab9cdea: 'd137be62cb6a2b831cad8c013b92fb55' // * Possibly 3DS exclusive?
 };
 
 function nintendoClientHeaderCheck(request: express.Request, response: express.Response, next: express.NextFunction): void {

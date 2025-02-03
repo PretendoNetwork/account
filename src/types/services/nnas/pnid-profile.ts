@@ -1,4 +1,4 @@
-import { YesNoBoolString } from '@/types/common/yes-no-bool-string';
+import type { YesNoBoolString } from '@/types/common/yes-no-bool-string';
 
 export interface PNIDProfile {
 	// *accounts: {}; // * We need to figure this out; no idea what these values mean or what they do
@@ -41,7 +41,7 @@ export interface PNIDProfile {
 				id: number;
 				url: string;
 				type: 'standard';
-			}
+			};
 		};
 		name: string;
 		primary: YesNoBoolString;

@@ -29,7 +29,7 @@ function multipartParser(request: express.Request, response: express.Response, n
 		let fileBuffer = Buffer.alloc(0);
 		let fileName = '';
 
-		part.on('header', header => {
+		part.on('header', (header) => {
 			const contentDisposition = header['content-disposition' as keyof object];
 			const regexResult = RE_FILE_NAME.exec(contentDisposition);
 

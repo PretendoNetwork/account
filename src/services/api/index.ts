@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import APIMiddleware from '@/middleware/api';
 import { formatHostnames, LOG_INFO } from '@/logger';
-
 import { V1 } from '@/services/api/routes';
 import { config } from '@/config-manager';
 import { restrictHostnames } from '@/middleware/host-limit';
@@ -24,7 +23,6 @@ api.use('/v1/login', V1.LOGIN);
 api.use('/v1/register', V1.REGISTER);
 api.use('/v1/reset-password', V1.RESET_PASSWORD);
 api.use('/v1/user', V1.USER);
-
 
 // * Main router for endpoints
 const router = express.Router();

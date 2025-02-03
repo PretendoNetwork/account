@@ -1,5 +1,5 @@
-import { YesNoBoolString } from '@/types/common/yes-no-bool-string';
-import { IDeviceAttribute } from '@/types/mongoose/device-attribute';
+import type { YesNoBoolString } from '@/types/common/yes-no-bool-string';
+import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 
 // TODO - Change this Map type to something more strongly typed
 export interface Person {
@@ -38,7 +38,7 @@ export interface Person {
 	region: number;
 	marketing_flag: YesNoBoolString;
 	device_attributes: {
-		device_attribute: IDeviceAttribute[]
+		device_attribute: IDeviceAttribute[];
 	};
 	off_device_flag: YesNoBoolString;
 }

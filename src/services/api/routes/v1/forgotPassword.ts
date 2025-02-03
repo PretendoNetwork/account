@@ -4,7 +4,7 @@ import hcaptcha from 'hcaptcha';
 import { getPNIDByEmailAddress, getPNIDByUsername } from '@/database';
 import { sendForgotPasswordEmail } from '@/util';
 import { config, disabledFeatures } from '@/config-manager';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			response.status(400).json({
 				app: 'api',
 				status: 400,
-				error: 'Must fill in captcha',
+				error: 'Must fill in captcha'
 			});
 
 			return;
@@ -32,7 +32,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			response.status(400).json({
 				app: 'api',
 				status: 400,
-				error: 'Captcha verification failed',
+				error: 'Captcha verification failed'
 			});
 
 			return;

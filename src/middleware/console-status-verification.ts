@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
-import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { Device } from '@/models/device';
 import { getValueFromHeaders } from '@/util';
+import type express from 'express';
 
 async function consoleStatusVerificationMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	if (!request.certificate || !request.certificate.valid) {
@@ -69,7 +69,7 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 	}
 
 	let device = await Device.findOne({
-		serial: serialNumber,
+		serial: serialNumber
 	});
 
 	const certificateHash = crypto.createHash('sha256').update(request.certificate._certificate).digest('base64');
@@ -95,7 +95,7 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 	}
 
 	device = await Device.findOne({
-		certificate_hash: certificateHash,
+		certificate_hash: certificateHash
 	});
 
 	if (!device) {

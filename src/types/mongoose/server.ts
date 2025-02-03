@@ -1,4 +1,4 @@
-import { Model, HydratedDocument } from 'mongoose';
+import type { Model, HydratedDocument } from 'mongoose';
 
 export interface IServer {
 	client_id: string;
@@ -20,4 +20,4 @@ interface IServerQueryHelpers {}
 
 export interface ServerModel extends Model<IServer, IServerQueryHelpers, IServerMethods> {}
 
-export type HydratedServerDocument = HydratedDocument<IServer, IServerMethods>
+export type HydratedServerDocument = HydratedDocument<IServer, IServerMethods>;

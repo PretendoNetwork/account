@@ -3,7 +3,7 @@ import { z } from 'zod';
 import Mii from 'mii-js';
 import { config } from '@/config-manager';
 import { PNID } from '@/models/pnid';
-import { UpdateUserRequest } from '@/types/services/api/update-user-request';
+import type { UpdateUserRequest } from '@/types/services/api/update-user-request';
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ const userSchema = z.object({
 	mii: z.object({
 		name: z.string().trim(),
 		primary: z.enum(['Y', 'N']),
-		data: z.string(),
+		data: z.string()
 	}).optional(),
 	environment: z.enum(['prod', 'test', 'dev']).optional()
 });
@@ -46,7 +46,7 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 		gender: pnid.gender,
 		country: pnid.country,
 		email: {
-			address: pnid.email.address,
+			address: pnid.email.address
 		},
 		timezone: {
 			name: pnid.timezone.name
@@ -150,7 +150,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 			const mii = new Mii(miiDataBuffer);
 			mii.validate();
-		} catch (_) {
+		} catch {
 			response.status(400).json({
 				app: 'api',
 				status: 400,
@@ -208,7 +208,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		gender: pnid.gender,
 		country: pnid.country,
 		email: {
-			address: pnid.email.address,
+			address: pnid.email.address
 		},
 		timezone: {
 			name: pnid.timezone.name

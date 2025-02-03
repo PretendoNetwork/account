@@ -3,5 +3,5 @@ export interface UpdateUserRequest {
 		name: string;
 		primary: string;
 		data: string;
-	}
+	};
 }

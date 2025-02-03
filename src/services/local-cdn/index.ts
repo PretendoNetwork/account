@@ -1,7 +1,6 @@
 import express from 'express';
 import { config, disabledFeatures } from '@/config-manager';
 import { LOG_INFO, formatHostnames } from '@/logger';
-
 import get from '@/services/local-cdn/routes/get';
 import { restrictHostnames } from '@/middleware/host-limit';
 

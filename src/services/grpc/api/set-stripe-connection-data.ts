@@ -1,12 +1,13 @@
-import { Status, ServerError, CallContext } from 'nice-grpc';
-import { SetStripeConnectionDataRequest } from '@pretendonetwork/grpc/api/set_stripe_connection_data_rpc';
+import { Status, ServerError } from 'nice-grpc';
 import { PNID } from '@/models/pnid';
+import type { CallContext } from 'nice-grpc';
+import type { SetStripeConnectionDataRequest } from '@pretendonetwork/grpc/api/set_stripe_connection_data_rpc';
 import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
 
 type StripeMongoUpdateScheme = {
-	access_level?: number;
-	server_access_level?: string;
+	'access_level'?: number;
+	'server_access_level'?: string;
 	'connections.stripe.customer_id'?: string;
 	'connections.stripe.subscription_id'?: string;
 	'connections.stripe.price_id'?: string;
@@ -15,7 +16,7 @@ type StripeMongoUpdateScheme = {
 	'connections.stripe.latest_webhook_timestamp': number;
 };
 
-export async function setStripeConnectionData(request: SetStripeConnectionDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<Empty>{
+export async function setStripeConnectionData(request: SetStripeConnectionDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<Empty> {
 	// * This is asserted in authentication-middleware, we know this is never null
 	const pnid = context.pnid!;
 
@@ -61,7 +62,7 @@ export async function setStripeConnectionData(request: SetStripeConnectionDataRe
 		if (pnid.connections.stripe.latest_webhook_timestamp && pnid.connections.stripe.customer_id) {
 			// * Stripe customer data has already been initialized, update it
 			await PNID.updateOne({
-				pid: pnid.pid,
+				'pid': pnid.pid,
 				'connections.stripe.latest_webhook_timestamp': {
 					$lte: request.timestamp
 				}

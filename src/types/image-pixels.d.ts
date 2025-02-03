@@ -1,5 +1,5 @@
 declare module 'image-pixels' {
-	import { NdArray } from 'ndarray';
+	import type { NdArray } from 'ndarray';
 
 	export interface ImagePixelsOptions {
 		source: ImageSource;

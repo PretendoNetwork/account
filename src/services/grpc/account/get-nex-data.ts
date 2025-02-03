@@ -1,6 +1,6 @@
 import { Status, ServerError } from 'nice-grpc';
-import {GetNEXDataRequest,GetNEXDataResponse, DeepPartial } from '@pretendonetwork/grpc/account/get_nex_data_rpc';
 import { NEXAccount } from '@/models/nex-account';
+import type { GetNEXDataRequest, GetNEXDataResponse, DeepPartial } from '@pretendonetwork/grpc/account/get_nex_data_rpc';
 
 export async function getNEXData(request: GetNEXDataRequest): Promise<DeepPartial<GetNEXDataResponse>> {
 	const nexAccount = await NEXAccount.findOne({ pid: request.pid });
@@ -8,7 +8,7 @@ export async function getNEXData(request: GetNEXDataRequest): Promise<DeepPartia
 	if (!nexAccount) {
 		throw new ServerError(
 			Status.INVALID_ARGUMENT,
-			'No NEX account found',
+			'No NEX account found'
 		);
 	}
 

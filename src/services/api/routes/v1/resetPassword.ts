@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { PNID } from '@/models/pnid';
 import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
-import { Token } from '@/types/common/token';
+import type { Token } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -31,7 +31,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	try {
 		const decryptedToken = await decryptToken(Buffer.from(token, 'hex'));
 		unpackedToken = unpackToken(decryptedToken);
-	} catch (error) {
+	} catch {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -62,7 +62,6 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 		return;
 	}
-
 
 	if (!password || password === '') {
 		response.status(400).json({

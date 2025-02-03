@@ -1,4 +1,4 @@
-import { Model, HydratedDocument } from 'mongoose';
+import type { Model, HydratedDocument } from 'mongoose';
 
 type DEVICE = 'wiiu' | '3ds';
 enum ACCESS_LEVEL {
@@ -27,4 +27,4 @@ interface INEXAccountQueryHelpers {}
 
 export interface NEXAccountModel extends Model<INEXAccount, INEXAccountQueryHelpers, INEXAccountMethods> {}
 
-export type HydratedNEXAccountDocument = HydratedDocument<INEXAccount, INEXAccountMethods>
+export type HydratedNEXAccountDocument = HydratedDocument<INEXAccount, INEXAccountMethods>;

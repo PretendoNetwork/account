@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
-import { INEXAccount, INEXAccountMethods, NEXAccountModel } from '@/types/mongoose/nex-account';
+import type { INEXAccount, INEXAccountMethods, NEXAccountModel } from '@/types/mongoose/nex-account';
 
 const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMethods>({
 	device_type: {
@@ -8,7 +8,7 @@ const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMet
 		enum: [
 			// * Only track the family here not the model
 			'wiiu',
-			'3ds',
+			'3ds'
 		]
 	},
 	pid: {
@@ -19,7 +19,7 @@ const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMet
 	owning_pid: Number,
 	access_level: {
 		type: Number,
-		default: 0  // * 0: standard, 1: tester, 2: mod?, 3: dev
+		default: 0 // * 0: standard, 1: tester, 2: mod?, 3: dev
 	},
 	server_access_level: {
 		type: String,
@@ -56,8 +56,12 @@ NEXAccountSchema.method('generatePID', async function generatePID(): Promise<voi
 NEXAccountSchema.method('generatePassword', function generatePassword(): void {
 	function character(): string | number {
 		const offset = Math.floor(Math.random() * 62);
-		if (offset < 10) return offset;
-		if (offset < 36) return String.fromCharCode(offset + 55);
+		if (offset < 10) {
+			return offset;
+		}
+		if (offset < 36) {
+			return String.fromCharCode(offset + 55);
+		}
 		return String.fromCharCode(offset + 61);
 	}
 

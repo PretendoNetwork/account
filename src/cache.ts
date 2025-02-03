@@ -11,7 +11,7 @@ const LOCAL_CDN_BASE = `${__dirname}/../cdn`;
 export async function connect(): Promise<void> {
 	if (!disabledFeatures.redis) {
 		client = redis.createClient(config.redis.client);
-		client.on('error', (err) => console.log('Redis Client Error', err));
+		client.on('error', err => console.log('Redis Client Error', err));
 
 		await client.connect();
 	}

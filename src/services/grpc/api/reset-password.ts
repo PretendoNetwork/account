@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import { Status, ServerError } from 'nice-grpc';
-import { ResetPasswordRequest } from '@pretendonetwork/grpc/api/reset_password_rpc';
 import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
 import { getPNIDByPID } from '@/database';
+import type { ResetPasswordRequest } from '@pretendonetwork/grpc/api/reset_password_rpc';
 import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { Token } from '@/types/common/token';
 
@@ -25,7 +25,7 @@ export async function resetPassword(request: ResetPasswordRequest): Promise<Empt
 	try {
 		const decryptedToken = await decryptToken(Buffer.from(token, 'base64'));
 		unpackedToken = unpackToken(decryptedToken);
-	} catch (error) {
+	} catch {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
 	}
 

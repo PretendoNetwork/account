@@ -1,12 +1,12 @@
 import crypto from 'node:crypto';
-import express from 'express';
 import { Device } from '@/models/device';
 import { NEXAccount } from '@/models/nex-account';
 import { nascError, nintendoBase64Decode } from '@/util';
 import { connection as databaseConnection } from '@/database';
 import NintendoCertificate from '@/nintendo-certificate';
 import { LOG_ERROR } from '@/logger';
-import { NASCRequestParams } from '@/types/services/nasc/request-params';
+import type express from 'express';
+import type { NASCRequestParams } from '@/types/services/nasc/request-params';
 
 async function NASCMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	const requestParams: NASCRequestParams = request.body;
@@ -103,9 +103,8 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		}
 	}
 
-
 	let device = await Device.findOne({
-		fcdcert_hash: fcdcertHash,
+		fcdcert_hash: fcdcertHash
 	});
 
 	if (device) {
