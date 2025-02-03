@@ -3,7 +3,6 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
-import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
 import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
@@ -49,20 +48,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
  * Replacement for: https://account.nintendo.net/v1/api/people
  * Description: Registers a new NNID
  */
-router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
-	if (!request.certificate || !request.certificate.valid) {
-		// TODO - Change this to a different error
-		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
-			}
-		}).end());
-
-		return;
-	}
-
+router.post('/', ratelimit, async (request: express.Request, response: express.Response): Promise<void> => {
 	const person: Person = request.body.person;
 
 	const userExists = await doesPNIDExist(person.user_id);

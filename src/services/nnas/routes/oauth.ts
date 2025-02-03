@@ -1,8 +1,6 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
-import deviceCertificateMiddleware from '@/middleware/device-certificate';
-import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
 import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
 import { generateOAuthTokens } from '@/util';
 import { Device } from '@/models/device';
@@ -15,7 +13,7 @@ const router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
  * Description: Generates an access token for a user
  */
-router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatusVerificationMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/access_token/generate', async (request: express.Request, response: express.Response): Promise<void> => {
 	const grantType = request.body.grant_type;
 	const username = request.body.user_id;
 	const password = request.body.password;
