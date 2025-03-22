@@ -39,8 +39,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	}
 
 	if (server.maintenance_mode) {
-		// TODO - FIND THE REAL UNDER MAINTENANCE ERROR CODE. 110 IS NOT IT
-		response.status(200).send(nascError('110').toString());
+		// TODO - FIND THE REAL UNDER MAINTENANCE ERROR CODE
+		response.status(503).send(nascError('101').toString());
 		return;
 	}
 

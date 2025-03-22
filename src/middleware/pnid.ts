@@ -21,9 +21,20 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	}
 
 	if (type === 'Basic') {
+		if (!request.path.includes('v1/api/people/@me/devices')) {
+			response.status(401).send(xmlbuilder.create({
+				errors: {
+					error: {
+						code: '1105',
+						message: 'Email address, username, or password, is not valid'
+					}
+				}
+			}).end());
+		}
+
 		pnid = await getPNIDByBasicAuth(token);
 	} else {
-		pnid = await getPNIDByTokenAuth(token);
+		pnid = await getPNIDByTokenAuth(token, [1, 2]);
 	}
 
 	if (!pnid) {

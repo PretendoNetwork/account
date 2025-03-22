@@ -125,6 +125,11 @@ class NintendoCertificate {
 			this._certificateBody = this._certificate.subarray(0x4 + signatureTypeSizes.SIZE + signatureTypeSizes.PADDING_SIZE);
 
 			this.signature = this._certificate.subarray(0x4, 0x4 + signatureTypeSizes.SIZE);
+
+			const padding = this._certificate.subarray(0x4 + signatureTypeSizes.SIZE, 0x4 + signatureTypeSizes.SIZE + signatureTypeSizes.PADDING_SIZE);
+
+			this.valid = padding.every(byte => byte === 0);
+
 			this.issuer = this._certificate.subarray(0x80, 0xC0).toString().split('\0')[0];
 			this.keyType = this._certificate.readUInt32BE(0xC0);
 			this.certificateName = this._certificate.subarray(0xC4, 0x104).toString().split('\0')[0];
@@ -137,7 +142,11 @@ class NintendoCertificate {
 				this.consoleType = '3ds';
 			}
 
-			this._verifySignature();
+			if (!this.valid) {
+				return;
+			}
+
+			this._verifySignatureECDSA();
 		}
 	}
 

@@ -3,7 +3,7 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
 import { getPNIDByEmailAddress, getPNIDByPID } from '@/database';
-import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail, sendEmailConfirmedParentalControlsEmail } from '@/util';
+import { sendEmailConfirmedEmail/*, sendConfirmationEmail, sendForgotPasswordEmail*/, sendEmailConfirmedParentalControlsEmail } from '@/util';
 
 const router = express.Router();
 
@@ -120,7 +120,7 @@ router.get('/resend_confirmation', async (request: express.Request, response: ex
 		return;
 	}
 
-	await sendConfirmationEmail(pnid);
+	//await sendConfirmationEmail(pnid);
 
 	response.status(200).send('');
 });
@@ -180,7 +180,7 @@ router.get('/forgotten_password/:pid', async (request: express.Request, response
 		return;
 	}
 
-	await sendForgotPasswordEmail(pnid);
+	//await sendForgotPasswordEmail(pnid);
 
 	response.status(200).send('');
 });

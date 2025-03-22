@@ -58,6 +58,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	}
 
 	if (pnid) {
+		console.log('API forgot password for', pnid);
 		await sendForgotPasswordEmail(pnid);
 	}
 

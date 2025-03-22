@@ -104,12 +104,17 @@ export async function getPNIDByBasicAuth(token: string): Promise<HydratedPNIDDoc
 	return pnid;
 }
 
-export async function getPNIDByTokenAuth(token: string): Promise<HydratedPNIDDocument | null> {
+export async function getPNIDByTokenAuth(token: string, allowedTypes?: number[]): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	try {
 		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
 		const unpackedToken = unpackToken(decryptedToken);
+
+		if (allowedTypes && !allowedTypes.includes(unpackedToken.system_type)) {
+			return null;
+		}
+
 		const pnid = await getPNIDByPID(unpackedToken.pid);
 
 		if (pnid) {

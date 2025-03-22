@@ -21,6 +21,8 @@ export async function forgotPassword(request: ForgotPasswordRequest): Promise<Em
 		pnid = await getPNIDByUsername(input);
 	}
 
+	console.log('gRPC forgot password for', pnid);
+
 	if (pnid) {
 		await sendForgotPasswordEmail(pnid);
 	}
