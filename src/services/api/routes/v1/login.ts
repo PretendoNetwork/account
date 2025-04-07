@@ -1,9 +1,9 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
-import { nintendoPasswordHash, generateToken} from '@/util';
-import { config } from '@/config-manager';
+import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
+import { nintendoPasswordHash, generateOAuthTokens} from '@/util';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { SystemType } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -86,7 +86,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			return;
 		}
 	} else {
-		pnid = await getPNIDByTokenAuth(refreshToken);
+		pnid = await getPNIDByAPIRefreshToken(refreshToken);
 
 		if (!pnid) {
 			response.status(400).json({
@@ -109,38 +109,22 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	const accessTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x1, // * OAuth Access
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
+	try {
+		const tokenGeneration = generateOAuthTokens(SystemType.API, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
 
-	const refreshTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x2, // * OAuth Refresh
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
-	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
-
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
-
-	// TODO - Handle null tokens
-
-	response.json({
-		access_token: accessToken,
-		token_type: 'Bearer',
-		expires_in: 3600,
-		refresh_token: newRefreshToken
-	});
+		response.json({
+			access_token: tokenGeneration.accessToken,
+			token_type: 'Bearer',
+			expires_in: tokenGeneration.expiresInSecs.access,
+			refresh_token: tokenGeneration.refreshToken
+		});
+	} catch {
+		response.status(500).json({
+			app: 'api',
+			status: 500,
+			error: 'Internal server error'
+		});
+	}
 });
 
 export default router;

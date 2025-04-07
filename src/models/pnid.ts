@@ -90,10 +90,7 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	},
 	devices: [DeviceSchema],
 	identification: { // * user identification tokens
-		email_code: {
-			type: String,
-			unique: true
-		},
+		email_code: String,
 		email_token: {
 			type: String,
 			unique: true
