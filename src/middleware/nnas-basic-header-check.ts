@@ -135,7 +135,7 @@ function nnasBasicHeaderCheckMiddleware(request: express.Request, response: expr
 			errors: {
 				error: {
 					code: '0002',
-					message: 'X-Nintendo-Region format is invalid'
+					message: 'X-Nintendo-Country format is invalid'
 				}
 			}
 		}).end());
