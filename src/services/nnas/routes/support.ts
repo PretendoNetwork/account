@@ -2,9 +2,9 @@ import dns from 'node:dns';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
-import { getPNIDByPID } from '@/database';
+import { getPNIDByEmailAddress, getPNIDByPID } from '@/database';
 import { Device } from '@/models/device';
-import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail } from '@/util';
+import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail, sendEmailConfirmedParentalControlsEmail } from '@/util';
 
 // * Middleware to ensure the input device is valid
 // TODO - Make this available for more routes? This could be useful elsewhere
@@ -184,6 +184,35 @@ router.get('/resend_confirmation', validateDeviceIDMiddleware, async (request: e
 	}
 
 	await sendConfirmationEmail(pnid);
+
+	response.status(200).send('');
+});
+
+/**
+ * [GET]
+ * Replacement for: https://account.nintendo.net/v1/api/support/send_confirmation/pin/:email
+ * Description: Sends a users confirmation email that their email has been registered for parental controls
+ */
+router.get('/send_confirmation/pin/:email', async (request: express.Request, response: express.Response): Promise<void> => {
+	const email = request.params.email;
+
+	const pnid = await getPNIDByEmailAddress(email);
+
+	if (!pnid) {
+		// TODO - Unsure if this is the right error
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0130',
+					message: 'PID has not been registered yet'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	await sendEmailConfirmedParentalControlsEmail(pnid);
 
 	response.status(200).send('');
 });
