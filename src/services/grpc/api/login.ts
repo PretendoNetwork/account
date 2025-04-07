@@ -31,12 +31,14 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 		if (!bcrypt.compareSync(hashedPassword, pnid.password)) {
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Password is incorrect');
 		}
-	} else {
+	} else if (grantType === 'refresh_token') {
 		if (!refreshToken) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');
 
 		pnid = await getPNIDByAPIRefreshToken(refreshToken);
 
 		if (!pnid) throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');
+	} else {
+		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid grant type');
 	}
 
 	if (pnid.deleted) {
