@@ -376,7 +376,10 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			expires_in: tokenGeneration.expiresInSecs.access,
 			refresh_token: tokenGeneration.refreshToken
 		});
-	} catch {
+	} catch (error: any) {
+		LOG_ERROR('/v1/register - token generation: ' + error);
+		if (error.stack) console.error(error.stack);
+
 		response.status(500).json({
 			app: 'api',
 			status: 500,

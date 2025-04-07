@@ -4,6 +4,7 @@ import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
 import { nintendoPasswordHash, generateOAuthTokens} from '@/util';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { SystemType } from '@/types/common/token';
+import { LOG_ERROR } from '@/logger';
 
 const router = express.Router();
 
@@ -118,7 +119,10 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			expires_in: tokenGeneration.expiresInSecs.access,
 			refresh_token: tokenGeneration.refreshToken
 		});
-	} catch {
+	} catch (error: any) {
+		LOG_ERROR('/v1/login - token generation: ' + error);
+		if (error.stack) console.error(error.stack);
+		
 		response.status(500).json({
 			app: 'api',
 			status: 500,
