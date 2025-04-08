@@ -100,16 +100,13 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 	if ((options.token_type !== TokenType.OAUTH_ACCESS && options.token_type !== TokenType.OAUTH_REFRESH) || options.system_type === SystemType.API) {
 		// * Access and refresh tokens have smaller bodies due to size constraints
 		// * The API does not have this restraint, however
-		if (options.title_id === undefined || options.access_level === undefined) {
-			return null;
-		}
 
 		dataBuffer = Buffer.concat([
 			dataBuffer,
 			Buffer.alloc(8 + 1)
 		]);
 
-		dataBuffer.writeBigUInt64LE(options.title_id, 0xE);
+		dataBuffer.writeBigUInt64LE(options.title_id ?? BigInt(0), 0xE);
 		dataBuffer.writeInt8(options.access_level, 0x16);
 	}
 

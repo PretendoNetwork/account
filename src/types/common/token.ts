@@ -24,7 +24,9 @@ export interface Token {
 }
 
 // ? Separated so additional non-token fields can be added in the future
-export type TokenOptions = Token
+export type TokenOptions = Token & {
+	access_level: number;
+}
 
 export type OAuthTokenGenerationResponse = {
 	accessToken: string;
