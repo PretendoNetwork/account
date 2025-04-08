@@ -74,10 +74,8 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	// TODO - Handle null tokens
-
 	const nexTokenBuffer = generateToken(server.aes_key, tokenOptions);
-	const nexToken = nintendoBase64Encode(nexTokenBuffer || '');
+	const nexToken = nintendoBase64Encode(nexTokenBuffer);
 
 	return new URLSearchParams({
 		locator: nintendoBase64Encode(`${server.ip}:${server.port}`),
@@ -98,10 +96,8 @@ async function processServiceTokenRequest(server: HydratedServerDocument, pid: n
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	// TODO - Handle null tokens
-
 	const serviceTokenBuffer = generateToken(server.aes_key, tokenOptions);
-	const serviceToken = nintendoBase64Encode(serviceTokenBuffer || '');
+	const serviceToken = nintendoBase64Encode(serviceTokenBuffer);
 
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('0'),

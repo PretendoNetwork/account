@@ -107,11 +107,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 	};
 
 	const serviceTokenBuffer = generateToken(server.aes_key, tokenOptions);
-	let serviceToken = serviceTokenBuffer ? serviceTokenBuffer.toString('base64') : '';
-
-	if (request.isCemu) {
-		serviceToken = Buffer.from(serviceToken, 'base64').toString('hex');
-	}
+	const serviceToken = request.isCemu ? serviceTokenBuffer.toString('hex') : serviceTokenBuffer.toString('base64');
 
 	response.send(xmlbuilder.create({
 		service_token: {

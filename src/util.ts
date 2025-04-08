@@ -72,11 +72,8 @@ export function generateOAuthTokens(systemType: SystemType, pnid: HydratedPNIDDo
 		expire_time: BigInt(Date.now() + (refreshTokenExpiresInSecs * 1000))
 	};
 
-	const accessToken = generateToken(config.aes_key, accessTokenOptions)?.toString('hex');
-	const refreshToken = generateToken(config.aes_key, refreshTokenOptions)?.toString('hex');
-
-	if (!accessToken) throw new Error('Failed to generate access token');
-	if (!refreshToken) throw new Error('Failed to generate refresh token');
+	const accessToken = generateToken(config.aes_key, accessTokenOptions).toString('hex');
+	const refreshToken = generateToken(config.aes_key, refreshTokenOptions).toString('hex');
 
 	return {
 		accessToken,
@@ -89,7 +86,7 @@ export function generateOAuthTokens(systemType: SystemType, pnid: HydratedPNIDDo
 }
 
 
-export function generateToken(key: string, options: TokenOptions): Buffer | null {
+export function generateToken(key: string, options: TokenOptions): Buffer {
 	let dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
 	dataBuffer.writeUInt8(options.system_type, 0x0);
@@ -285,10 +282,7 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // * Only valid for 24 hours
 	};
 
-	const tokenBuffer = generateToken(config.aes_key, tokenOptions);
-	const passwordResetToken = tokenBuffer ? tokenBuffer.toString('hex') : '';
-
-	// TODO - Handle null token
+	const passwordResetToken = generateToken(config.aes_key, tokenOptions).toString('hex');
 
 	const mailerOptions = {
 		to: pnid.email.address,
