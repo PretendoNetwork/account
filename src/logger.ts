@@ -24,7 +24,6 @@ function getTimeStamp(): string {
 }
 
 export function LOG_SUCCESS(input: string): void {
-	const time = new Date();
 	input = `[${getTimeStamp()}] [SUCCESS]: ${input}`;
 	streams.success.write(`${input}\n`);
 
@@ -32,7 +31,6 @@ export function LOG_SUCCESS(input: string): void {
 }
 
 export function LOG_ERROR(input: string): void {
-	const time = new Date();
 	input = `[${getTimeStamp()}] [ERROR]: ${input}`;
 	streams.error.write(`${input}\n`);
 
@@ -40,7 +38,6 @@ export function LOG_ERROR(input: string): void {
 }
 
 export function LOG_WARN(input: string): void {
-	const time = new Date();
 	input = `[${getTimeStamp()}] [WARN]: ${input}`;
 	streams.warn.write(`${input}\n`);
 
@@ -48,7 +45,6 @@ export function LOG_WARN(input: string): void {
 }
 
 export function LOG_INFO(input: string): void {
-	const time = new Date();
 	input = `[${getTimeStamp()}] [INFO]: ${input}`;
 	streams.info.write(`${input}\n`);
 
