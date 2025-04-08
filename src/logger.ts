@@ -14,9 +14,18 @@ const streams = {
 	info: fs.createWriteStream(`${root}/logs/info.log`)
 } as const;
 
+function getTimeStamp(): string {
+	const time = new Date();
+	const hours = String(time.getHours()).padStart(2, '0');
+	const minutes = String(time.getMinutes()).padStart(2, '0');
+	const seconds = String(time.getSeconds()).padStart(2, '0');
+
+	return `[${hours}:${minutes}:${seconds}]`;
+}
+
 export function LOG_SUCCESS(input: string): void {
 	const time = new Date();
-	input = `[${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}] [SUCCESS]: ${input}`;
+	input = `[${getTimeStamp()}] [SUCCESS]: ${input}`;
 	streams.success.write(`${input}\n`);
 
 	console.log(`${input}`.green.bold);
@@ -24,7 +33,7 @@ export function LOG_SUCCESS(input: string): void {
 
 export function LOG_ERROR(input: string): void {
 	const time = new Date();
-	input = `[${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}] [ERROR]: ${input}`;
+	input = `[${getTimeStamp()}] [ERROR]: ${input}`;
 	streams.error.write(`${input}\n`);
 
 	console.log(`${input}`.red.bold);
@@ -32,7 +41,7 @@ export function LOG_ERROR(input: string): void {
 
 export function LOG_WARN(input: string): void {
 	const time = new Date();
-	input = `[${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}] [WARN]: ${input}`;
+	input = `[${getTimeStamp()}] [WARN]: ${input}`;
 	streams.warn.write(`${input}\n`);
 
 	console.log(`${input}`.yellow.bold);
@@ -40,7 +49,7 @@ export function LOG_WARN(input: string): void {
 
 export function LOG_INFO(input: string): void {
 	const time = new Date();
-	input = `[${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}] [INFO]: ${input}`;
+	input = `[${getTimeStamp()}] [INFO]: ${input}`;
 	streams.info.write(`${input}\n`);
 
 	console.log(`${input}`.cyan.bold);
