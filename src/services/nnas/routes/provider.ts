@@ -1,7 +1,7 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
-import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
+import { generateToken, getValueFromHeaders, getValueFromQueryString, isSystemType } from '@/util';
 import { NEXAccount } from '@/models/nex-account';
 import { SystemType, TokenOptions, TokenType } from '@/types/common/token';
 
@@ -90,7 +90,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	if (!(server.device in Object.values(SystemType))) {
+	if (!isSystemType(server.device)) {
 		throw new Error('Invalid system type');
 	}
 
@@ -216,7 +216,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	if (!(server.device in Object.values(SystemType))) {
+	if (!isSystemType(server.device)) {
 		throw new Error('Invalid system type');
 	}
 

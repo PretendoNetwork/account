@@ -85,6 +85,14 @@ export function generateOAuthTokens(systemType: SystemType, pnid: HydratedPNIDDo
 	};
 }
 
+export function isSystemType(value: number): value is SystemType {
+	return (Object.values(SystemType) as number[]).includes(value);
+}
+
+export function isTokenType(value: number): value is TokenType {
+	return (Object.values(TokenType) as number[]).includes(value);
+}
+
 
 export function generateToken(key: string, options: TokenOptions): Buffer {
 	let dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
@@ -165,12 +173,12 @@ export function unpackToken(token: Buffer): Token {
 	const systemType = token.readUInt8(0x0);
 	const tokenType = token.readUInt8(0x1);
 
-	if (!(systemType in Object.values(SystemType))) throw new Error('Invalid system type');
-	if (!(tokenType in Object.values(TokenType))) throw new Error('Invalid token type');
+	if (!isSystemType(systemType)) throw new Error('Invalid system type');
+	if (!isTokenType(tokenType)) throw new Error('Invalid token type');
 
 	const unpacked: Token = {
-		system_type: systemType as SystemType,
-		token_type: tokenType as TokenType,
+		system_type: systemType,
+		token_type: tokenType,
 		pid: token.readUInt32LE(0x2),
 		expire_time: token.readBigUInt64LE(0x6)
 	};
