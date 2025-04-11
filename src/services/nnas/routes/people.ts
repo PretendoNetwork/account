@@ -1,11 +1,11 @@
 import crypto from 'node:crypto';
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
 import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import { createNNASErrorResponse, createNNASResponse } from '@/services/nnas/create-response';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
@@ -28,16 +28,14 @@ router.get('/:username', async (request: express.Request, response: express.Resp
 	const userExists = await doesPNIDExist(username);
 
 	if (userExists) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0100',
 					message: 'Account ID already exists'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	response.send();
@@ -54,16 +52,14 @@ router.post('/', ratelimit, async (request: express.Request, response: express.R
 	const userExists = await doesPNIDExist(person.user_id);
 
 	if (userExists) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0100',
 					message: 'Account ID already exists'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
@@ -168,15 +164,15 @@ router.post('/', ratelimit, async (request: express.Request, response: express.R
 
 		await session.abortTransaction();
 
-		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
-			}
-		}).end());
-
-		return;
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
+			]
+		});
 	} finally {
 		// * This runs regardless of failure
 		// * Returning on catch will not prevent this from running
@@ -185,11 +181,13 @@ router.post('/', ratelimit, async (request: express.Request, response: express.R
 
 	await sendConfirmationEmail(pnid);
 
-	response.send(xmlbuilder.create({
-		person: {
-			pid: pnid.pid
+	return createNNASResponse(response, {
+		body: {
+			person: {
+				pid: pnid.pid
+			}
 		}
-	}).end());
+	});
 });
 
 /**
@@ -198,47 +196,46 @@ router.post('/', ratelimit, async (request: express.Request, response: express.R
  * Description: Gets a users profile
  */
 router.get('/@me/profile', async (request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', new Date().getTime().toString());
-
 	const pnid = request.pnid;
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const person = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
-	response.send(xmlbuilder.create({
-		person
-	}, { separateArrayItems: true }).end());
+	return createNNASResponse(response, {
+		body: {
+			person
+		},
+		xmlbuilder_options: {
+			separateArrayItems: true // TODO - Is this really needed?
+		}
+	});
 });
 
 /**
@@ -247,10 +244,6 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
  * Description: Gets user profile, seems to be the same as https://account.nintendo.net/v1/api/people/@me/profile
  */
 router.post('/@me/devices', async (request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', new Date().getTime().toString());
-
 	// * We don't care about the device attributes
 	// * The console ignores them and PNIDs are not tied to consoles anyway
 	// * So the server also ignores them and does not save the ones posted here
@@ -261,39 +254,39 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const person = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
-	response.send(xmlbuilder.create({
-		person
-	}).end());
+	return createNNASResponse(response, {
+		body: {
+			person
+		}
+	});
 });
 
 /**
@@ -302,10 +295,6 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
  * Description: Returns only user devices
  */
 router.get('/@me/devices', async (request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', new Date().getTime().toString());
-
 	const pnid = request.pnid;
 	const deviceID = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
 	const acceptLanguage = getValueFromHeaders(request.headers, 'accept-language');
@@ -316,53 +305,52 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 
 	if (!deviceID || !acceptLanguage || !platformID || !region || !serialNumber || !systemVersion) {
 		// TODO - Research these error more
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'Bad Request',
 					code: '1600',
 					message: 'Unable to process request'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
-	response.send(xmlbuilder.create({
-		devices: [
-			{
-				device: {
-					device_id: deviceID,
-					language: acceptLanguage,
-					updated: moment().format('YYYY-MM-DDTHH:MM:SS'),
-					pid: pnid.pid,
-					platform_id: platformID,
-					region: region,
-					serial_number: serialNumber,
-					status: 'ACTIVE',
-					system_version: systemVersion,
-					type: 'RETAIL',
-					updated_by: 'USER'
+	return createNNASResponse(response, {
+		body: {
+			devices: [
+				{
+					device: {
+						device_id: deviceID,
+						language: acceptLanguage,
+						updated: moment().format('YYYY-MM-DDTHH:MM:SS'),
+						pid: pnid.pid,
+						platform_id: platformID,
+						region: region,
+						serial_number: serialNumber,
+						status: 'ACTIVE',
+						system_version: systemVersion,
+						type: 'RETAIL',
+						updated_by: 'USER'
+					}
 				}
-			}
-		]
-	}).end());
+			]
+		}
+	});
 });
 
 /**
@@ -371,47 +359,43 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
  * Description: Gets user profile, seems to be the same as https://account.nintendo.net/v1/api/people/@me/profile
  */
 router.get('/@me/devices/owner', async (request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', moment().add(5, 'h').toString());
-
 	const pnid = request.pnid;
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const person = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
-	response.send(xmlbuilder.create({
-		person
-	}).end());
+	return createNNASResponse(response, {
+		body: {
+			person
+		}
+	});
 });
 
 /**
@@ -420,13 +404,11 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
  * Description: Unknown use
  */
 router.get('/@me/devices/status', async (_request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', moment().add(5, 'h').toString());
-
-	response.send(xmlbuilder.create({
-		device: {}
-	}).end());
+	return createNNASResponse(response, {
+		body: {
+			device: {}
+		}
+	});
 });
 
 
@@ -440,17 +422,16 @@ router.put('/@me/miis/@primary', async (request: express.Request, response: expr
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const mii: {
@@ -482,17 +463,15 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 	const pnid = request.pnid;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	response.send();
@@ -507,17 +486,15 @@ router.post('/@me/deletion', async (request: express.Request, response: express.
 	const pnid = request.pnid;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const email = pnid.email.address;
@@ -544,17 +521,15 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 	const person: Person = request.body.person;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const gender = person.gender ? person.gender : pnid.gender;
@@ -618,36 +593,36 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 	const pnid = request.pnid;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
-	response.send(xmlbuilder.create({
-		emails: [
-			{
-				email: {
-					address: pnid.email.address,
-					id: pnid.email.id,
-					parent: pnid.email.parent ? 'Y' : 'N',
-					primary: pnid.email.primary ? 'Y' : 'N',
-					reachable: pnid.email.reachable ? 'Y' : 'N',
-					type: 'DEFAULT', // * what is this?
-					updated_by: 'USER', // * need to actually update this
-					validated: pnid.email.validated ? 'Y' : 'N',
-					validated_date: pnid.email.validated_date,
+	return createNNASResponse(response, {
+		body: {
+			emails: [
+				{
+					email: {
+						address: pnid.email.address,
+						id: pnid.email.id,
+						parent: pnid.email.parent ? 'Y' : 'N',
+						primary: pnid.email.primary ? 'Y' : 'N',
+						reachable: pnid.email.reachable ? 'Y' : 'N',
+						type: 'DEFAULT', // * what is this?
+						updated_by: 'USER', // * need to actually update this
+						validated: pnid.email.validated ? 'Y' : 'N',
+						validated_date: pnid.email.validated_date,
+					}
 				}
-			}
-		]
-	}).end());
+			]
+		}
+	});
 });
 
 /**
@@ -663,17 +638,15 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 	} = request.body.email;
 
 	if (!pnid || !email || !email.address) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	// TODO - Better email check

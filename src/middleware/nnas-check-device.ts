@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
+import { createNNASErrorResponse } from '@/services/nnas/create-response';
 import NintendoCertificate from '@/nintendo-certificate';
 import { Device } from '@/models/device';
 
@@ -30,7 +30,7 @@ async function nnasCheckDeviceMiddleware(request: express.Request, response: exp
 	const platformID = request.header('X-Nintendo-Platform-ID')!;
 	const deviceID = Number(request.header('X-Nintendo-Device-ID')!);
 	const serialNumber = request.header('X-Nintendo-Serial-Number')!;
-	const deviceCertificate = request.header('X-Nintendo-Device-Cert');
+	const deviceCertificate = request.header('X-Nintendo-Device-Cert')?.split(', ')[0]; // * 3DS sends the device cert twice, and Express will format it into "VALUE1, VALUE2"
 	const path = request.originalUrl.split('?')[0];
 
 	if (platformID === '1' && INSECURE_WIIU_ENDPOINTS.some(regex => regex.test(path))) {
@@ -40,56 +40,56 @@ async function nnasCheckDeviceMiddleware(request: express.Request, response: exp
 
 	// * 3DS ALWAYS sends the device certificate
 	if (platformID === '0' && deviceCertificate == undefined) {
-		response.status(400).send(xmlbuilder.create({
-			error: {
-				code: '0110',
-				message: 'Unlinked device'
-			}
-		}).end());
-
-		return;
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
+					code: '0110',
+					message: 'Unlinked device'
+				}
+			]
+		});
 	}
 
 	const shouldCheckCertificate = deviceCertificate !== undefined || platformID === '0' || REQUIRED_CERT_CHECK_ENDPOINTS.some(regex => regex.test(path));
 
 	if (shouldCheckCertificate) {
 		if (deviceCertificate === undefined) {
-			response.status(400).send(xmlbuilder.create({
-				error: {
-					code: '0110',
-					message: 'Unlinked device'
-				}
-			}).end());
-
-			return;
+			return createNNASErrorResponse(response, {
+				errors: [
+					{
+						code: '0110',
+						message: 'Unlinked device'
+					}
+				]
+			});
 		}
 
 		const certificate = new NintendoCertificate(deviceCertificate);
 
 		if (!certificate.valid) {
-			response.status(400).send(xmlbuilder.create({
-				error: {
-					code: '0110',
-					message: 'Unlinked device'
-				}
-			}).end());
-
-			return;
+			return createNNASErrorResponse(response, {
+				errors: [
+					{
+						code: '0110',
+						message: 'Unlinked device'
+					}
+				]
+			});
 		}
 
 		const certificateDeviceID = parseInt(certificate.certificateName.slice(2).split('-')[0], 16);
 
 		if (deviceID !== certificateDeviceID) {
 			// TODO - Change this to a different error
-			response.status(400).send(xmlbuilder.create({
-				error: {
-					cause: 'Bad Request',
-					code: '1600',
-					message: 'Unable to process request'
-				}
-			}).end());
-
-			return;
+			return createNNASErrorResponse(response, {
+				errors: [
+					{
+						cause: 'Bad Request',
+						code: '1600',
+						message: 'Unable to process request'
+					}
+				]
+			});
 		}
 
 		let device = await Device.findOne({
@@ -102,18 +102,19 @@ async function nnasCheckDeviceMiddleware(request: express.Request, response: exp
 			// * the time the device document was created. Therefore we can
 			// * know that serial tampering happened on the 3DS if this fails
 			// * to find a device document.
-			response.status(400).send(xmlbuilder.create({
-				error: {
-					code: '0002',
-					message: 'serialNumber format is invalid'
-				}
-			}).end());
-
-			return;
+			return createNNASErrorResponse(response, {
+				errors: [
+					{
+						code: '0002',
+						message: 'serialNumber format is invalid'
+					}
+				]
+			});
 		}
 
 		// * Update 3DS consoles to sync with the data from NASC
-		const certificateHash = crypto.createHash('sha256').update(Buffer.from(deviceCertificate, 'base64')).digest('base64');
+		const certificateBytes = Buffer.from(deviceCertificate, 'base64');
+		const certificateHash = crypto.createHash('sha256').update(certificateBytes).digest('base64');
 
 		if (device && !device.certificate_hash && certificate.consoleType === '3ds') {
 			// * First time seeing the 3DS in NNAS, link the device certificate
@@ -138,15 +139,15 @@ async function nnasCheckDeviceMiddleware(request: express.Request, response: exp
 			if (certificate.consoleType === '3ds') {
 				// * If this happens, something has gone horribly wrong
 				// TODO - Change this to a different error
-				response.status(400).send(xmlbuilder.create({
-					error: {
-						cause: 'Bad Request',
-						code: '1600',
-						message: 'Unable to process request'
-					}
-				}).end());
-
-				return;
+				return createNNASErrorResponse(response, {
+					errors: [
+						{
+							cause: 'Bad Request',
+							code: '1600',
+							message: 'Unable to process request'
+						}
+					]
+				});
 			}
 
 			// * Assume device is a Wii U we've never seen before
@@ -162,15 +163,15 @@ async function nnasCheckDeviceMiddleware(request: express.Request, response: exp
 		if (device.serial !== serialNumber) {
 			// * Spoofed serial. Device ID compared to certificate directly earlier
 			// TODO - Change this to a different error
-			response.status(400).send(xmlbuilder.create({
-				error: {
-					cause: 'Bad Request',
-					code: '1600',
-					message: 'Unable to process request'
-				}
-			}).end());
-
-			return;
+			return createNNASErrorResponse(response, {
+				errors: [
+					{
+						cause: 'Bad Request',
+						code: '1600',
+						message: 'Unable to process request'
+					}
+				]
+			});
 		}
 
 		request.device = device;
@@ -185,30 +186,26 @@ async function nnasCheckDeviceMiddleware(request: express.Request, response: exp
 		});
 
 		if (!device) {
-			response.status(400).send(xmlbuilder.create({
-				errors: {
-					error: {
+			return createNNASErrorResponse(response, {
+				errors: [
+					{
 						cause: 'device_id',
 						code: '0113',
 						message: 'Unauthorized device'
 					}
-				}
-			}).end());
-
-			return;
+				]
+			});
 		}
 
 		if (device.access_level < 0) {
-			response.status(400).send(xmlbuilder.create({
-				errors: {
-					error: {
+			return createNNASErrorResponse(response, {
+				errors: [
+					{
 						code: '0012',
 						message: 'Device has been banned by game server' // TODO - This is not the right error message
 					}
-				}
-			}).end());
-
-			return;
+				]
+			});
 		}
 
 		request.device = device;

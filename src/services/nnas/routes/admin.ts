@@ -1,6 +1,6 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import { getValueFromQueryString } from '@/util';
+import { createNNASErrorResponse, createNNASResponse } from '@/services/nnas/create-response';
 import { PNID } from '@/models/pnid';
 
 const router = express.Router();
@@ -16,17 +16,15 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 	const input = getValueFromQueryString(request.query, 'input');
 
 	if (!inputType || !outputType || !input) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'Bad Request',
 					code: '1600',
 					message: 'Unable to process request'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	let inputList = input.split(',');
@@ -97,11 +95,13 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 		results.push(result);
 	}
 
-	response.send(xmlbuilder.create({
-		mapped_ids: {
-			mapped_id: results
+	return createNNASResponse(response, {
+		body: {
+			mapped_ids: {
+				mapped_id: results
+			}
 		}
-	}).end());
+	});
 });
 
 /**

@@ -1,7 +1,7 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import { document as xmlParser } from 'xmlbuilder2';
 import { getValueFromHeaders, mapToObject } from '@/util';
+import { createNNASErrorResponse } from '@/services/nnas/create-response';
 
 function XMLMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): void {
 	if (request.method == 'POST' || request.method == 'PUT') {
@@ -35,14 +35,15 @@ function XMLMiddleware(request: express.Request, response: express.Response, nex
 				request.body = mapToObject(request.body);
 			} catch (error) {
 				// TODO - This is not a real error code, check to see if better one exists
-				return response.status(401).send(xmlbuilder.create({
-					errors: {
-						error: {
+				return createNNASErrorResponse(response, {
+					status: 401,
+					errors: [
+						{
 							code: '0004',
 							message: 'XML parse error'
 						}
-					}
-				}).end());
+					]
+				});
 			}
 
 			next();

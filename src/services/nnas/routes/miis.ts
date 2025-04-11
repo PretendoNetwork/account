@@ -1,6 +1,6 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import { getValueFromQueryString } from '@/util';
+import { createNNASErrorResponse, createNNASResponse } from '@/services/nnas/create-response';
 import { PNID } from '@/models/pnid';
 import { config } from '@/config-manager';
 import { YesNoBoolString } from '@/types/common/yes-no-bool-string';
@@ -16,17 +16,15 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 	const input = getValueFromQueryString(request.query, 'pids');
 
 	if (!input) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'Bad Request',
 					code: '1600',
 					message: 'Unable to process request'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const pids = input.split(',').map(pid => Number(pid)).filter(pid => !isNaN(pid));
@@ -119,11 +117,13 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 	if (miis.length === 0) {
 		response.status(404).end();
 	} else {
-		response.send(xmlbuilder.create({
-			miis: {
-				mii: miis
+		return createNNASResponse(response, {
+			body: {
+				miis: {
+					mii: miis
+				}
 			}
-		}).end());
+		});
 	}
 });
 
