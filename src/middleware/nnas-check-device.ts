@@ -30,7 +30,7 @@ async function nnasCheckDeviceMiddleware(request: express.Request, response: exp
 	const platformID = request.header('X-Nintendo-Platform-ID')!;
 	const deviceID = Number(request.header('X-Nintendo-Device-ID')!);
 	const serialNumber = request.header('X-Nintendo-Serial-Number')!;
-	const deviceCertificate = request.header('X-Nintendo-Device-Cert');
+	const deviceCertificate = request.header('X-Nintendo-Device-Cert')?.split(', ')[0]; // * 3DS sends the device cert twice, and Express will format it into "VALUE1, VALUE2"
 	const path = request.originalUrl.split('?')[0];
 
 	if (platformID === '1' && INSECURE_WIIU_ENDPOINTS.some(regex => regex.test(path))) {
@@ -113,7 +113,8 @@ async function nnasCheckDeviceMiddleware(request: express.Request, response: exp
 		}
 
 		// * Update 3DS consoles to sync with the data from NASC
-		const certificateHash = crypto.createHash('sha256').update(Buffer.from(deviceCertificate, 'base64')).digest('base64');
+		const certificateBytes = Buffer.from(deviceCertificate, 'base64');
+		const certificateHash = crypto.createHash('sha256').update(certificateBytes).digest('base64');
 
 		if (device && !device.certificate_hash && certificate.consoleType === '3ds') {
 			// * First time seeing the 3DS in NNAS, link the device certificate
