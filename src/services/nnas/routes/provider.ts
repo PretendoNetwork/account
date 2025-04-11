@@ -2,6 +2,7 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString, isSystemType } from '@/util';
+import { createNNASErrorResponse } from '@/services/nnas/create-response';
 import { NEXAccount } from '@/models/nex-account';
 import { SystemType, TokenOptions, TokenType } from '@/types/common/token';
 
@@ -16,78 +17,68 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 	const pnid = request.pnid;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const clientID = getValueFromQueryString(request.query, 'client_id');
 
 	if (!clientID) {
 		// TODO - Research this error more
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '1021',
 					message: 'The requested game server was not found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const titleID = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
 
 	if (!titleID) {
 		// TODO - Research this error more
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '1021',
 					message: 'The requested game server was not found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const serverAccessLevel = pnid.server_access_level;
 	const server = await getServerByClientID(clientID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '1021',
 					message: 'The requested game server was not found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (server.maintenance_mode) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '2002',
 					message: 'The requested game server is under maintenance'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (!isSystemType(server.device)) {
@@ -125,17 +116,15 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	const pnid = request.pnid;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const nexAccount = await NEXAccount.findOne({
@@ -143,77 +132,68 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 	});
 
 	if (!nexAccount) {
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const gameServerID = getValueFromQueryString(request.query, 'game_server_id');
 
 	if (!gameServerID) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0118',
 					message: 'Unique ID and Game Server ID are not linked'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const serverAccessLevel = pnid.server_access_level;
 	const server = await getServerByGameServerID(gameServerID, serverAccessLevel);
 
 	if (!server || !server.aes_key) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '1021',
 					message: 'The requested game server was not found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (server.maintenance_mode) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '2002',
 					message: 'The requested game server is under maintenance'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const titleID = getValueFromHeaders(request.headers, 'x-nintendo-title-id');
 
 	if (!titleID) {
 		// TODO - Research this error more
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '1021',
 					message: 'The requested game server was not found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (!isSystemType(server.device)) {

@@ -1,6 +1,6 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import { getValueFromHeaders } from '@/util';
+import { createNNASErrorResponse } from '@/services/nnas/create-response';
 import { getPNIDByBasicAuth, getPNIDByNNASAccessToken } from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -28,55 +28,49 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 
 	if (!pnid) {
 		if (type === 'Bearer') {
-			response.status(401).send(xmlbuilder.create({
-				errors: {
-					error: {
+			return createNNASErrorResponse(response, {
+				status: 401,
+				errors: [
+					{
 						cause: 'access_token',
 						code: '0005',
 						message: 'Invalid access token'
 					}
-				}
-			}).end());
-
-			return;
+				]
+			});
 		}
 
-		response.status(401).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 401,
+			errors: [
+				{
 					code: '1105',
 					message: 'Email address, username, or password, is not valid'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (pnid.deleted) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0112',
 					message: pnid.username
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (pnid.access_level < 0) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0108',
 					message: 'Account has been banned'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	request.pnid = pnid;

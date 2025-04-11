@@ -1,10 +1,10 @@
 import dns from 'node:dns';
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
 import { getPNIDByEmailAddress, getPNIDByPID } from '@/database';
-import { Device } from '@/models/device';
 import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail, sendEmailConfirmedParentalControlsEmail } from '@/util';
+import { createNNASErrorResponse } from '@/services/nnas/create-response';
+import { Device } from '@/models/device';
 
 // * Middleware to ensure the input device is valid
 // TODO - Make this available for more routes? This could be useful elsewhere
@@ -23,30 +23,26 @@ async function validateDeviceIDMiddleware(request: express.Request, response: ex
 	});
 
 	if (!device) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'device_id',
 					code: '0113',
 					message: 'Unauthorized device'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (device.access_level < 0) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0012',
 					message: 'Device has been banned by game server' // TODO - This is not the right error message
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	// TODO - Once we push support for linking PNIDs to consoles, also check if the PID is linked or not
@@ -65,31 +61,29 @@ router.post('/validate/email', async (request: express.Request, response: expres
 	const email = request.body.email;
 
 	if (!email) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'email',
 					code: '0103',
 					message: 'Email format is invalid'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const domain = email.split('@')[1];
 
 	dns.resolveMx(domain, (error: NodeJS.ErrnoException | null) => {
 		if (error) {
-			return response.send(xmlbuilder.create({
-				errors: {
-					error: {
+			return createNNASErrorResponse(response, {
+				errors: [
+					{
 						code: '1126',
-						message: 'The domain "' + domain + '" is not accessible.'
+						message: `The domain "${domain}" is not accessible.`
 					}
-				}
-			}).end());
+				]
+			});
 		}
 
 		response.send();
@@ -108,16 +102,14 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 	const pnid = await getPNIDByPID(pid);
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0130',
 					message: 'PID has not been registered yet'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	// * If the email is already confirmed don't bother continuing
@@ -128,15 +120,14 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 	}
 
 	if (pnid.identification.email_code !== code) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0116',
 					message: 'Missing or invalid verification code'
 				}
-			}
-		}).end());
-		return;
+			]
+		});
 	}
 
 	const validatedDate = moment().format('YYYY-MM-DDTHH:MM:SS');
@@ -164,16 +155,14 @@ router.get('/resend_confirmation', validateDeviceIDMiddleware, async (request: e
 
 	if (!pnid) {
 		// TODO - Unsure if this is the right error
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0130',
 					message: 'PID has not been registered yet'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	// * If the email is already confirmed don't bother continuing
@@ -200,16 +189,14 @@ router.get('/send_confirmation/pin/:email', async (request: express.Request, res
 
 	if (!pnid) {
 		// TODO - Unsure if this is the right error
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0130',
 					message: 'PID has not been registered yet'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	await sendEmailConfirmedParentalControlsEmail(pnid);
@@ -226,17 +213,15 @@ router.get('/send_confirmation/pin/:email', async (request: express.Request, res
 router.get('/forgotten_password/:pid', validateDeviceIDMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	if (!/^\d+$/.test(request.params.pid)) {
 		// * This is what Nintendo sends
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'Not Found',
 					code: '1600',
 					message: 'Unable to process request'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const pid = Number(request.params.pid);

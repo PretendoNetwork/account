@@ -6,6 +6,7 @@ import moment from 'moment';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
 import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import { createNNASErrorResponse } from '@/services/nnas/create-response';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
@@ -28,16 +29,14 @@ router.get('/:username', async (request: express.Request, response: express.Resp
 	const userExists = await doesPNIDExist(username);
 
 	if (userExists) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0100',
 					message: 'Account ID already exists'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	response.send();
@@ -54,16 +53,14 @@ router.post('/', ratelimit, async (request: express.Request, response: express.R
 	const userExists = await doesPNIDExist(person.user_id);
 
 	if (userExists) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0100',
 					message: 'Account ID already exists'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
@@ -168,15 +165,15 @@ router.post('/', ratelimit, async (request: express.Request, response: express.R
 
 		await session.abortTransaction();
 
-		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
-			}
-		}).end());
-
-		return;
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
+			]
+		});
 	} finally {
 		// * This runs regardless of failure
 		// * Returning on catch will not prevent this from running
@@ -206,34 +203,32 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const person = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	response.send(xmlbuilder.create({
@@ -261,34 +256,32 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const person = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	response.send(xmlbuilder.create({
@@ -316,32 +309,29 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 
 	if (!deviceID || !acceptLanguage || !platformID || !region || !serialNumber || !systemVersion) {
 		// TODO - Research these error more
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'Bad Request',
 					code: '1600',
 					message: 'Unable to process request'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	response.send(xmlbuilder.create({
@@ -379,34 +369,32 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const person = await getPNIDProfileJSONByPID(pnid.pid);
 
 	if (!person) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	response.send(xmlbuilder.create({
@@ -440,17 +428,16 @@ router.put('/@me/miis/@primary', async (request: express.Request, response: expr
 
 	if (!pnid) {
 		// TODO - Research this error more
-		response.status(404).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			status: 404,
+			errors: [
+				{
 					cause: '',
 					code: '0008',
 					message: 'Not Found'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const mii: {
@@ -482,17 +469,15 @@ router.put('/@me/devices/@current/inactivate', async (request: express.Request, 
 	const pnid = request.pnid;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	response.send();
@@ -507,17 +492,15 @@ router.post('/@me/deletion', async (request: express.Request, response: express.
 	const pnid = request.pnid;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const email = pnid.email.address;
@@ -544,17 +527,15 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 	const person: Person = request.body.person;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	const gender = person.gender ? person.gender : pnid.gender;
@@ -618,17 +599,15 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 	const pnid = request.pnid;
 
 	if (!pnid) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	response.send(xmlbuilder.create({
@@ -663,17 +642,15 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 	} = request.body.email;
 
 	if (!pnid || !email || !email.address) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'access_token',
 					code: '0002',
 					message: 'Invalid access token'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	// TODO - Better email check

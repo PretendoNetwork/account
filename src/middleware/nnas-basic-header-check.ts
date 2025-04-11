@@ -1,5 +1,5 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
+import { createNNASErrorResponse } from '@/services/nnas/create-response';
 
 const VALID_CLIENT_ID_SECRET_PAIRS: Record<string, string> = {
 	// * 'Key' is the client ID, 'Value' is the client secret
@@ -50,14 +50,14 @@ function nnasBasicHeaderCheckMiddleware(request: express.Request, response: expr
 
 	// * 0 = 3DS, 1 = Wii U
 	if (platformID === undefined || (platformID !== '0' && platformID !== '1')) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'platformId format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
@@ -65,80 +65,80 @@ function nnasBasicHeaderCheckMiddleware(request: express.Request, response: expr
 	// * 1 = debug, 2 = retail
 	if (deviceType === undefined || (deviceType !== '1' && deviceType !== '2')) {
 		// TODO - Unsure if this is the right error
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'Device type format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	if (deviceID === undefined || !DEVICE_ID.test(deviceID)) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'deviceId format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	if (serialNumber === undefined || !SERIAL_REGEX.test(serialNumber)) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'serialNumber format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	// TODO - Should the version check throw SYSTEM_UPDATE_REQUIRED?
 	if (systemVersion === undefined || SYSTEM_VERSIONS[platformID] !== systemVersion) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'version format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	if (region === undefined || !REGIONS.includes(region)) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'X-Nintendo-Region format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	if (country === undefined) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'X-Nintendo-Country format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
@@ -150,112 +150,110 @@ function nnasBasicHeaderCheckMiddleware(request: express.Request, response: expr
 		!VALID_CLIENT_ID_SECRET_PAIRS[clientID] ||
 		clientSecret !== VALID_CLIENT_ID_SECRET_PAIRS[clientID]
 	) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					cause: 'client_id',
 					code: '0004',
 					message: 'API application invalid or incorrect application credentials'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	if (friendsVersion === undefined || friendsVersion !== '0000') {
 		// TODO - Unsure if this is the right error
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'Friends version is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	// TODO - Check this against valid list
 	if (environment === undefined) {
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '1017',
 					message: 'The requested game environment wasn\'t found for the given game server.'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	if (titleID === undefined) {
 		// TODO - Unsure if this is the right error
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'Title ID format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	if (uniqueID === undefined) {
 		// TODO - Unsure if this is the right error
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'Unique ID format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	if (applicationVersion === undefined) {
 		// TODO - Unsure if this is the right error
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'Application version format is invalid'
 				}
-			}
-		}).end());
+			]
+		});
 
 		return;
 	}
 
 	if (platformID === '0' && model === undefined) {
 		// TODO - Unsure if this is the right error
-		response.send(xmlbuilder.create({
-			errors: {
-				error: {
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
 					code: '0002',
 					message: 'Model format is invalid'
 				}
-			}
-		}).end());
-
-		return;
+			]
+		});
 	}
 
 	if (platformID === '0' && deviceCertificate === undefined) {
-		response.status(400).send(xmlbuilder.create({
-			error: {
-				code: '0110',
-				message: 'Unlinked device'
-			}
-		}).end());
-
-		return;
+		return createNNASErrorResponse(response, {
+			errors: [
+				{
+					code: '0110',
+					message: 'Unlinked device'
+				}
+			]
+		});
 	}
 
 	return next();
