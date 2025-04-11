@@ -1,12 +1,11 @@
 import crypto from 'node:crypto';
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
 import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
-import { createNNASErrorResponse } from '@/services/nnas/create-response';
+import { createNNASErrorResponse, createNNASResponse } from '@/services/nnas/create-response';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
@@ -182,11 +181,13 @@ router.post('/', ratelimit, async (request: express.Request, response: express.R
 
 	await sendConfirmationEmail(pnid);
 
-	response.send(xmlbuilder.create({
-		person: {
-			pid: pnid.pid
+	return createNNASResponse(response, {
+		body: {
+			person: {
+				pid: pnid.pid
+			}
 		}
-	}).end());
+	});
 });
 
 /**
@@ -195,10 +196,6 @@ router.post('/', ratelimit, async (request: express.Request, response: express.R
  * Description: Gets a users profile
  */
 router.get('/@me/profile', async (request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', new Date().getTime().toString());
-
 	const pnid = request.pnid;
 
 	if (!pnid) {
@@ -231,9 +228,14 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
 		});
 	}
 
-	response.send(xmlbuilder.create({
-		person
-	}, { separateArrayItems: true }).end());
+	return createNNASResponse(response, {
+		body: {
+			person
+		},
+		xmlbuilder_options: {
+			separateArrayItems: true // TODO - Is this really needed?
+		}
+	});
 });
 
 /**
@@ -242,10 +244,6 @@ router.get('/@me/profile', async (request: express.Request, response: express.Re
  * Description: Gets user profile, seems to be the same as https://account.nintendo.net/v1/api/people/@me/profile
  */
 router.post('/@me/devices', async (request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', new Date().getTime().toString());
-
 	// * We don't care about the device attributes
 	// * The console ignores them and PNIDs are not tied to consoles anyway
 	// * So the server also ignores them and does not save the ones posted here
@@ -284,9 +282,11 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
 		});
 	}
 
-	response.send(xmlbuilder.create({
-		person
-	}).end());
+	return createNNASResponse(response, {
+		body: {
+			person
+		}
+	});
 });
 
 /**
@@ -295,10 +295,6 @@ router.post('/@me/devices', async (request: express.Request, response: express.R
  * Description: Returns only user devices
  */
 router.get('/@me/devices', async (request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', new Date().getTime().toString());
-
 	const pnid = request.pnid;
 	const deviceID = getValueFromHeaders(request.headers, 'x-nintendo-device-id');
 	const acceptLanguage = getValueFromHeaders(request.headers, 'accept-language');
@@ -334,25 +330,27 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
 		});
 	}
 
-	response.send(xmlbuilder.create({
-		devices: [
-			{
-				device: {
-					device_id: deviceID,
-					language: acceptLanguage,
-					updated: moment().format('YYYY-MM-DDTHH:MM:SS'),
-					pid: pnid.pid,
-					platform_id: platformID,
-					region: region,
-					serial_number: serialNumber,
-					status: 'ACTIVE',
-					system_version: systemVersion,
-					type: 'RETAIL',
-					updated_by: 'USER'
+	return createNNASResponse(response, {
+		body: {
+			devices: [
+				{
+					device: {
+						device_id: deviceID,
+						language: acceptLanguage,
+						updated: moment().format('YYYY-MM-DDTHH:MM:SS'),
+						pid: pnid.pid,
+						platform_id: platformID,
+						region: region,
+						serial_number: serialNumber,
+						status: 'ACTIVE',
+						system_version: systemVersion,
+						type: 'RETAIL',
+						updated_by: 'USER'
+					}
 				}
-			}
-		]
-	}).end());
+			]
+		}
+	});
 });
 
 /**
@@ -361,10 +359,6 @@ router.get('/@me/devices', async (request: express.Request, response: express.Re
  * Description: Gets user profile, seems to be the same as https://account.nintendo.net/v1/api/people/@me/profile
  */
 router.get('/@me/devices/owner', async (request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', moment().add(5, 'h').toString());
-
 	const pnid = request.pnid;
 
 	if (!pnid) {
@@ -397,9 +391,11 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
 		});
 	}
 
-	response.send(xmlbuilder.create({
-		person
-	}).end());
+	return createNNASResponse(response, {
+		body: {
+			person
+		}
+	});
 });
 
 /**
@@ -408,13 +404,11 @@ router.get('/@me/devices/owner', async (request: express.Request, response: expr
  * Description: Unknown use
  */
 router.get('/@me/devices/status', async (_request: express.Request, response: express.Response): Promise<void> => {
-	response.set('Content-Type', 'text/xml');
-	response.set('Server', 'Nintendo 3DS (http)');
-	response.set('X-Nintendo-Date', moment().add(5, 'h').toString());
-
-	response.send(xmlbuilder.create({
-		device: {}
-	}).end());
+	return createNNASResponse(response, {
+		body: {
+			device: {}
+		}
+	});
 });
 
 
@@ -610,23 +604,25 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 		});
 	}
 
-	response.send(xmlbuilder.create({
-		emails: [
-			{
-				email: {
-					address: pnid.email.address,
-					id: pnid.email.id,
-					parent: pnid.email.parent ? 'Y' : 'N',
-					primary: pnid.email.primary ? 'Y' : 'N',
-					reachable: pnid.email.reachable ? 'Y' : 'N',
-					type: 'DEFAULT', // * what is this?
-					updated_by: 'USER', // * need to actually update this
-					validated: pnid.email.validated ? 'Y' : 'N',
-					validated_date: pnid.email.validated_date,
+	return createNNASResponse(response, {
+		body: {
+			emails: [
+				{
+					email: {
+						address: pnid.email.address,
+						id: pnid.email.id,
+						parent: pnid.email.parent ? 'Y' : 'N',
+						primary: pnid.email.primary ? 'Y' : 'N',
+						reachable: pnid.email.reachable ? 'Y' : 'N',
+						type: 'DEFAULT', // * what is this?
+						updated_by: 'USER', // * need to actually update this
+						validated: pnid.email.validated ? 'Y' : 'N',
+						validated_date: pnid.email.validated_date,
+					}
 				}
-			}
-		]
-	}).end());
+			]
+		}
+	});
 });
 
 /**

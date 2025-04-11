@@ -1,5 +1,5 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
+import { createNNASResponse } from '@/services/nnas/create-response';
 
 const router = express.Router();
 
@@ -10,9 +10,11 @@ const router = express.Router();
  */
 router.get('/@current/status', async (request: express.Request, response: express.Response): Promise<void> => {
 	// TODO - Finish this
-	response.send(xmlbuilder.create({
-		device: ''
-	}).end());
+	return createNNASResponse(response, {
+		body: {
+			device: ''
+		}
+	});
 });
 
 export default router;

@@ -16,6 +16,7 @@ type CreateNNASErrorResponseOptions = {
 type CreateNNASResponseOptions = {
 	status?: number;
 	body: Record<string, any>;
+	xmlbuilder_options?: xmlbuilder.CreateOptions
 }
 
 // TODO - This can largely be removed once an upgrade to Express v5 is done, since v5 supports throwing errors in async routes
@@ -37,7 +38,7 @@ export function createNNASResponse(response: express.Response, options: CreateNN
 	response.set('X-Nintendo-Date', new Date().getTime().toString());
 
 	const body = xmlbuilder
-		.create(options.body)
+		.create(options.body, options.xmlbuilder_options)
 		.commentBefore('WARNING! DO NOT SHARE ANYTHING IN THIS REQUEST OR RESPONSE WITH UNTRUSTED USERS! REQUESTS AND RESPONSES CONTAIN SENSITIVE INFORMATION ABOUT YOUR DEVICE/ACCOUNT SUCH AS PASSWORDS, EMAILS, CERTIFICATES, ETC!').end();
 
 	response.status(options.status || 200).send(body);

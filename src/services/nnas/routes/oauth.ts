@@ -1,9 +1,8 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
 import { generateOAuthTokens } from '@/util';
-import { createNNASErrorResponse } from '@/services/nnas/create-response';
+import { createNNASErrorResponse, createNNASResponse } from '@/services/nnas/create-response';
 import { Device } from '@/models/device';
 import { SystemType } from '@/types/common/token';
 
@@ -155,15 +154,17 @@ router.post('/access_token/generate', async (request: express.Request, response:
 	try {
 		const tokenGeneration = generateOAuthTokens(SystemType.WIIU, pnid);
 
-		response.send(xmlbuilder.create({
-			OAuth20: {
-				access_token: {
-					token: tokenGeneration.accessToken,
-					refresh_token: tokenGeneration.refreshToken,
-					expires_in: tokenGeneration.expiresInSecs.access
+		return createNNASResponse(response, {
+			body: {
+				OAuth20: {
+					access_token: {
+						token: tokenGeneration.accessToken,
+						refresh_token: tokenGeneration.refreshToken,
+						expires_in: tokenGeneration.expiresInSecs.access
+					}
 				}
 			}
-		}).commentBefore('WARNING! DO NOT SHARE ANYTHING IN THIS REQUEST OR RESPONSE WITH UNTRUSTED USERS! IT CAN BE USED TO IMPERSONATE YOU AND YOUR CONSOLE, POTENTIALLY GETTING YOU BANNED!').end()); // TODO - This is ugly
+		});
 	} catch {
 		response.status(500);
 	}

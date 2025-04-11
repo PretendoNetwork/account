@@ -1,8 +1,7 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString, isSystemType } from '@/util';
-import { createNNASErrorResponse } from '@/services/nnas/create-response';
+import { createNNASErrorResponse, createNNASResponse } from '@/services/nnas/create-response';
 import { NEXAccount } from '@/models/nex-account';
 import { SystemType, TokenOptions, TokenType } from '@/types/common/token';
 
@@ -100,11 +99,13 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 	const serviceTokenBuffer = generateToken(server.aes_key, tokenOptions);
 	const serviceToken = request.isCemu ? serviceTokenBuffer.toString('hex') : serviceTokenBuffer.toString('base64');
 
-	response.send(xmlbuilder.create({
-		service_token: {
-			token: serviceToken
+	return createNNASResponse(response, {
+		body: {
+			service_token: {
+				token: serviceToken
+			}
 		}
-	}).end());
+	});
 });
 
 /**
@@ -219,15 +220,17 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		nexToken = Buffer.from(nexToken || '', 'base64').toString('hex');
 	}
 
-	response.send(xmlbuilder.create({
-		nex_token: {
-			host: server.ip,
-			nex_password: nexAccount.password,
-			pid: nexAccount.pid,
-			port: server.port,
-			token: nexToken
+	return createNNASResponse(response, {
+		body: {
+			nex_token: {
+				host: server.ip,
+				nex_password: nexAccount.password,
+				pid: nexAccount.pid,
+				port: server.port,
+				token: nexToken
+			}
 		}
-	}).end());
+	});
 });
 
 export default router;

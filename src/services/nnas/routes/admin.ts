@@ -1,7 +1,6 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import { getValueFromQueryString } from '@/util';
-import { createNNASErrorResponse } from '@/services/nnas/create-response';
+import { createNNASErrorResponse, createNNASResponse } from '@/services/nnas/create-response';
 import { PNID } from '@/models/pnid';
 
 const router = express.Router();
@@ -96,11 +95,13 @@ router.get('/mapped_ids', async (request: express.Request, response: express.Res
 		results.push(result);
 	}
 
-	response.send(xmlbuilder.create({
-		mapped_ids: {
-			mapped_id: results
+	return createNNASResponse(response, {
+		body: {
+			mapped_ids: {
+				mapped_id: results
+			}
 		}
-	}).end());
+	});
 });
 
 /**

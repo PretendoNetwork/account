@@ -1,7 +1,6 @@
 import express from 'express';
-import xmlbuilder from 'xmlbuilder';
 import { getValueFromQueryString } from '@/util';
-import { createNNASErrorResponse } from '@/services/nnas/create-response';
+import { createNNASErrorResponse, createNNASResponse } from '@/services/nnas/create-response';
 import { PNID } from '@/models/pnid';
 import { config } from '@/config-manager';
 import { YesNoBoolString } from '@/types/common/yes-no-bool-string';
@@ -118,11 +117,13 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 	if (miis.length === 0) {
 		response.status(404).end();
 	} else {
-		response.send(xmlbuilder.create({
-			miis: {
-				mii: miis
+		return createNNASResponse(response, {
+			body: {
+				miis: {
+					mii: miis
+				}
 			}
-		}).end());
+		});
 	}
 });
 
