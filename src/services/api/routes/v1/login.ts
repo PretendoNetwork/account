@@ -1,9 +1,9 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
-import { nintendoPasswordHash, generateOAuthTokens} from '@/util';
+import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
+import { nintendoPasswordHash, generateToken} from '@/util';
+import { config } from '@/config-manager';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import { SystemType } from '@/types/common/token';
 import { LOG_ERROR } from '@/logger';
 
 const router = express.Router();
@@ -87,7 +87,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			return;
 		}
 	} else {
-		pnid = await getPNIDByAPIRefreshToken(refreshToken);
+		pnid = await getPNIDByTokenAuth(refreshToken);
 
 		if (!pnid) {
 			response.status(400).json({
@@ -110,19 +110,44 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
+	const accessTokenOptions = {
+		system_type: 0x3, // * API
+		token_type: 0x1, // * OAuth Access
+		pid: pnid.pid,
+		access_level: pnid.access_level,
+		title_id: BigInt(0),
+		expire_time: BigInt(Date.now() + (3600 * 1000))
+	};
+
+	const refreshTokenOptions = {
+		system_type: 0x3, // * API
+		token_type: 0x2, // * OAuth Refresh
+		pid: pnid.pid,
+		access_level: pnid.access_level,
+		title_id: BigInt(0),
+		expire_time: BigInt(Date.now() + (3600 * 1000))
+	};
+	
 	try {
-		const tokenGeneration = generateOAuthTokens(SystemType.API, pnid, { refreshExpiresIn: 14 * 24 * 60 * 60 }); // * 14 days
+
+		const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
+		const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
+
+		const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
+		const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+
+		// TODO - Handle null tokens
 
 		response.json({
-			access_token: tokenGeneration.accessToken,
+			access_token: accessToken,
 			token_type: 'Bearer',
-			expires_in: tokenGeneration.expiresInSecs.access,
-			refresh_token: tokenGeneration.refreshToken
+			expires_in: 3600,
+			refresh_token: newRefreshToken
 		});
 	} catch (error: any) {
 		LOG_ERROR('/v1/login - token generation: ' + error);
 		if (error.stack) console.error(error.stack);
-		
+	
 		response.status(500).json({
 			app: 'api',
 			status: 500,

@@ -1,9 +1,8 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
-import { generateToken, getValueFromHeaders, getValueFromQueryString, isSystemType } from '@/util';
+import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { NEXAccount } from '@/models/nex-account';
-import { SystemType, TokenOptions, TokenType } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -90,24 +89,21 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	if (!isSystemType(server.device)) {
-		throw new Error('Invalid system type');
-	}
-
-	// * Asserted safely because of the check above
-	const systemType = server.device as SystemType;
-
-	const tokenOptions: TokenOptions = {
-		system_type: systemType as SystemType,
-		token_type: TokenType.SERVICE,
+	const tokenOptions = {
+		system_type: server.device,
+		token_type: 0x4, // * Service token
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const serviceTokenBuffer = generateToken(server.aes_key, tokenOptions);
-	const serviceToken = request.isCemu ? serviceTokenBuffer.toString('hex') : serviceTokenBuffer.toString('base64');
+	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	let serviceToken = serviceTokenBuffer ? serviceTokenBuffer.toString('base64') : '';
+
+	if (request.isCemu) {
+		serviceToken = Buffer.from(serviceToken, 'base64').toString('hex');
+	}
 
 	response.send(xmlbuilder.create({
 		service_token: {
@@ -216,23 +212,16 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	if (!isSystemType(server.device)) {
-		throw new Error('Invalid system type');
-	}
-
-	// * Asserted safely because of the check above
-	const systemType = server.device as SystemType;
-
-	const tokenOptions: TokenOptions = {
-		system_type: systemType, 
-		token_type: TokenType.NEX,
+	const tokenOptions = {
+		system_type: server.device,
+		token_type: 0x3, // * nex token,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const nexTokenBuffer = generateToken(server.aes_key, tokenOptions);
+	const nexTokenBuffer = await generateToken(server.aes_key, tokenOptions);
 	let nexToken = nexTokenBuffer ? nexTokenBuffer.toString('base64') : '';
 
 	if (request.isCemu) {

@@ -1,7 +1,7 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getValueFromHeaders } from '@/util';
-import { getPNIDByBasicAuth, getPNIDByNNASAccessToken } from '@/database';
+import { getPNIDByBasicAuth, getPNIDByTokenAuth } from '@/database';
 import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
@@ -23,7 +23,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	if (type === 'Basic' && request.path.includes('v1/api/people/@me/devices')) {
 		pnid = await getPNIDByBasicAuth(token);
 	} else if (type === 'Bearer') {
-		pnid = await getPNIDByNNASAccessToken(token);
+		pnid = await getPNIDByTokenAuth(token);
 	}
 
 	if (!pnid) {

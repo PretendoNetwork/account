@@ -53,7 +53,6 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
-	// TODO - Replace this with https://github.com/PretendoNetwork/nintendo-file-formats maybe?
 	const cert = new NintendoCertificate(fcdcert);
 
 	if (!cert.valid) {

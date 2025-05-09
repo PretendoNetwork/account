@@ -120,13 +120,6 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 		return;
 	}
 
-	// * If the email is already confirmed don't bother continuing
-	if (pnid.email.validated) {
-		// TODO - Is there an actual error for this case?
-		response.status(200).send('');
-		return;
-	}
-
 	if (pnid.identification.email_code !== code) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
@@ -176,13 +169,6 @@ router.get('/resend_confirmation', validateDeviceIDMiddleware, async (request: e
 		return;
 	}
 
-	// * If the email is already confirmed don't bother continuing
-	if (pnid.email.validated) {
-		// TODO - Is there an actual error for this case?
-		response.status(200).send('');
-		return;
-	}
-
 	await sendConfirmationEmail(pnid);
 
 	response.status(200).send('');
@@ -224,28 +210,22 @@ router.get('/send_confirmation/pin/:email', async (request: express.Request, res
  * NOTE: On NN this was a temp password that expired after 24 hours. We do not do that
  */
 router.get('/forgotten_password/:pid', validateDeviceIDMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
-	if (!/^\d+$/.test(request.params.pid)) {
-		// * This is what Nintendo sends
+	const pid = Number(request.params.pid);
+
+	const pnid = await getPNIDByPID(pid);
+
+	if (!pnid) {
+		// TODO - Better errors
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
-					cause: 'Not Found',
-					code: '1600',
-					message: 'Unable to process request'
+					cause: 'device_id',
+					code: '0113',
+					message: 'Unauthorized device'
 				}
 			}
 		}).end());
 
-		return;
-	}
-
-	const pid = Number(request.params.pid);
-	const pnid = await getPNIDByPID(pid);
-
-	if (!pnid) {
-		// * Whenever a PID is a number, but is invalid, Nintendo just 404s
-		// TODO - When we move to linking PNIDs to consoles, this also applies to valid PIDs not linked to the current console
-		response.status(404).send('');
 		return;
 	}
 

@@ -3,7 +3,6 @@ import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, ge
 import { getServerByTitleID } from '@/database';
 import { NASCRequestParams } from '@/types/services/nasc/request-params';
 import { HydratedServerDocument } from '@/types/mongoose/server';
-import { SystemType, TokenOptions, TokenType } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -65,17 +64,19 @@ router.post('/', async (request: express.Request, response: express.Response): P
 });
 
 async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
-	const tokenOptions: TokenOptions = {
-		system_type: SystemType['3DS'],
-		token_type: TokenType.NEX,
+	const tokenOptions = {
+		system_type: 0x2, // * 3DS
+		token_type: 0x3, // * NEX token
 		pid: pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const nexTokenBuffer = generateToken(server.aes_key, tokenOptions);
-	const nexToken = nintendoBase64Encode(nexTokenBuffer);
+	// TODO - Handle null tokens
+
+	const nexTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	const nexToken = nintendoBase64Encode(nexTokenBuffer || '');
 
 	return new URLSearchParams({
 		locator: nintendoBase64Encode(`${server.ip}:${server.port}`),
@@ -87,17 +88,19 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 }
 
 async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
-	const tokenOptions: TokenOptions = {
-		system_type: SystemType['3DS'],
-		token_type: TokenType.SERVICE,
+	const tokenOptions = {
+		system_type: 0x2, // * 3DS
+		token_type: 0x4, // * Service token
 		pid: pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
-	const serviceTokenBuffer = generateToken(server.aes_key, tokenOptions);
-	const serviceToken = nintendoBase64Encode(serviceTokenBuffer);
+	// TODO - Handle null tokens
+
+	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
+	const serviceToken = nintendoBase64Encode(serviceTokenBuffer || '');
 
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('0'),

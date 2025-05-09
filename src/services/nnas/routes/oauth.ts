@@ -1,10 +1,12 @@
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
-import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
-import { generateOAuthTokens } from '@/util';
+import deviceCertificateMiddleware from '@/middleware/device-certificate';
+import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
+import { getPNIDByTokenAuth, getPNIDByUsername } from '@/database';
+import { generateToken } from '@/util';
+import { config } from '@/config-manager';
 import { Device } from '@/models/device';
-import { SystemType } from '@/types/common/token';
 
 const router = express.Router();
 
@@ -13,7 +15,7 @@ const router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
  * Description: Generates an access token for a user
  */
-router.post('/access_token/generate', async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatusVerificationMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	const grantType = request.body.grant_type;
 	const username = request.body.user_id;
 	const password = request.body.password;
@@ -86,7 +88,7 @@ router.post('/access_token/generate', async (request: express.Request, response:
 		}
 
 		try {
-			pnid = await getPNIDByNNASRefreshToken(refreshToken);
+			pnid = await getPNIDByTokenAuth(refreshToken);
 
 			if (!pnid) {
 				response.status(400).send(xmlbuilder.create({
@@ -151,21 +153,37 @@ router.post('/access_token/generate', async (request: express.Request, response:
 		return;
 	}
 
-	try {
-		const tokenGeneration = generateOAuthTokens(SystemType.WIIU, pnid);
+	const accessTokenOptions = {
+		system_type: 0x1, // * WiiU
+		token_type: 0x1, // * OAuth Access
+		pid: pnid.pid,
+		expire_time: BigInt(Date.now() + (3600 * 1000))
+	};
 
-		response.send(xmlbuilder.create({
-			OAuth20: {
-				access_token: {
-					token: tokenGeneration.accessToken,
-					refresh_token: tokenGeneration.refreshToken,
-					expires_in: tokenGeneration.expiresInSecs.access
-				}
+	const refreshTokenOptions = {
+		system_type: 0x1, // * WiiU
+		token_type: 0x2, // * OAuth Refresh
+		pid: pnid.pid,
+		expire_time: BigInt(Date.now() + (3600 * 1000))
+	};
+
+	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
+	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
+
+	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
+	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+
+	// TODO - Handle null tokens
+
+	response.send(xmlbuilder.create({
+		OAuth20: {
+			access_token: {
+				token: accessToken,
+				refresh_token: newRefreshToken,
+				expires_in: 3600
 			}
-		}).commentBefore('WARNING! DO NOT SHARE ANYTHING IN THIS REQUEST OR RESPONSE WITH UNTRUSTED USERS! IT CAN BE USED TO IMPERSONATE YOU AND YOUR CONSOLE, POTENTIALLY GETTING YOU BANNED!').end()); // TODO - This is ugly
-	} catch {
-		response.status(500);
-	}
+		}
+	}).end());
 });
 
 export default router;
