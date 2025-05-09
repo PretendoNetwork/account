@@ -14,15 +14,15 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	const parts = authHeader.split(' ');
 	const type = parts[0];
 	let token = parts[1];
-	let pnid: HydratedPNIDDocument | null;
+	let pnid: HydratedPNIDDocument | null = null;
 
 	if (request.isCemu) {
 		token = Buffer.from(token, 'hex').toString('base64');
 	}
 
-	if (type === 'Basic') {
+	if (type === 'Basic' && request.path.includes('v1/api/people/@me/devices')) {
 		pnid = await getPNIDByBasicAuth(token);
-	} else {
+	} else if (type === 'Bearer') {
 		pnid = await getPNIDByTokenAuth(token);
 	}
 
