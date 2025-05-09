@@ -1,4 +1,4 @@
-export interface Token {
+export interface TokenOptions {
 	system_type: number;
 	token_type: number;
 	pid: number;

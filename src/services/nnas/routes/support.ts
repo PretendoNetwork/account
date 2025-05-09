@@ -3,56 +3,7 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
 import { getPNIDByEmailAddress, getPNIDByPID } from '@/database';
-import { Device } from '@/models/device';
 import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail, sendEmailConfirmedParentalControlsEmail } from '@/util';
-
-// * Middleware to ensure the input device is valid
-// TODO - Make this available for more routes? This could be useful elsewhere
-async function validateDeviceIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
-	const deviceID = request.header('x-nintendo-device-id');
-	const serial = request.header('x-nintendo-serial-number');
-
-	// * Since these values are linked at the time of device creation, and the
-	// * device ID is always validated against the device certificate for legitimacy
-	// * we can safely assume that every console hitting our servers through normal
-	// * means will be stored correctly. And since once both values are set they
-	// * cannot be changed, these checks will always be safe
-	const device = await Device.findOne({
-		device_id: Number(deviceID),
-		serial: serial
-	});
-
-	if (!device) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
-					cause: 'device_id',
-					code: '0113',
-					message: 'Unauthorized device'
-				}
-			}
-		}).end());
-
-		return;
-	}
-
-	if (device.access_level < 0) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
-					code: '0012',
-					message: 'Device has been banned by game server' // TODO - This is not the right error message
-				}
-			}
-		}).end());
-
-		return;
-	}
-
-	// TODO - Once we push support for linking PNIDs to consoles, also check if the PID is linked or not
-
-	next();
-}
 
 const router = express.Router();
 
@@ -120,13 +71,6 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
 		return;
 	}
 
-	// * If the email is already confirmed don't bother continuing
-	if (pnid.email.validated) {
-		// TODO - Is there an actual error for this case?
-		response.status(200).send('');
-		return;
-	}
-
 	if (pnid.identification.email_code !== code) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
@@ -157,7 +101,7 @@ router.put('/email_confirmation/:pid/:code', async (request: express.Request, re
  * Replacement for: https://account.nintendo.net/v1/api/support/resend_confirmation
  * Description: Resends a users confirmation email
  */
-router.get('/resend_confirmation', validateDeviceIDMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
+router.get('/resend_confirmation', async (request: express.Request, response: express.Response): Promise<void> => {
 	const pid = Number(request.headers['x-nintendo-pid']);
 
 	const pnid = await getPNIDByPID(pid);
@@ -173,13 +117,6 @@ router.get('/resend_confirmation', validateDeviceIDMiddleware, async (request: e
 			}
 		}).end());
 
-		return;
-	}
-
-	// * If the email is already confirmed don't bother continuing
-	if (pnid.email.validated) {
-		// TODO - Is there an actual error for this case?
-		response.status(200).send('');
 		return;
 	}
 
@@ -223,29 +160,23 @@ router.get('/send_confirmation/pin/:email', async (request: express.Request, res
  * Description: Sends the user a password reset email
  * NOTE: On NN this was a temp password that expired after 24 hours. We do not do that
  */
-router.get('/forgotten_password/:pid', validateDeviceIDMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
-	if (!/^\d+$/.test(request.params.pid)) {
-		// * This is what Nintendo sends
+router.get('/forgotten_password/:pid', async (request: express.Request, response: express.Response): Promise<void> => {
+	const pid = Number(request.params.pid);
+
+	const pnid = await getPNIDByPID(pid);
+
+	if (!pnid) {
+		// TODO - Better errors
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
-					cause: 'Not Found',
-					code: '1600',
-					message: 'Unable to process request'
+					cause: 'device_id',
+					code: '0113',
+					message: 'Unauthorized device'
 				}
 			}
 		}).end());
 
-		return;
-	}
-
-	const pid = Number(request.params.pid);
-	const pnid = await getPNIDByPID(pid);
-
-	if (!pnid) {
-		// * Whenever a PID is a number, but is invalid, Nintendo just 404s
-		// TODO - When we move to linking PNIDs to consoles, this also applies to valid PIDs not linked to the current console
-		response.status(404).send('');
 		return;
 	}
 

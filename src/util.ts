@@ -10,8 +10,9 @@ import crc32 from 'buffer-crc32';
 import crc from 'crc';
 import { sendMail } from '@/mailer';
 import { config, disabledFeatures } from '@/config-manager';
-import { OAuthTokenGenerationResponse, OAuthTokenOptions, SystemType, Token, TokenOptions, TokenType } from '@/types/common/token';
-import { HydratedPNIDDocument, IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
+import { TokenOptions } from '@/types/common/token-options';
+import { Token } from '@/types/common/token';
+import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import { SafeQs } from '@/types/common/safe-qs';
 
 let s3: S3;
@@ -52,49 +53,7 @@ export function nintendoBase64Encode(decoded: string | Buffer): string {
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
-export function generateOAuthTokens(systemType: SystemType, pnid: HydratedPNIDDocument, options?: OAuthTokenOptions): OAuthTokenGenerationResponse {
-	const accessTokenExpiresInSecs = options?.accessExpiresIn ?? 60 * 60; // * 1 hour
-	const refreshTokenExpiresInSecs = options?.refreshExpiresIn ?? 24 * 60 * 60; // * 24 hours
-
-	const accessTokenOptions: TokenOptions = {
-		system_type: systemType,
-		token_type: TokenType.OAUTH_ACCESS,
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		expire_time: BigInt(Date.now() + (accessTokenExpiresInSecs * 1000))
-	};
-
-	const refreshTokenOptions: TokenOptions = {
-		system_type: systemType,
-		token_type: TokenType.OAUTH_REFRESH,
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		expire_time: BigInt(Date.now() + (refreshTokenExpiresInSecs * 1000))
-	};
-
-	const accessToken = generateToken(config.aes_key, accessTokenOptions).toString('hex');
-	const refreshToken = generateToken(config.aes_key, refreshTokenOptions).toString('hex');
-
-	return {
-		accessToken,
-		refreshToken,
-		expiresInSecs: {
-			access: accessTokenExpiresInSecs,
-			refresh: refreshTokenExpiresInSecs
-		}
-	};
-}
-
-export function isSystemType(value: number): value is SystemType {
-	return (Object.values(SystemType) as number[]).includes(value);
-}
-
-export function isTokenType(value: number): value is TokenType {
-	return (Object.values(TokenType) as number[]).includes(value);
-}
-
-
-export function generateToken(key: string, options: TokenOptions): Buffer {
+export function generateToken(key: string, options: TokenOptions): Buffer | null {
 	let dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
 
 	dataBuffer.writeUInt8(options.system_type, 0x0);
@@ -102,16 +61,19 @@ export function generateToken(key: string, options: TokenOptions): Buffer {
 	dataBuffer.writeUInt32LE(options.pid, 0x2);
 	dataBuffer.writeBigUInt64LE(options.expire_time, 0x6);
 
-	if ((options.token_type !== TokenType.OAUTH_ACCESS && options.token_type !== TokenType.OAUTH_REFRESH) || options.system_type === SystemType.API) {
+	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
 		// * Access and refresh tokens have smaller bodies due to size constraints
 		// * The API does not have this restraint, however
+		if (options.title_id === undefined || options.access_level === undefined) {
+			return null;
+		}
 
 		dataBuffer = Buffer.concat([
 			dataBuffer,
 			Buffer.alloc(8 + 1)
 		]);
 
-		dataBuffer.writeBigUInt64LE(options.title_id ?? BigInt(0), 0xE);
+		dataBuffer.writeBigUInt64LE(options.title_id, 0xE);
 		dataBuffer.writeInt8(options.access_level, 0x16);
 	}
 
@@ -125,7 +87,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer {
 
 	let final = encrypted;
 
-	if ((options.token_type !== TokenType.OAUTH_ACCESS && options.token_type !== TokenType.OAUTH_REFRESH) || options.system_type === SystemType.API) {
+	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
 		// * Access and refresh tokens don't get a checksum due to size constraints
 		const checksum = crc32(dataBuffer);
 
@@ -170,20 +132,14 @@ export function decryptToken(token: Buffer, key?: string): Buffer {
 }
 
 export function unpackToken(token: Buffer): Token {
-	const systemType = token.readUInt8(0x0);
-	const tokenType = token.readUInt8(0x1);
-
-	if (!isSystemType(systemType)) throw new Error('Invalid system type');
-	if (!isTokenType(tokenType)) throw new Error('Invalid token type');
-
 	const unpacked: Token = {
-		system_type: systemType,
-		token_type: tokenType,
+		system_type: token.readUInt8(0x0),
+		token_type: token.readUInt8(0x1),
 		pid: token.readUInt32LE(0x2),
 		expire_time: token.readBigUInt64LE(0x6)
 	};
 
-	if (unpacked.token_type !== TokenType.OAUTH_ACCESS && unpacked.token_type !== TokenType.OAUTH_REFRESH) {
+	if (unpacked.token_type !== 0x1 && unpacked.token_type !== 0x2) {
 		unpacked.title_id = token.readBigUInt64LE(0xE);
 		unpacked.access_level = token.readInt8(0x16);
 	}
@@ -281,16 +237,19 @@ export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.Hyd
 }
 
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
-	const tokenOptions: TokenOptions = {
-		system_type: SystemType.API,
-		token_type: TokenType.PASSWORD_RESET,
+	const tokenOptions = {
+		system_type: 0xF, // * API
+		token_type: 0x5, // * Password reset
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // * Only valid for 24 hours
 	};
 
-	const passwordResetToken = generateToken(config.aes_key, tokenOptions).toString('hex');
+	const tokenBuffer = await generateToken(config.aes_key, tokenOptions);
+	const passwordResetToken = tokenBuffer ? tokenBuffer.toString('hex') : '';
+
+	// TODO - Handle null token
 
 	const mailerOptions = {
 		to: pnid.email.address,

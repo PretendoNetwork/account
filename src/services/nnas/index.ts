@@ -2,8 +2,7 @@
 
 import path from 'node:path';
 import express from 'express';
-import nnasBasicHeaderCheckMiddleware from '@/middleware/nnas-basic-header-check';
-import nnasCheckDeviceMiddleware from '@/middleware/nnas-check-device';
+import clientHeaderCheck from '@/middleware/client-header';
 import cemuMiddleware from '@/middleware/cemu';
 import pnidMiddleware from '@/middleware/pnid';
 import { LOG_INFO, formatHostnames } from '@/logger';
@@ -47,8 +46,7 @@ nnas.use('/v1/account-settings/js/', setJSHeader, express.static(path.join(__dir
 nnas.use('/v1/account-settings/img/', setIMGHeader, express.static(path.join(__dirname, '../../assets/user-info-settings')));
 
 LOG_INFO('[NNAS] Importing middleware');
-nnas.use(nnasBasicHeaderCheckMiddleware);
-nnas.use(nnasCheckDeviceMiddleware);
+nnas.use(clientHeaderCheck);
 nnas.use(cemuMiddleware);
 nnas.use(pnidMiddleware);
 

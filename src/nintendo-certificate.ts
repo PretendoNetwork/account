@@ -69,7 +69,6 @@ const SIGNATURE_SIZES = {
 	}
 } as const;
 
-// TODO - Replace this with https://github.com/PretendoNetwork/nintendo-file-formats
 class NintendoCertificate {
 	_certificate: Buffer;
 	_certificateBody: Buffer;
@@ -124,16 +123,8 @@ class NintendoCertificate {
 			const signatureTypeSizes = this._signatureTypeSizes(this.signatureType);
 
 			this._certificateBody = this._certificate.subarray(0x4 + signatureTypeSizes.SIZE + signatureTypeSizes.PADDING_SIZE);
+
 			this.signature = this._certificate.subarray(0x4, 0x4 + signatureTypeSizes.SIZE);
-
-			const padding = this._certificate.subarray(0x4 + signatureTypeSizes.SIZE, 0x4 + signatureTypeSizes.SIZE + signatureTypeSizes.PADDING_SIZE);
-
-			this.valid = padding.every(byte => byte === 0);
-
-			if (!this.valid) {
-				return;
-			}
-
 			this.issuer = this._certificate.subarray(0x80, 0xC0).toString().split('\0')[0];
 			this.keyType = this._certificate.readUInt32BE(0xC0);
 			this.certificateName = this._certificate.subarray(0xC4, 0x104).toString().split('\0')[0];
@@ -146,7 +137,7 @@ class NintendoCertificate {
 				this.consoleType = '3ds';
 			}
 
-			this._verifySignatureECDSA(); // * Force it to use the expected certificate type
+			this._verifySignature();
 		}
 	}
 
