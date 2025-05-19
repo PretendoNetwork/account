@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@hcaptcha/types": "^1.0.3",
-    "@pretendonetwork/eslint-config": "^0.0.7",
+    "@pretendonetwork/eslint-config": "^0.0.8",
     "@types/bcrypt": "^5.0.0",
     "@types/buffer-crc32": "^0.2.2",
     "@types/cors": "^2.8.13",
