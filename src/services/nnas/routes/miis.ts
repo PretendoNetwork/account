@@ -3,7 +3,7 @@ import xmlbuilder from 'xmlbuilder';
 import { getValueFromQueryString } from '@/util';
 import { PNID } from '@/models/pnid';
 import { config } from '@/config-manager';
-import { YesNoBoolString } from '@/types/common/yes-no-bool-string';
+import type { YesNoBoolString } from '@/types/common/yes-no-bool-string';
 
 const router = express.Router();
 
@@ -40,7 +40,7 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 				id: number;
 				url: string;
 				type: string;
-			}[]
+			}[];
 		};
 		name: string;
 		pid: number;

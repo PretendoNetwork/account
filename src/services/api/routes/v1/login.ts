@@ -1,10 +1,10 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
-import { nintendoPasswordHash, generateToken} from '@/util';
+import { nintendoPasswordHash, generateToken } from '@/util';
 import { config } from '@/config-manager';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import { LOG_ERROR } from '@/logger';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
 
@@ -127,9 +127,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		title_id: BigInt(0),
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
-	
-	try {
 
+	try {
 		const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
 		const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
 
@@ -146,8 +145,10 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		});
 	} catch (error: any) {
 		LOG_ERROR('/v1/login - token generation: ' + error);
-		if (error.stack) console.error(error.stack);
-	
+		if (error.stack) {
+			console.error(error.stack);
+		}
+
 		response.status(500).json({
 			app: 'api',
 			status: 500,

@@ -1,7 +1,7 @@
-import { CallContext } from 'nice-grpc';
-import { UpdateUserDataRequest, DeepPartial } from '@pretendonetwork/grpc/api/update_user_data_rpc';
-import { GetUserDataResponse } from '@pretendonetwork/grpc/api/get_user_data_rpc';
 import { config } from '@/config-manager';
+import type { CallContext } from 'nice-grpc';
+import type { UpdateUserDataRequest, DeepPartial } from '@pretendonetwork/grpc/api/update_user_data_rpc';
+import type { GetUserDataResponse } from '@pretendonetwork/grpc/api/get_user_data_rpc';
 import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
 
 export async function updateUserData(_request: UpdateUserDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<DeepPartial<GetUserDataResponse>> {
@@ -21,7 +21,7 @@ export async function updateUserData(_request: UpdateUserDataRequest, context: C
 		mii: {
 			name: pnid.mii.name,
 			data: pnid.mii.data,
-			url: `${config.cdn.base_url}/mii/${pnid.pid}/standard.tga`,
+			url: `${config.cdn.base_url}/mii/${pnid.pid}/standard.tga`
 		},
 		birthday: pnid.birthdate,
 		gender: pnid.gender,

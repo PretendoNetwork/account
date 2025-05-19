@@ -6,13 +6,13 @@ import { PNID } from '@/models/pnid';
 import { Server } from '@/models/server';
 import { LOG_ERROR } from '@/logger';
 import { config } from '@/config-manager';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import { IDeviceAttribute } from '@/types/mongoose/device-attribute';
-import { HydratedServerDocument } from '@/types/mongoose/server';
-import { PNIDProfile } from '@/types/services/nnas/pnid-profile';
-import { ConnectionData } from '@/types/services/api/connection-data';
-import { ConnectionResponse } from '@/types/services/api/connection-response';
-import { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
+import type { HydratedServerDocument } from '@/types/mongoose/server';
+import type { PNIDProfile } from '@/types/services/nnas/pnid-profile';
+import type { ConnectionData } from '@/types/services/api/connection-data';
+import type { ConnectionResponse } from '@/types/services/api/connection-response';
+import type { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
 
 const connection_string = config.mongoose.connection_string;
 const options = config.mongoose.options;
@@ -202,7 +202,7 @@ export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile 
 				}
 			},
 			name: pnid.mii.name,
-			primary: pnid.mii.primary ? 'Y' : 'N',
+			primary: pnid.mii.primary ? 'Y' : 'N'
 		},
 		region: pnid.region,
 		tz_name: pnid.timezone.name,
@@ -221,7 +221,9 @@ export async function getServerByGameServerID(gameServerID: string, accessMode: 
 
 	for (const mode of searchModes) {
 		const server = servers.find(s => s.access_mode === mode);
-		if (server) return server;
+		if (server) {
+			return server;
+		}
 	}
 
 	return null;
@@ -237,7 +239,9 @@ export async function getServerByTitleID(titleID: string, accessMode: string): P
 
 	for (const mode of searchModes) {
 		const server = servers.find(s => s.access_mode === mode);
-		if (server) return server;
+		if (server) {
+			return server;
+		}
 	}
 
 	return null;
@@ -253,7 +257,9 @@ export async function getServerByClientID(clientID: string, accessMode: string):
 
 	for (const mode of searchModes) {
 		const server = servers.find(s => s.access_mode === mode);
-		if (server) return server;
+		if (server) {
+			return server;
+		}
 	}
 
 	return null;

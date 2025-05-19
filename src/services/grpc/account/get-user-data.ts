@@ -1,8 +1,8 @@
 import { Status, ServerError } from 'nice-grpc';
-import { GetUserDataRequest, GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
 import { getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
+import type { GetUserDataRequest, GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
 
 export async function getUserData(request: GetUserDataRequest): Promise<GetUserDataResponse> {
 	const pnid = await getPNIDByPID(request.pid);
@@ -10,7 +10,7 @@ export async function getUserData(request: GetUserDataRequest): Promise<GetUserD
 	if (!pnid) {
 		throw new ServerError(
 			Status.INVALID_ARGUMENT,
-			'No PNID found',
+			'No PNID found'
 		);
 	}
 
@@ -23,7 +23,7 @@ export async function getUserData(request: GetUserDataRequest): Promise<GetUserD
 		mii: {
 			name: pnid.mii.name,
 			data: pnid.mii.data,
-			url: `${config.cdn.base_url}/mii/${pnid.pid}/standard.tga`,
+			url: `${config.cdn.base_url}/mii/${pnid.pid}/standard.tga`
 		},
 		creationDate: pnid.creation_date,
 		birthdate: pnid.birthdate,

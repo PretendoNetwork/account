@@ -1,19 +1,20 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
-import { IncomingHttpHeaders } from 'node:http';
-import { ObjectCannedACL, S3 } from '@aws-sdk/client-s3';
+import { S3 } from '@aws-sdk/client-s3';
 import fs from 'fs-extra';
-import express from 'express';
-import mongoose from 'mongoose';
-import { ParsedQs } from 'qs';
-import crc32 from 'buffer-crc32';
-import crc from 'crc';
+import bufferCrc32 from 'buffer-crc32';
+import { crc32 } from 'crc';
 import { sendMail } from '@/mailer';
 import { config, disabledFeatures } from '@/config-manager';
-import { TokenOptions } from '@/types/common/token-options';
-import { Token } from '@/types/common/token';
-import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
-import { SafeQs } from '@/types/common/safe-qs';
+import type { ParsedQs } from 'qs';
+import type mongoose from 'mongoose';
+import type express from 'express';
+import type { ObjectCannedACL } from '@aws-sdk/client-s3';
+import type { IncomingHttpHeaders } from 'node:http';
+import type { TokenOptions } from '@/types/common/token-options';
+import type { Token } from '@/types/common/token';
+import type { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
+import type { SafeQs } from '@/types/common/safe-qs';
 
 let s3: S3;
 
@@ -25,8 +26,8 @@ if (!disabledFeatures.s3) {
 
 		credentials: {
 			accessKeyId: config.s3.key,
-			secretAccessKey: config.s3.secret,
-		},
+			secretAccessKey: config.s3.secret
+		}
 	});
 }
 
@@ -89,7 +90,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 
 	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
 		// * Access and refresh tokens don't get a checksum due to size constraints
-		const checksum = crc32(dataBuffer);
+		const checksum = bufferCrc32(dataBuffer);
 
 		final = Buffer.concat([
 			checksum,
@@ -124,7 +125,7 @@ export function decryptToken(token: Buffer, key?: string): Buffer {
 		decipher.final()
 	]);
 
-	if (expectedChecksum && (expectedChecksum !== crc.crc32(decrypted))) {
+	if (expectedChecksum && (expectedChecksum !== crc32(decrypted))) {
 		throw new Error('Checksum did not match. Failed decrypt. Are you using the right key?');
 	}
 
@@ -193,7 +194,7 @@ export function nascError(errorCode: string): URLSearchParams {
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('1'),
 		returncd: errorCode == 'null' ? errorCode : nintendoBase64Encode(errorCode),
-		datetime: nintendoBase64Encode(nascDateTime()),
+		datetime: nintendoBase64Encode(nascDateTime())
 	});
 }
 
@@ -212,7 +213,7 @@ export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNI
 	await sendMail(options);
 }
 
-export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void>  {
+export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const options = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Email address confirmed',
@@ -224,7 +225,7 @@ export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IP
 	await sendMail(options);
 }
 
-export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void>  {
+export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const options = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Email address confirmed for Parental Controls',
@@ -333,5 +334,5 @@ export function getValueFromHeaders(headers: IncomingHttpHeaders, key: string): 
 }
 
 export function mapToObject(map: Map<any, any>): object {
-	return Object.fromEntries(Array.from(map.entries(), ([ k, v ]) => v instanceof Map ? [ k, mapToObject(v) ] : [ k, v ]));
+	return Object.fromEntries(Array.from(map.entries(), ([k, v]) => v instanceof Map ? [k, mapToObject(v)] : [k, v]));
 }

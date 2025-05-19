@@ -11,7 +11,6 @@ database.connect().then(async function () {
 	});
 
 	for (const nexAccount of nexAccountsToBeChanged) {
-
 		if (!nexAccount.friend_code) {
 			const pid = nexAccount.pid;
 			const pidBuffer = Buffer.alloc(4);

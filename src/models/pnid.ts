@@ -9,16 +9,16 @@ import Stripe from 'stripe';
 import { DeviceSchema } from '@/models/device';
 import { uploadCDNAsset } from '@/util';
 import { LOG_ERROR, LOG_WARN } from '@/logger';
-import { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
-import { PNIDPermissionFlag } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
+import type { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
+import type { PNIDPermissionFlag } from '@/types/common/permission-flags';
 
 let stripe: Stripe;
 
 if (config.stripe?.secret_key) {
 	stripe = new Stripe(config.stripe.secret_key, {
 		apiVersion: '2022-11-15',
-		typescript: true,
+		typescript: true
 	});
 }
 
@@ -33,7 +33,7 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	},
 	access_level: {
 		type: Number,
-		default: 0  // * 0: standard, 1: tester, 2: mod?, 3: dev
+		default: 0 // * 0: standard, 1: tester, 2: mod?, 3: dev
 	},
 	server_access_level: {
 		type: String,
@@ -81,7 +81,7 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		id: Number,
 		hash: String,
 		image_url: String,
-		image_id: Number,
+		image_id: Number
 	},
 	flags: {
 		active: Boolean,
@@ -122,7 +122,7 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	}
 }, { id: false });
 
-PNIDSchema.plugin(uniqueValidator, {message: '{PATH} already in use.'});
+PNIDSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 
 /*
 	According to http://pf2m.com/tools/rank.php Nintendo PID's start at 1,800,000,000 and count down with each account
@@ -136,7 +136,7 @@ PNIDSchema.method('generatePID', async function generatePID(): Promise<void> {
 	const min = 1000000000; // * The console (WiiU) seems to not accept PIDs smaller than this
 	const max = 1799999999;
 
-	const pid =  Math.floor(Math.random() * (max - min + 1) + min);
+	const pid = Math.floor(Math.random() * (max - min + 1) + min);
 
 	const inuse = await PNID.findOne({
 		pid
@@ -171,7 +171,7 @@ PNIDSchema.method('generateEmailValidationToken', async function generateEmailVa
 	}
 });
 
-PNIDSchema.method('updateMii', async function updateMii({ name, primary, data }: { name: string; primary: string; data: string; }): Promise<void> {
+PNIDSchema.method('updateMii', async function updateMii({ name, primary, data }: { name: string; primary: string; data: string }): Promise<void> {
 	this.mii.name = name;
 	this.mii.primary = primary === 'Y';
 	this.mii.data = data;
@@ -190,7 +190,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	const miiStudioUrl = mii.studioUrl({
 		type: 'face',
 		width: 128,
-		instanceCount: 1,
+		instanceCount: 1
 	});
 	const miiStudioNormalFaceImageData = await got(miiStudioUrl).buffer();
 	const pngData = await imagePixels(miiStudioNormalFaceImageData);
@@ -207,7 +207,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 			type: 'face',
 			expression: expression,
 			width: 128,
-			instanceCount: 1,
+			instanceCount: 1
 		});
 		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
 		await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
@@ -216,7 +216,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	const miiStudioBodyUrl = mii.studioUrl({
 		type: 'all_body',
 		width: 270,
-		instanceCount: 1,
+		instanceCount: 1
 	});
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
 	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');

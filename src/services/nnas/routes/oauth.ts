@@ -101,7 +101,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 
 				return;
 			}
-		} catch (error) {
+		} catch {
 			response.status(400).send(xmlbuilder.create({
 				error: {
 					cause: 'refresh_token',

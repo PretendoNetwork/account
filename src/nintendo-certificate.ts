@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import NodeRSA from 'node-rsa';
-import { SignatureSize } from '@/types/common/signature-size';
+import type { SignatureSize } from '@/types/common/signature-size';
 
 const WIIU_DEVICE_PUB_PEM = `-----BEGIN PUBLIC KEY-----
 MFIwEAYHKoZIzj0CAQYFK4EEABsDPgAEAP1WBBgs8XUJIQDDCK5IOZEbb5+h1TqV
@@ -229,7 +229,7 @@ class NintendoCertificate {
 
 		publicKey.importKey({
 			n: CTR_LFCS_B_PUB,
-			e: 65537,
+			e: 65537
 		}, 'components-public');
 
 		this.valid = publicKey.verify(this._certificateBody, this.signature);

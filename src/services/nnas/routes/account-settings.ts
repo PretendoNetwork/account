@@ -6,15 +6,15 @@ import { getServerByClientID, getPNIDByPID } from '@/database';
 import { LOG_ERROR } from '@/logger';
 import { decryptToken, unpackToken, getValueFromHeaders, sendConfirmationEmail } from '@/util';
 import { config } from '@/config-manager';
-import { HydratedServerDocument } from '@/types/mongoose/server';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import { AccountSettings } from '@/types/services/nnas/account-settings';
-import { Token } from '@/types/common/token';
-import { RegionLanguages } from '@/types/services/nnas/region-languages';
-import { RegionTimezone, RegionTimezones } from '@/types/services/nnas/region-timezones';
-import { Country, Region } from '@/types/services/nnas/regions';
 import timezones from '@/services/nnas/timezones.json';
 import regionsList from '@/services/nnas/regions.json';
+import type { HydratedServerDocument } from '@/types/mongoose/server';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type { AccountSettings } from '@/types/services/nnas/account-settings';
+import type { Token } from '@/types/common/token';
+import type { RegionLanguages } from '@/types/services/nnas/region-languages';
+import type { RegionTimezone, RegionTimezones } from '@/types/services/nnas/region-timezones';
+import type { Country, Region } from '@/types/services/nnas/regions';
 
 const router = express.Router();
 
@@ -26,8 +26,8 @@ const accountSettingsSchema = z.object({
 	country: z.string(),
 	email: z.string().email(),
 	server_selection: z.enum(['prod', 'test', 'dev']),
-	marketing_flag: z.enum(['true', 'false']).transform((value) => value === 'true'),
-	off_device_flag: z.enum(['true', 'false']).transform((value) => value === 'true'),
+	marketing_flag: z.enum(['true', 'false']).transform(value => value === 'true'),
+	off_device_flag: z.enum(['true', 'false']).transform(value => value === 'true')
 });
 
 /**
@@ -63,7 +63,7 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 		const regionLanguages: RegionLanguages = timezones[countryCode as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[language] ? regionLanguages[language] : Object.values(regionLanguages)[0];
 
-		const region: Country | undefined = regionsList.find((region) => region.iso_code === countryCode);
+		const region: Country | undefined = regionsList.find(region => region.iso_code === countryCode);
 
 		const miiFaces = ['normal_face', 'smile_open_mouth', 'sorrow', 'surprise_open_mouth', 'wink_left', 'frustrated'];
 		const face = miiFaces[crypto.randomInt(5)];
@@ -78,7 +78,7 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 			face,
 			notice,
 			accountLevel,
-			regions: region ? region.regions: [],
+			regions: region ? region.regions : [],
 			regionsList
 		});
 	} catch (error: any) {
@@ -154,7 +154,7 @@ router.post('/update', async function (request: express.Request, response: expre
 		const regionLanguages: RegionLanguages = timezones[pnid.country as keyof typeof timezones];
 		const regionTimezones: RegionTimezones = regionLanguages[pnid.language] ? regionLanguages[pnid.language] : Object.values(regionLanguages)[0];
 		const timezone: RegionTimezone | undefined = regionTimezones.find(tz => tz.area === timezoneName);
-		const country: Country | undefined = regionsList.find((region) => region.iso_code === pnid.country);
+		const country: Country | undefined = regionsList.find(region => region.iso_code === pnid.country);
 		let notice = '';
 
 		if (!country) {
@@ -163,7 +163,7 @@ router.post('/update', async function (request: express.Request, response: expre
 			return;
 		}
 
-		const regionObject: Region | undefined = country.regions.find((region) => region.id === person.data.region);
+		const regionObject: Region | undefined = country.regions.find(region => region.id === person.data.region);
 		const region = regionObject ? regionObject.id : pnid.region;
 
 		if (!timezone) {

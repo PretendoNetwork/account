@@ -1,6 +1,5 @@
 import express from 'express';
 import { LOG_INFO, formatHostnames } from '@/logger';
-
 import upload from '@/services/datastore/routes/upload';
 import { restrictHostnames } from '@/middleware/host-limit';
 import { config } from '@/config-manager';

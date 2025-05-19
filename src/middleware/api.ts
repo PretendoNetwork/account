@@ -1,7 +1,7 @@
-import express from 'express';
 import { getValueFromHeaders } from '@/util';
 import { getPNIDByTokenAuth } from '@/database';
 import { LOG_ERROR } from '@/logger';
+import type express from 'express';
 async function APIMiddleware(request: express.Request, _response: express.Response, next: express.NextFunction): Promise<void> {
 	const authHeader = getValueFromHeaders(request.headers, 'authorization');
 
@@ -16,7 +16,9 @@ async function APIMiddleware(request: express.Request, _response: express.Respon
 		request.pnid = pnid;
 	} catch (error: any) {
 		LOG_ERROR('api middleware - decode pnid: ' + error);
-		if (error.stack) console.error(error.stack);
+		if (error.stack) {
+			console.error(error.stack);
+		}
 	}
 
 	return next();

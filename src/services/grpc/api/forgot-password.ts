@@ -1,8 +1,8 @@
 import { Status, ServerError } from 'nice-grpc';
 import validator from 'validator';
-import { ForgotPasswordRequest } from '@pretendonetwork/grpc/api/forgot_password_rpc';
 import { getPNIDByEmailAddress, getPNIDByUsername } from '@/database';
 import { sendForgotPasswordEmail } from '@/util';
+import type { ForgotPasswordRequest } from '@pretendonetwork/grpc/api/forgot_password_rpc';
 import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
