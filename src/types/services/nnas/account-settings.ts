@@ -1,4 +1,4 @@
-import { GenderTypes } from '@/types/common/gender-types';
+import type { GenderTypes } from '@/types/common/gender-types';
 
 export interface AccountSettings {
 	birthdate: string;

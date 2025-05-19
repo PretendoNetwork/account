@@ -1,9 +1,10 @@
 import fs from 'fs-extra';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import isValidHostname from 'is-valid-hostname';
 import { LOG_INFO, LOG_WARN, LOG_ERROR, formatHostnames } from '@/logger';
-import { type Config, domainServices, optionalDomainServices } from '@/types/common/config';
+import { domainServices, optionalDomainServices } from '@/types/common/config';
+import type mongoose from 'mongoose';
+import type { Config } from '@/types/common/config';
 
 dotenv.config();
 
@@ -74,9 +75,9 @@ export const config: Config = {
 	grpc: {
 		master_api_keys: {
 			account: process.env.PN_ACT_CONFIG_GRPC_MASTER_API_KEY_ACCOUNT || '',
-			api: process.env.PN_ACT_CONFIG_GRPC_MASTER_API_KEY_API || '',
+			api: process.env.PN_ACT_CONFIG_GRPC_MASTER_API_KEY_API || ''
 		},
-		port: Number(process.env.PN_ACT_CONFIG_GRPC_PORT || ''),
+		port: Number(process.env.PN_ACT_CONFIG_GRPC_PORT || '')
 	},
 	server_environment: process.env.PN_ACT_CONFIG_SERVER_ENVIRONMENT || '',
 	datastore: {
@@ -90,7 +91,7 @@ export const config: Config = {
 		datastore: (process.env.PN_ACT_CONFIG_DOMAINS_DATASTORE || 'datastore.pretendo.cc').split(','),
 		local_cdn: (process.env.PN_ACT_CONFIG_DOMAINS_LOCAL_CDN || '').split(','),
 		nasc: (process.env.PN_ACT_CONFIG_DOMAINS_NASC || 'nasc.pretendo.cc').split(','),
-		nnas: (process.env.PN_ACT_CONFIG_DOMAINS_NNAS || 'c.account.pretendo.cc,account.pretendo.cc').split(','),
+		nnas: (process.env.PN_ACT_CONFIG_DOMAINS_NNAS || 'c.account.pretendo.cc,account.pretendo.cc').split(',')
 	}
 };
 
@@ -116,7 +117,11 @@ for (const service of domainServices) {
 	const uniqueDomains = [...new Set(config.domains[service])];
 
 	for (const domain of uniqueDomains) {
-		isValidHostname(domain) ? validDomains.push(domain) : invalidDomains.push(domain);
+		if (isValidHostname(domain)) {
+			validDomains.push(domain);
+		} else {
+			invalidDomains.push(domain);
+		}
 	}
 
 	if (validDomains.length === 0 && !optionalDomainServices.includes(service)) {
@@ -230,7 +235,7 @@ if (disabledFeatures.s3) {
 		if (disabledFeatures.redis) {
 			LOG_WARN('Both S3 and Redis are disabled. Large CDN files will use the in-memory cache, which may result in high memory use. Please enable S3 if you\'re running a production server.');
 		}
-	}	
+	}
 }
 
 if (!config.aes_key) {

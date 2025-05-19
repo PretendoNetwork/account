@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import type mongoose from 'mongoose';
 
 export const domainServices = ['api', 'assets', 'cbvc', 'conntest', 'datastore', 'nasc', 'nnas', 'local_cdn'] as const;
 export type DomainService = typeof domainServices[number];
@@ -16,7 +16,7 @@ export interface Config {
 	redis: {
 		client: {
 			url: string;
-		}
+		};
 	};
 	email: {
 		ses: {
@@ -38,7 +38,7 @@ export interface Config {
 		secret: string;
 	};
 	cdn: {
-		/** 
+		/**
 		 * @deprecated Use `domains.cdn` instead
 		 */
 		subdomain?: string;

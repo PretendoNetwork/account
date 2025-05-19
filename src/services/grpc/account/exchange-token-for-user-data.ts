@@ -1,9 +1,9 @@
 import { Status, ServerError } from 'nice-grpc';
-import { ExchangeTokenForUserDataRequest } from '@pretendonetwork/grpc/account/exchange_token_for_user_data';
-import { GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
 import { getPNIDByTokenAuth } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
+import type { GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
+import type { ExchangeTokenForUserDataRequest } from '@pretendonetwork/grpc/account/exchange_token_for_user_data';
 
 export async function exchangeTokenForUserData(request: ExchangeTokenForUserDataRequest): Promise<GetUserDataResponse> {
 	if (!request.token.trim()) {
@@ -25,7 +25,7 @@ export async function exchangeTokenForUserData(request: ExchangeTokenForUserData
 		mii: {
 			name: pnid.mii.name,
 			data: pnid.mii.data,
-			url: `${config.cdn.base_url}/mii/${pnid.pid}/standard.tga`,
+			url: `${config.cdn.base_url}/mii/${pnid.pid}/standard.tga`
 		},
 		creationDate: pnid.creation_date,
 		birthdate: pnid.birthdate,

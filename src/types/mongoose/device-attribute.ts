@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import type { Model } from 'mongoose';
 
 export interface IDeviceAttribute {
 	created_date?: string;

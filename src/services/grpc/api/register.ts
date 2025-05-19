@@ -1,7 +1,5 @@
 import crypto from 'node:crypto';
 import { Status, ServerError } from 'nice-grpc';
-import { RegisterRequest, DeepPartial } from '@pretendonetwork/grpc/api/register_rpc';
-import { LoginResponse } from '@pretendonetwork/grpc/api/login_rpc';
 import emailvalidator from 'email-validator';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
@@ -13,6 +11,8 @@ import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
+import type { LoginResponse } from '@pretendonetwork/grpc/api/login_rpc';
+import type { RegisterRequest, DeepPartial } from '@pretendonetwork/grpc/api/register_rpc';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -140,7 +140,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 		// * PNIDs can only be registered from a Wii U
 		// * So assume website users are WiiU NEX accounts
 		nexAccount = new NEXAccount({
-			device_type: 'wiiu',
+			device_type: 'wiiu'
 		});
 
 		await nexAccount.generatePID();

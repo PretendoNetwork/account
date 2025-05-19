@@ -1,4 +1,3 @@
-
 import crypto from 'node:crypto';
 import express from 'express';
 import emailvalidator from 'email-validator';
@@ -12,8 +11,8 @@ import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
-import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
 
@@ -276,7 +275,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		// * PNIDs can only be registered from a Wii U
 		// * So assume website users are WiiU NEX accounts
 		nexAccount = new NEXAccount({
-			device_type: 'wiiu',
+			device_type: 'wiiu'
 		});
 
 		await nexAccount.generatePID();
@@ -347,7 +346,9 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		await session.commitTransaction();
 	} catch (error: any) {
 		LOG_ERROR('[POST] /v1/register: ' + error);
-		if (error.stack) console.error(error.stack);
+		if (error.stack) {
+			console.error(error.stack);
+		}
 
 		await session.abortTransaction();
 
@@ -401,7 +402,9 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		});
 	} catch (error: any) {
 		LOG_ERROR('/v1/register - token generation: ' + error);
-		if (error.stack) console.error(error.stack);
+		if (error.stack) {
+			console.error(error.stack);
+		}
 
 		response.status(500).json({
 			app: 'api',

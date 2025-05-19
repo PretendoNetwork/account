@@ -1,8 +1,8 @@
-import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getValueFromHeaders } from '@/util';
 import { getPNIDByBasicAuth, getPNIDByTokenAuth } from '@/database';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type express from 'express';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	const authHeader = getValueFromHeaders(request.headers, 'authorization');

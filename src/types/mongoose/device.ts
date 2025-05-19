@@ -1,5 +1,5 @@
-import { Model, Types, HydratedDocument } from 'mongoose';
-import { IDeviceAttribute } from '@/types/mongoose/device-attribute';
+import type { Model, Types, HydratedDocument } from 'mongoose';
+import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 
 type MODEL = 'wup' | 'ctr' | 'spr' | 'ftr' | 'ktr' | 'red' | 'jan';
 type ACCESS_LEVEL = -1 | 0 | 1 | 2 | 3;
@@ -16,7 +16,7 @@ export interface IDevice {
 		account_id: number;
 	};
 	environment: string;
-	mac_hash: string;     // * 3DS-specific
+	mac_hash: string; // * 3DS-specific
 	fcdcert_hash: string; // * 3DS-specific
 	linked_pids: number[];
 	access_level: ACCESS_LEVEL;
@@ -30,4 +30,4 @@ interface IDeviceQueryHelpers {}
 
 export interface DeviceModel extends Model<IDevice, IDeviceQueryHelpers, IDeviceMethods> {}
 
-export type HydratedDeviceDocument = HydratedDocument<IDevice, IDeviceMethods>
+export type HydratedDeviceDocument = HydratedDocument<IDevice, IDeviceMethods>;
