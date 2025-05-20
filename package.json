@@ -45,7 +45,7 @@
     "image-pixels": "^1.1.1",
     "is-valid-hostname": "^1.0.2",
     "joi": "^17.8.3",
-    "mii-js": "github:PretendoNetwork/mii-js",
+    "mii-js": "github:PretendoNetwork/mii-js#f1741e1f82771dd7c753fd408230373d33caa184",
     "moment": "^2.29.4",
     "mongoose": "^7.0.0",
     "mongoose-unique-validator": "^4.0.0",
