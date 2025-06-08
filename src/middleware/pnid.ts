@@ -23,7 +23,8 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	if (type === 'Basic' && request.path.includes('v1/api/people/@me/devices')) {
 		pnid = await getPNIDByBasicAuth(token);
 	} else if (type === 'Bearer') {
-		pnid = await getPNIDByTokenAuth(token);
+		// TODO - This "accepted types list" is mostly a hack. Change this
+		pnid = await getPNIDByTokenAuth(token, [1, 2]);
 	}
 
 	if (!pnid) {
