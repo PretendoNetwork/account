@@ -2,6 +2,7 @@ import { Status, ServerError } from 'nice-grpc';
 import { getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
+import { Device } from '@/models/device';
 import type { GetUserDataRequest, GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
 
 export async function getUserData(request: GetUserDataRequest): Promise<GetUserDataResponse> {
@@ -13,6 +14,18 @@ export async function getUserData(request: GetUserDataRequest): Promise<GetUserD
 			'No PNID found'
 		);
 	}
+
+	const devices = (await Device.find({
+		linked_pids: pnid.pid
+	})).map((device) => {
+		return {
+			model: device.get('model'), // ".model" gives the Mongoose model...
+			serial: device.serial,
+			linkedPids: device.linked_pids,
+			accessLevel: device.access_level,
+			serverAccessLevel: device.server_access_level
+		};
+	});
 
 	return {
 		deleted: pnid.deleted,
@@ -55,6 +68,7 @@ export async function getUserData(request: GetUserDataRequest): Promise<GetUserD
 			updateBossFiles: pnid.hasPermission(PNID_PERMISSION_FLAGS.UPDATE_BOSS_FILES),
 			deleteBossFiles: pnid.hasPermission(PNID_PERMISSION_FLAGS.DELETE_BOSS_FILES),
 			updatePnidPermissions: pnid.hasPermission(PNID_PERMISSION_FLAGS.UPDATE_PNID_PERMISSIONS)
-		}
+		},
+		devices
 	};
 }
