@@ -3,7 +3,7 @@ import { getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 import { Device } from '@/models/device';
-import type { GetUserDataRequest, GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
+import type { GetUserDataRequest, GetUserDataResponse } from '@pretendonetwork/grpc/account/v2/get_user_data_rpc';
 
 export async function getUserData(request: GetUserDataRequest): Promise<GetUserDataResponse> {
 	const pnid = await getPNIDByPID(request.pid);
@@ -69,6 +69,6 @@ export async function getUserData(request: GetUserDataRequest): Promise<GetUserD
 			deleteBossFiles: pnid.hasPermission(PNID_PERMISSION_FLAGS.DELETE_BOSS_FILES),
 			updatePnidPermissions: pnid.hasPermission(PNID_PERMISSION_FLAGS.UPDATE_PNID_PERMISSIONS)
 		},
-		devices
+		linkedDevices: devices
 	};
 }
