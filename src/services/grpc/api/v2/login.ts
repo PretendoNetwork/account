@@ -75,15 +75,18 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
 	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
 
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+	if (!accessTokenBuffer) {
+		throw new ServerError(Status.INTERNAL, 'Failed to generate access token');
+	}
 
-	// TODO - Handle null tokens
+	if (!refreshTokenBuffer) {
+		throw new ServerError(Status.INTERNAL, 'Failed to generate refresh token');
+	}
 
 	return {
-		accessToken: accessToken,
+		accessToken: accessTokenBuffer.toString('hex'),
 		tokenType: 'Bearer',
 		expiresIn: 3600,
-		refreshToken: newRefreshToken
+		refreshToken: refreshTokenBuffer.toString('hex')
 	};
 }
