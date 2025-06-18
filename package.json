@@ -27,7 +27,7 @@
     "@aws-sdk/client-s3": "^3.657.0",
     "@aws-sdk/client-ses": "^3.515.0",
     "@inquirer/prompts": "^7.2.0",
-    "@pretendonetwork/grpc": "^1.0.5",
+    "@pretendonetwork/grpc": "^2.2.1",
     "bcrypt": "^5.0.0",
     "buffer-crc32": "^0.2.13",
     "colors": "^1.4.0",
