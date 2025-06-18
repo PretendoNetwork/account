@@ -13,6 +13,6 @@ export default ratelimit({
 			data = request.ip;
 		}
 
-		return crypto.createHash('md5').update(data).digest('hex');
+		return crypto.createHash('md5').update(data!).digest('hex');
 	}
 });
