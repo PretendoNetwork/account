@@ -1,13 +1,13 @@
 import { createServer } from 'nice-grpc';
 import { AccountDefinition as AccountServiceDefinitionV1 } from '@pretendonetwork/grpc/account/account_service';
 import { APIDefinition as ApiServiceDefinitionV1 } from '@pretendonetwork/grpc/api/api_service';
+import { AccountServiceDefinition as AccountServiceDefinitionV2 } from '@pretendonetwork/grpc/account/v2/account_service';
+import { ApiServiceDefinition as ApiServiceDefinitionV2 } from '@pretendonetwork/grpc/api/v2/api_service';
 import { apiKeyMiddleware as accountApiKeyMiddlewareV1 } from '@/services/grpc/account/v1/api-key-middleware';
 import { apiKeyMiddleware as apiApiKeyMiddlewareV1 } from '@/services/grpc/api/v1/api-key-middleware';
 import { authenticationMiddleware as apiAuthenticationMiddlewareV1 } from '@/services/grpc/api/v1/authentication-middleware';
 import { accountServiceImplementationV1 } from '@/services/grpc/account/v1/implementation';
 import { apiServiceImplementationV1 } from '@/services/grpc/api/v1/implementation';
-import { AccountServiceDefinition as AccountServiceDefinitionV2 } from '@pretendonetwork/grpc/account/v2/account_service';
-import { ApiServiceDefinition as ApiServiceDefinitionV2 } from '@pretendonetwork/grpc/api/v2/api_service';
 import { apiKeyMiddleware as accountApiKeyMiddlewareV2 } from '@/services/grpc/account/v2/api-key-middleware';
 import { apiKeyMiddleware as apiApiKeyMiddlewareV2 } from '@/services/grpc/api/v2/api-key-middleware';
 import { authenticationMiddleware as apiAuthenticationMiddlewareV2 } from '@/services/grpc/api/v2/authentication-middleware';
