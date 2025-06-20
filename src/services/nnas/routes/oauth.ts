@@ -130,15 +130,13 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 
 	// * This are set/validated in consoleStatusVerificationMiddleware
 	// * It is always set, despite what Express might think
-	if (request.device?.model === 'wup') {
-		await Device.updateOne({
-			_id: request.device?._id
-		}, {
-			$addToSet: {
-				linked_pids: pnid.pid
-			}
-		});
-	}
+	await Device.updateOne({
+		_id: request.device!._id
+	}, {
+		$addToSet: {
+			linked_pids: pnid.pid
+		}
+	});
 
 	if (pnid.access_level < 0) {
 		response.status(400).send(xmlbuilder.create({
