@@ -3,7 +3,7 @@ import { Status, ServerError } from 'nice-grpc';
 import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
 import { getPNIDByPID } from '@/database';
 import type { ResetPasswordRequest } from '@pretendonetwork/grpc/api/reset_password_rpc';
-import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
+import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
 import type { Token } from '@/types/common/token';
 
 // * This sucks

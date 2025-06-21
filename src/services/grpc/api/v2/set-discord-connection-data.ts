@@ -1,10 +1,9 @@
 import { Status, ServerError } from 'nice-grpc';
 import type { CallContext } from 'nice-grpc';
-import type { SetDiscordConnectionDataRequest } from '@pretendonetwork/grpc/api/set_discord_connection_data_rpc';
-import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
-import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
+import type { SetDiscordConnectionDataRequest, SetDiscordConnectionDataResponse } from '@pretendonetwork/grpc/api/v2/set_discord_connection_data_rpc';
+import type { AuthenticationCallContextExt } from '@/services/grpc/api/v1/authentication-middleware';
 
-export async function setDiscordConnectionData(request: SetDiscordConnectionDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<Empty> {
+export async function setDiscordConnectionData(request: SetDiscordConnectionDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<SetDiscordConnectionDataResponse> {
 	// * This is asserted in authentication-middleware, we know this is never null
 	const pnid = context.pnid!;
 

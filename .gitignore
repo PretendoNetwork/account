@@ -62,3 +62,4 @@ config.json
 certs
 cdn
 dist
+.DS_Store

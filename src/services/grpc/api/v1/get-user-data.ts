@@ -1,14 +1,12 @@
 import { config } from '@/config-manager';
 import type { CallContext } from 'nice-grpc';
-import type { UpdateUserDataRequest, DeepPartial } from '@pretendonetwork/grpc/api/update_user_data_rpc';
-import type { GetUserDataResponse } from '@pretendonetwork/grpc/api/get_user_data_rpc';
-import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
+import type { GetUserDataResponse, DeepPartial } from '@pretendonetwork/grpc/api/get_user_data_rpc';
+import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
+import type { AuthenticationCallContextExt } from '@/services/grpc/api/v1/authentication-middleware';
 
-export async function updateUserData(_request: UpdateUserDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<DeepPartial<GetUserDataResponse>> {
+export async function getUserData(_request: Empty, context: CallContext & AuthenticationCallContextExt): Promise<DeepPartial<GetUserDataResponse>> {
 	// * This is asserted in authentication-middleware, we know this is never null
 	const pnid = context.pnid!;
-
-	// TODO - STUBBED, DO SOMETHING HERE
 
 	return {
 		deleted: pnid.deleted,
