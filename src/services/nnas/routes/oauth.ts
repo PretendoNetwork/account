@@ -164,7 +164,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		system_type: SystemType.WUP,
 		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
 	};
 
 	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);

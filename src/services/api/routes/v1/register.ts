@@ -384,7 +384,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
 	};
 
 	try {

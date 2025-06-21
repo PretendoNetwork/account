@@ -246,7 +246,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
 	};
 
 	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
