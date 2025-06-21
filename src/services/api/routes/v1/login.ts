@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
 import { nintendoPasswordHash, generateToken } from '@/util';
+import { TokenType } from '@/types/common/token-types';
 import { config } from '@/config-manager';
 import { LOG_ERROR } from '@/logger';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
@@ -112,7 +113,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 	const accessTokenOptions = {
 		system_type: 0x3, // * API
-		token_type: 0x1, // * OAuth Access
+		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
@@ -121,7 +122,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 	const refreshTokenOptions = {
 		system_type: 0x3, // * API
-		token_type: 0x2, // * OAuth Refresh
+		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),

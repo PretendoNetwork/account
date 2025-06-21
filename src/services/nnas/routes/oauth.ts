@@ -5,6 +5,7 @@ import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
 import { getPNIDByTokenAuth, getPNIDByUsername } from '@/database';
 import { generateToken } from '@/util';
+import { TokenType } from '@/types/common/token-types';
 import { config } from '@/config-manager';
 import { Device } from '@/models/device';
 
@@ -153,14 +154,14 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 
 	const accessTokenOptions = {
 		system_type: 0x1, // * WiiU
-		token_type: 0x1, // * OAuth Access
+		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const refreshTokenOptions = {
 		system_type: 0x1, // * WiiU
-		token_type: 0x2, // * OAuth Refresh
+		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
