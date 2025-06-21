@@ -5,6 +5,7 @@ import { nintendoPasswordHash, decryptToken, unpackToken } from '@/util';
 import { PNID } from '@/models/pnid';
 import { Server } from '@/models/server';
 import { LOG_ERROR } from '@/logger';
+import { TokenType } from '@/types/common/token-types';
 import { config } from '@/config-manager';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
@@ -117,6 +118,12 @@ export async function getPNIDByTokenAuth(token: string, allowedTypes?: SystemTyp
 		}
 
 		const pnid = await getPNIDByPID(unpackedToken.pid);
+
+		// TODO - This is a hack. If `allowedTypes` is not set, it is assumed to be a call from our internal API,
+		//        and we ignore expiration checks on service tokens. Independent services should expire their own tokens
+		if (unpackedToken.token_type === TokenType.IndependentService && !allowedTypes) {
+			return pnid;
+		}
 
 		if (pnid) {
 			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));

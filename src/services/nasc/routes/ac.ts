@@ -96,7 +96,7 @@ async function processServiceTokenRequest(server: HydratedServerDocument, pid: n
 		pid: pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now()) // TODO - Hack. Independent services expire their own tokens, so we give them the ISSUED time, not an EXPIRE time
 	};
 
 	// TODO - Handle null tokens

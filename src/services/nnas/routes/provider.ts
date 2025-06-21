@@ -96,7 +96,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now()) // TODO - Hack. Independent services expire their own tokens, so we give them the ISSUED time, not an EXPIRE time
 	};
 
 	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
