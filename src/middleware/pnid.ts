@@ -1,4 +1,5 @@
 import xmlbuilder from 'xmlbuilder';
+import { SystemType } from '@/types/common/system-types';
 import { getValueFromHeaders } from '@/util';
 import { getPNIDByBasicAuth, getPNIDByTokenAuth } from '@/database';
 import type express from 'express';
@@ -24,7 +25,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		pnid = await getPNIDByBasicAuth(token);
 	} else if (type === 'Bearer') {
 		// TODO - This "accepted types list" is mostly a hack. Change this
-		pnid = await getPNIDByTokenAuth(token, [1, 2]);
+		pnid = await getPNIDByTokenAuth(token, [SystemType.WUP, SystemType.CTR]);
 	}
 
 	if (!pnid) {

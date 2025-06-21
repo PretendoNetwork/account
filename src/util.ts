@@ -64,7 +64,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 	dataBuffer.writeUInt32LE(options.pid, 0x2);
 	dataBuffer.writeBigUInt64LE(options.expire_time, 0x6);
 
-	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
+	if ((options.token_type !== TokenType.OAuthAccess && options.token_type !== TokenType.OAuthRefresh) || options.system_type === SystemType.API) {
 		// * Access and refresh tokens have smaller bodies due to size constraints
 		// * The API does not have this restraint, however
 		if (options.title_id === undefined || options.access_level === undefined) {
@@ -90,7 +90,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 
 	let final = encrypted;
 
-	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
+	if ((options.token_type !== TokenType.OAuthAccess && options.token_type !== TokenType.OAuthRefresh) || options.system_type === SystemType.API) {
 		// * Access and refresh tokens don't get a checksum due to size constraints
 		const checksum = bufferCrc32(dataBuffer);
 
@@ -142,7 +142,7 @@ export function unpackToken(token: Buffer): Token {
 		expire_time: token.readBigUInt64LE(0x6)
 	};
 
-	if (unpacked.token_type !== 0x1 && unpacked.token_type !== 0x2) {
+	if (unpacked.token_type !== TokenType.OAuthAccess && unpacked.token_type !== TokenType.OAuthRefresh) {
 		unpacked.title_id = token.readBigUInt64LE(0xE);
 		unpacked.access_level = token.readInt8(0x16);
 	}

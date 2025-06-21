@@ -13,6 +13,7 @@ import type { PNIDProfile } from '@/types/services/nnas/pnid-profile';
 import type { ConnectionData } from '@/types/services/api/connection-data';
 import type { ConnectionResponse } from '@/types/services/api/connection-response';
 import type { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
+import type { SystemType } from '@/types/common/system-types';
 
 const connection_string = config.mongoose.connection_string;
 const options = config.mongoose.options;
@@ -104,7 +105,7 @@ export async function getPNIDByBasicAuth(token: string): Promise<HydratedPNIDDoc
 	return pnid;
 }
 
-export async function getPNIDByTokenAuth(token: string, allowedTypes?: number[]): Promise<HydratedPNIDDocument | null> {
+export async function getPNIDByTokenAuth(token: string, allowedTypes?: SystemType[]): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	try {
