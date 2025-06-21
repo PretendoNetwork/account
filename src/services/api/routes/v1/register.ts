@@ -7,6 +7,7 @@ import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
 import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
@@ -369,7 +370,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	await sendConfirmationEmail(pnid);
 
 	const accessTokenOptions = {
-		system_type: 0x3, // * API
+		system_type: SystemType.API,
 		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
@@ -378,7 +379,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	};
 
 	const refreshTokenOptions = {
-		system_type: 0x3, // * API
+		system_type: SystemType.API,
 		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
 		access_level: pnid.access_level,

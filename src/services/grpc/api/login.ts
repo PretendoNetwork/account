@@ -2,6 +2,7 @@ import { Status, ServerError } from 'nice-grpc';
 import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
 import { nintendoPasswordHash, generateToken } from '@/util';
+import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config } from '@/config-manager';
 import type { LoginRequest, LoginResponse, DeepPartial } from '@pretendonetwork/grpc/api/login_rpc';
@@ -56,7 +57,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 	}
 
 	const accessTokenOptions = {
-		system_type: 0x3, // * API
+		system_type: SystemType.API,
 		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
@@ -65,7 +66,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 	};
 
 	const refreshTokenOptions = {
-		system_type: 0x3, // * API
+		system_type: SystemType.API,
 		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
 		access_level: pnid.access_level,

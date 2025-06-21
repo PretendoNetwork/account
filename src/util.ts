@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import bufferCrc32 from 'buffer-crc32';
 import { crc32 } from 'crc';
 import { sendMail } from '@/mailer';
+import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
 import type { ParsedQs } from 'qs';
@@ -240,7 +241,7 @@ export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.Hyd
 
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const tokenOptions = {
-		system_type: 0xF, // * API
+		system_type: SystemType.PasswordReset,
 		token_type: TokenType.PasswordReset,
 		pid: pnid.pid,
 		access_level: pnid.access_level,

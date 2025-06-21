@@ -10,6 +10,7 @@ import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/ut
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
+import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
 import type { LoginResponse } from '@pretendonetwork/grpc/api/login_rpc';
@@ -231,7 +232,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 	await sendConfirmationEmail(pnid);
 
 	const accessTokenOptions = {
-		system_type: 0x3, // * API
+		system_type: SystemType.API,
 		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
@@ -240,7 +241,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 	};
 
 	const refreshTokenOptions = {
-		system_type: 0x3, // * API
+		system_type: SystemType.API,
 		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
 		access_level: pnid.access_level,

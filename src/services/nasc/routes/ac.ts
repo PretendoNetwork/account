@@ -1,9 +1,10 @@
 import express from 'express';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
 import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, generateToken } from '@/util';
 import { getServerByTitleID } from '@/database';
 import type { NASCRequestParams } from '@/types/services/nasc/request-params';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
-import { TokenType } from '@/types/common/token-types';
 
 const router = express.Router();
 
@@ -66,7 +67,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
 	const tokenOptions = {
-		system_type: 0x2, // * 3DS
+		system_type: SystemType.CTR,
 		token_type: TokenType.NEX,
 		pid: pid,
 		access_level: 0,
@@ -90,8 +91,8 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 
 async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
 	const tokenOptions = {
-		system_type: 0x2, // * 3DS
-		token_type: 0x4, // * Service token
+		system_type: SystemType.CTR,
+		token_type: TokenType.IndependentService,
 		pid: pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
