@@ -1,8 +1,8 @@
 import { config } from '@/config-manager';
 import type { CallContext } from 'nice-grpc';
-import type { GetUserDataResponse, DeepPartial } from '@pretendonetwork/grpc/api/get_user_data_rpc';
-import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
-import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
+import type { GetUserDataResponse, DeepPartial } from '@pretendonetwork/grpc/api/v2/get_user_data_rpc';
+import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
+import type { AuthenticationCallContextExt } from '@/services/grpc/api/v1/authentication-middleware';
 
 export async function getUserData(_request: Empty, context: CallContext & AuthenticationCallContextExt): Promise<DeepPartial<GetUserDataResponse>> {
 	// * This is asserted in authentication-middleware, we know this is never null
