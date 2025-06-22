@@ -1,7 +1,6 @@
 import xmlbuilder from 'xmlbuilder';
-import { SystemType } from '@/types/common/system-types';
 import { getValueFromHeaders } from '@/util';
-import { getPNIDByBasicAuth, getPNIDByTokenAuth } from '@/database';
+import { getPNIDByBasicAuth, getPNIDByNNASAccessToken } from '@/database';
 import type express from 'express';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -24,8 +23,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	if (type === 'Basic' && request.path.includes('v1/api/people/@me/devices')) {
 		pnid = await getPNIDByBasicAuth(token);
 	} else if (type === 'Bearer') {
-		// TODO - This "accepted types list" is mostly a hack. Change this
-		pnid = await getPNIDByTokenAuth(token, [SystemType.WUP, SystemType.CTR]);
+		pnid = await getPNIDByNNASAccessToken(token);
 	}
 
 	if (!pnid) {

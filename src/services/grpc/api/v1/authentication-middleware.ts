@@ -1,5 +1,5 @@
 import { Status, ServerError } from 'nice-grpc';
-import { getPNIDByTokenAuth } from '@/database';
+import { getPNIDByAPIAccessToken } from '@/database';
 import type { ServerMiddlewareCall, CallContext } from 'nice-grpc';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -31,7 +31,7 @@ export async function* authenticationMiddleware<Request, Response>(
 		let pnid = null;
 
 		if (token) {
-			pnid = await getPNIDByTokenAuth(token);
+			pnid = await getPNIDByAPIAccessToken(token);
 		}
 
 		if (!pnid && TOKEN_REQUIRED_PATHS.includes(call.method.path)) {

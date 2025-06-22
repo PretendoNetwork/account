@@ -1,6 +1,6 @@
 import { Status, ServerError } from 'nice-grpc';
 import bcrypt from 'bcrypt';
-import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
+import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
 import { nintendoPasswordHash, generateToken } from '@/util';
 import { config } from '@/config-manager';
 import { SystemType } from '@/types/common/system-types';
@@ -45,7 +45,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Password is incorrect');
 		}
 	} else {
-		pnid = await getPNIDByTokenAuth(refreshToken!); // * We know refreshToken will never be null here
+		pnid = await getPNIDByAPIRefreshToken(refreshToken!); // * We know refreshToken will never be null here
 
 		if (!pnid) {
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');

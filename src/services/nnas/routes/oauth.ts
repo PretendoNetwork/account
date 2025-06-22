@@ -3,7 +3,7 @@ import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
-import { getPNIDByTokenAuth, getPNIDByUsername } from '@/database';
+import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
 import { generateToken } from '@/util';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
@@ -90,7 +90,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		}
 
 		try {
-			pnid = await getPNIDByTokenAuth(refreshToken);
+			pnid = await getPNIDByNNASRefreshToken(refreshToken);
 
 			if (!pnid) {
 				response.status(400).send(xmlbuilder.create({
