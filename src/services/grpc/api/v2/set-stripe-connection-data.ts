@@ -1,9 +1,8 @@
 import { Status, ServerError } from 'nice-grpc';
 import { PNID } from '@/models/pnid';
 import type { CallContext } from 'nice-grpc';
-import type { SetStripeConnectionDataRequest } from '@pretendonetwork/grpc/api/set_stripe_connection_data_rpc';
-import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
-import type { AuthenticationCallContextExt } from '@/services/grpc/api/authentication-middleware';
+import type { SetStripeConnectionDataRequest, SetStripeConnectionDataResponse } from '@pretendonetwork/grpc/api/v2/set_stripe_connection_data_rpc';
+import type { AuthenticationCallContextExt } from '@/services/grpc/api/v1/authentication-middleware';
 
 type StripeMongoUpdateScheme = {
 	'access_level'?: number;
@@ -16,7 +15,7 @@ type StripeMongoUpdateScheme = {
 	'connections.stripe.latest_webhook_timestamp': number;
 };
 
-export async function setStripeConnectionData(request: SetStripeConnectionDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<Empty> {
+export async function setStripeConnectionData(request: SetStripeConnectionDataRequest, context: CallContext & AuthenticationCallContextExt): Promise<SetStripeConnectionDataResponse> {
 	// * This is asserted in authentication-middleware, we know this is never null
 	const pnid = context.pnid!;
 
@@ -26,16 +25,6 @@ export async function setStripeConnectionData(request: SetStripeConnectionDataRe
 
 	if (request.customerId && !pnid.connections.stripe.customer_id) {
 		updateData['connections.stripe.customer_id'] = request.customerId;
-	}
-
-	// * These checks allow for null/0 values in order to reset data if needed
-
-	if (request.accessLevel !== undefined) {
-		updateData.access_level = request.accessLevel;
-	}
-
-	if (request.serverAccessLevel !== undefined) {
-		updateData.server_access_level = request.serverAccessLevel;
 	}
 
 	if (request.subscriptionId !== undefined) {
