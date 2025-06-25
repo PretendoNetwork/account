@@ -5,6 +5,8 @@ import fs from 'fs-extra';
 import bufferCrc32 from 'buffer-crc32';
 import { crc32 } from 'crc';
 import { sendMail } from '@/mailer';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
 import type { ParsedQs } from 'qs';
 import type mongoose from 'mongoose';
@@ -62,7 +64,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 	dataBuffer.writeUInt32LE(options.pid, 0x2);
 	dataBuffer.writeBigUInt64LE(options.expire_time, 0x6);
 
-	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
+	if ((options.token_type !== TokenType.OAuthAccess && options.token_type !== TokenType.OAuthRefresh) || options.system_type === SystemType.API) {
 		// * Access and refresh tokens have smaller bodies due to size constraints
 		// * The API does not have this restraint, however
 		if (options.title_id === undefined || options.access_level === undefined) {
@@ -88,7 +90,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 
 	let final = encrypted;
 
-	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
+	if ((options.token_type !== TokenType.OAuthAccess && options.token_type !== TokenType.OAuthRefresh) || options.system_type === SystemType.API) {
 		// * Access and refresh tokens don't get a checksum due to size constraints
 		const checksum = bufferCrc32(dataBuffer);
 
@@ -140,7 +142,7 @@ export function unpackToken(token: Buffer): Token {
 		expire_time: token.readBigUInt64LE(0x6)
 	};
 
-	if (unpacked.token_type !== 0x1 && unpacked.token_type !== 0x2) {
+	if (unpacked.token_type !== TokenType.OAuthAccess && unpacked.token_type !== TokenType.OAuthRefresh) {
 		unpacked.title_id = token.readBigUInt64LE(0xE);
 		unpacked.access_level = token.readInt8(0x16);
 	}
@@ -239,8 +241,8 @@ export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.Hyd
 
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const tokenOptions = {
-		system_type: 0xF, // * API
-		token_type: 0x5, // * Password reset
+		system_type: SystemType.PasswordReset,
+		token_type: TokenType.PasswordReset,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),

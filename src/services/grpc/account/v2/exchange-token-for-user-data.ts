@@ -1,5 +1,5 @@
 import { Status, ServerError } from 'nice-grpc';
-import { getPNIDByTokenAuth } from '@/database';
+import { getPNIDByAPIAccessToken } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 import { Device } from '@/models/device';
@@ -11,7 +11,7 @@ export async function exchangeTokenForUserData(request: ExchangeTokenForUserData
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
 	}
 
-	const pnid = await getPNIDByTokenAuth(request.token);
+	const pnid = await getPNIDByAPIAccessToken(request.token);
 
 	if (!pnid) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');

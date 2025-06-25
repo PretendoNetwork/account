@@ -3,8 +3,10 @@ import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
-import { getPNIDByTokenAuth, getPNIDByUsername } from '@/database';
+import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
 import { generateToken } from '@/util';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
 import { config } from '@/config-manager';
 import { Device } from '@/models/device';
 
@@ -88,7 +90,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		}
 
 		try {
-			pnid = await getPNIDByTokenAuth(refreshToken);
+			pnid = await getPNIDByNNASRefreshToken(refreshToken);
 
 			if (!pnid) {
 				response.status(400).send(xmlbuilder.create({
@@ -152,17 +154,17 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 	}
 
 	const accessTokenOptions = {
-		system_type: 0x1, // * WiiU
-		token_type: 0x1, // * OAuth Access
+		system_type: SystemType.WUP,
+		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		expire_time: BigInt(Date.now() + (3600 * 1000))
 	};
 
 	const refreshTokenOptions = {
-		system_type: 0x1, // * WiiU
-		token_type: 0x2, // * OAuth Refresh
+		system_type: SystemType.WUP,
+		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
 	};
 
 	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);

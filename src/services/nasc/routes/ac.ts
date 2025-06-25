@@ -1,4 +1,6 @@
 import express from 'express';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
 import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, generateToken } from '@/util';
 import { getServerByTitleID } from '@/database';
 import type { NASCRequestParams } from '@/types/services/nasc/request-params';
@@ -65,8 +67,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
 	const tokenOptions = {
-		system_type: 0x2, // * 3DS
-		token_type: 0x3, // * NEX token
+		system_type: SystemType.CTR,
+		token_type: TokenType.NEX,
 		pid: pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
@@ -89,12 +91,12 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 
 async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
 	const tokenOptions = {
-		system_type: 0x2, // * 3DS
-		token_type: 0x4, // * Service token
+		system_type: SystemType.CTR,
+		token_type: TokenType.IndependentService,
 		pid: pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now()) // TODO - Hack. Independent services expire their own tokens, so we give them the ISSUED time, not an EXPIRE time
 	};
 
 	// TODO - Handle null tokens

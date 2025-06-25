@@ -7,6 +7,8 @@ import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
 import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -368,8 +370,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	await sendConfirmationEmail(pnid);
 
 	const accessTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x1, // * OAuth Access
+		system_type: SystemType.API,
+		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
@@ -377,12 +379,12 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	};
 
 	const refreshTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x2, // * OAuth Refresh
+		system_type: SystemType.API,
+		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
 	};
 
 	try {
