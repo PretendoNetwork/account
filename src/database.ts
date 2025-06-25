@@ -106,14 +106,14 @@ export async function getPNIDByBasicAuth(token: string): Promise<HydratedPNIDDoc
 	return pnid;
 }
 
-async function getPNIDByOAuthToken(token: string, expectedSystemTypes: SystemType[], expectedTokenType: TokenType): Promise<HydratedPNIDDocument | null> {
+async function getPNIDByOAuthToken(token: string, expectedSystemType: SystemType, expectedTokenType: TokenType): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	try {
 		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
 		const unpackedToken = unpackToken(decryptedToken);
 
-		if (!expectedSystemTypes.includes(unpackedToken.system_type)) {
+		if (unpackedToken.system_type !== expectedSystemType) {
 			return null;
 		}
 		if (unpackedToken.token_type !== expectedTokenType) {
@@ -139,19 +139,19 @@ async function getPNIDByOAuthToken(token: string, expectedSystemTypes: SystemTyp
 }
 
 export async function getPNIDByNNASAccessToken(token: string): Promise<HydratedPNIDDocument | null> {
-	return getPNIDByOAuthToken(token, [SystemType.WUP, SystemType.CTR], TokenType.OAuthAccess);
+	return getPNIDByOAuthToken(token, SystemType.WUP, TokenType.OAuthAccess);
 }
 
 export async function getPNIDByNNASRefreshToken(token: string): Promise<HydratedPNIDDocument | null> {
-	return getPNIDByOAuthToken(token, [SystemType.WUP, SystemType.CTR], TokenType.OAuthRefresh);
+	return getPNIDByOAuthToken(token, SystemType.WUP, TokenType.OAuthRefresh);
 }
 
 export async function getPNIDByAPIAccessToken(token: string): Promise<HydratedPNIDDocument | null> {
-	return getPNIDByOAuthToken(token, [SystemType.API], TokenType.OAuthAccess);
+	return getPNIDByOAuthToken(token, SystemType.API, TokenType.OAuthAccess);
 }
 
 export async function getPNIDByAPIRefreshToken(token: string): Promise<HydratedPNIDDocument | null> {
-	return getPNIDByOAuthToken(token, [SystemType.API], TokenType.OAuthRefresh);
+	return getPNIDByOAuthToken(token, SystemType.API, TokenType.OAuthRefresh);
 }
 
 export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile | null> {
