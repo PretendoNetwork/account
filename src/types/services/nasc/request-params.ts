@@ -5,6 +5,7 @@ export interface NASCRequestParams {
 	macadr: string;
 	titleid: string;
 	servertype: string;
+	gameid: string;
 	userid?: string;
 	uidhmac?: string;
 	passwd?: string;

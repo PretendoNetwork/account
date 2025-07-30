@@ -16,7 +16,8 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		!requestParams.csnum ||
 		!requestParams.macadr ||
 		!requestParams.titleid ||
-		!requestParams.servertype
+		!requestParams.servertype ||
+		!requestParams.gameid
 	) {
 		response.status(200).send(nascError('null').toString()); // * This is what Nintendo sends
 		return;

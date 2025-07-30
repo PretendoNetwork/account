@@ -17,6 +17,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	const requestParams: NASCRequestParams = request.body;
 	const action = nintendoBase64Decode(requestParams.action).toString();
 	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
+	const gameServerID = nintendoBase64Decode(requestParams.gameid).toString();
 	const nexAccount = request.nexAccount;
 	let responseData = nascError('null');
 
@@ -25,24 +26,25 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	// TODO - REMOVE AFTER PUBLIC LAUNCH
-	// * LET EVERYONE IN THE `test` FRIENDS SERVER
-	// * THAT WAY EVERYONE CAN GET AN ASSIGNED PID
-	let serverAccessLevel = 'test';
-	if (titleID !== '0004013000003202') {
-		serverAccessLevel = nexAccount.server_access_level;
-	}
-
-	const server = await getServerByTitleID(titleID, serverAccessLevel);
+	const server = await getServerByTitleID(titleID, nexAccount.server_access_level);
 
 	if (!server || !server.aes_key) {
 		response.status(200).send(nascError('110').toString());
 		return;
 	}
 
+	if (gameServerID !== server.game_server_id) {
+		// * If there is a server for a given title ID but it has a different game server ID,
+		// * then the title probably requires custom patches. There is an error for an invalid
+		// * game ID, but that is irrelevant here since we search the server by the title ID
+		// *
+		// * 152 is a custom error code
+		response.status(200).send(nascError('152').toString());
+		return;
+	}
+
 	if (server.maintenance_mode) {
-		// TODO - FIND THE REAL UNDER MAINTENANCE ERROR CODE. 110 IS NOT IT
-		response.status(200).send(nascError('110').toString());
+		response.status(200).send(nascError('101').toString());
 		return;
 	}
 
