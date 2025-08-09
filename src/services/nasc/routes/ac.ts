@@ -36,7 +36,10 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	if (gameServerID !== server.game_server_id) {
 		// * If there is a server for a given title ID but it has a different game server ID,
 		// * then the title probably requires custom patches. There is an error for an invalid
-		// * game ID, but that is irrelevant here since we search the server by the title ID
+		// * game ID, but that is irrelevant here since we search the server by the title ID.
+		// *
+		// * TODO - Keep the original game server ID and add a new "patched" field to support
+		// * searching by game server ID in the future.
 		// *
 		// * 152 is a custom error code
 		response.status(200).send(nascError('152').toString());
