@@ -7,6 +7,7 @@ import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
 import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import IP2LocationManager from '@/ip2location';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
@@ -63,6 +64,33 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	}
 
 	const person: Person = request.body.person;
+
+	// TODO - This is kinda ugly
+	const birthdate = new Date(person.birth_date);
+	const today = new Date();
+	const eighteenthBirthday = new Date(birthdate);
+	eighteenthBirthday.setFullYear(birthdate.getFullYear() + 18);
+
+	if (today < eighteenthBirthday) {
+		// TODO - Enable `CF-IPCountry` in Cloudflare and only use IP2Location as a fallback
+		const ip = (request.headers['cf-connecting-ip'] || request.headers['x-forwarded-for'] || request.ip) as string | undefined;
+		if (ip) {
+			const location = IP2LocationManager.lookup(ip);
+			if (location?.country === 'US' && location?.region === 'Mississippi') {
+				// * See https://bsky.social/about/blog/08-22-2025-mississippi-hb1126 for details
+				response.status(403).send(xmlbuilder.create({
+					errors: {
+						error: {
+							code: '1228', // TODO - This is made up because 228 is a Mississippi area code /shrug
+							message: 'Mississippi law prevents us from collecting any data from any users under the age of 18 without extreme parental verification methods.' // TODO - Translate this? It wont show to end users so maybe not though
+						}
+					}
+				}).end());
+
+				return;
+			}
+		}
+	}
 
 	const userExists = await doesPNIDExist(person.user_id);
 
