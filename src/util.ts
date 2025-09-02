@@ -338,3 +338,24 @@ export function getValueFromHeaders(headers: IncomingHttpHeaders, key: string): 
 export function mapToObject(map: Map<any, any>): object {
 	return Object.fromEntries(Array.from(map.entries(), ([k, v]) => v instanceof Map ? [k, mapToObject(v)] : [k, v]));
 }
+
+export function isValidBirthday(dateString: string): boolean {
+	// * Birthdays MUST be in the format YYYY-MM-DD. This is how the
+	// * console sends them, regardless of region
+
+	// * Make sure general format is right
+	const regex = /^\d{4}-\d{2}-\d{2}$/;
+	if (!regex.test(dateString)) {
+		return false;
+	}
+
+	// * Actually check that it's a valid date
+	const parts = dateString.split('-');
+	const year = parseInt(parts[0], 10);
+	const month = parseInt(parts[1], 10);
+	const day = parseInt(parts[2], 10);
+
+	const date = new Date(year, month - 1, day);
+
+	return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}

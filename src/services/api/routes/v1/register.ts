@@ -6,7 +6,7 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { isValidBirthday, nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
@@ -69,6 +69,36 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 			return;
 		}
+	}
+
+	if (!clientIP || clientIP === '') {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'IP must be forwarded to check local laws'
+		});
+
+		return;
+	}
+
+	if (!birthday || birthday === '') {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Birthday must be set'
+		});
+
+		return;
+	}
+
+	if (!isValidBirthday(birthday)) {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Birthday must be a valid date'
+		});
+
+		return;
 	}
 
 	// TODO - This is kinda ugly
