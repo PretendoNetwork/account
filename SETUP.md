@@ -67,7 +67,7 @@ Configurations are loaded through environment variables. `.env` files are suppor
 | Name                                          | Description                                                                                    | Optional |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------- |
 | `PN_ACT_CONFIG_HTTP_PORT`                     | The HTTP port the server listens on                                                            | No       |
-| `PN_ACT_CONFIG_IP2LOCATION_TOKEN`             | Download token for https://lite.ip2location.com. Used to download the local IP databases       | No       |
+| `PN_ACT_CONFIG_IP2LOCATION_TOKEN`             | Download token for https://lite.ip2location.com. Used to download the local IP databases       | Yes      |
 | `PN_ACT_CONFIG_MONGO_CONNECTION_STRING`       | MongoDB connection string                                                                      | No       |
 | `PN_ACT_CONFIG_MONGOOSE_CONNECT_OPTIONS_PATH` | Path to a `.json` file containing Mongoose connection options                                  | Yes      |
 | `PN_ACT_CONFIG_REDIS_URL`                     | Redis URL                                                                                      | Yes      |

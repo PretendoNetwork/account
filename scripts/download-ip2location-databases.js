@@ -17,6 +17,11 @@ const databases = {
 };
 
 async function main() {
+	if (!process.env.PN_ACT_CONFIG_IP2LOCATION_TOKEN) {
+		// * Optional
+		return;
+	}
+
 	for (const name in databases) {
 		const database = databases[name];
 		const response = await fetch(`https://www.ip2location.com/download/?token=${process.env.PN_ACT_CONFIG_IP2LOCATION_TOKEN}&file=${name}`);
