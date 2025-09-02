@@ -68,7 +68,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 	if (age < 18) {
 		// TODO - Enable `CF-IPCountry` in Cloudflare and only use IP2Location as a fallback
-		const ip = (request.headers['cf-connecting-ip'] || request.headers['x-forwarded-for'] || request.ip) as string | undefined;
+		const ip = request.ip;
 		if (ip) {
 			const location = IP2LocationManager.lookup(ip);
 			if (location?.country === 'US' && location?.region === 'Mississippi') {
