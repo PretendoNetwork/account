@@ -6,7 +6,7 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { isValidBirthday, nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { isValidBirthday, getAgeFromDate, nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
@@ -101,13 +101,9 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	// TODO - This is kinda ugly
-	const birthdate = new Date(birthday);
-	const today = new Date();
-	const eighteenthBirthday = new Date(birthdate);
-	eighteenthBirthday.setFullYear(birthdate.getFullYear() + 18);
+	const age = getAgeFromDate(birthday);
 
-	if (today < eighteenthBirthday) {
+	if (age < 18) {
 		// TODO - Enable `CF-IPCountry` in Cloudflare and only use IP2Location as a fallback
 		const location = IP2LocationManager.lookup(clientIP);
 		if (location?.country === 'US' && location?.region === 'Mississippi') {

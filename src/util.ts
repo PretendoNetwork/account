@@ -359,3 +359,28 @@ export function isValidBirthday(dateString: string): boolean {
 
 	return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
+
+export function getAgeFromDate(dateString: string): number {
+	if (!isValidBirthday(dateString)) {
+		return -1;
+	}
+
+	const parts = dateString.split('-');
+	const birthYear = parseInt(parts[0], 10);
+	const birthMonth = parseInt(parts[1], 10);
+	const birthDay = parseInt(parts[2], 10);
+
+	const today = new Date();
+	const currentYear = today.getFullYear();
+	const currentMonth = today.getMonth() + 1;
+	const currentDay = today.getDate();
+
+	let age = currentYear - birthYear;
+
+	// * Check if birthday has actually happened this year yet
+	if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
+		age--;
+	}
+
+	return age;
+}

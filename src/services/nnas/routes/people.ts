@@ -6,7 +6,7 @@ import moment from 'moment';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
-import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import { getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -64,14 +64,9 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	}
 
 	const person: Person = request.body.person;
+	const age = getAgeFromDate(person.birth_date);
 
-	// TODO - This is kinda ugly
-	const birthdate = new Date(person.birth_date);
-	const today = new Date();
-	const eighteenthBirthday = new Date(birthdate);
-	eighteenthBirthday.setFullYear(birthdate.getFullYear() + 18);
-
-	if (today < eighteenthBirthday) {
+	if (age < 18) {
 		// TODO - Enable `CF-IPCountry` in Cloudflare and only use IP2Location as a fallback
 		const ip = (request.headers['cf-connecting-ip'] || request.headers['x-forwarded-for'] || request.ip) as string | undefined;
 		if (ip) {
