@@ -31,7 +31,6 @@ async function main() {
 
 		try {
 			for await (const entry of zip) {
-				console.log(entry.filename);
 				if (entry.filename === database.file_name) {
 					const readStream = await entry.openReadStream();
 					const writeStream = fs.createWriteStream(database.save_path);
