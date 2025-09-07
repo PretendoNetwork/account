@@ -38,8 +38,8 @@ async function main() {
 					await pipeline(readStream, writeStream);
 				}
 			}
-		} finally {
-			await zip.close();
+		} catch (error) {
+			console.error(error);
 		}
 	}
 }
