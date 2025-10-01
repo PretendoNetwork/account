@@ -31,6 +31,7 @@ const app = express();
 // * START APPLICATION
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
+app.set('trust proxy', true); // TODO - Make this configurable
 
 // * Create router
 LOG_INFO('Setting up Middleware');

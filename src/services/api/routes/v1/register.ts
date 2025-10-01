@@ -6,7 +6,8 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { isValidBirthday, getAgeFromDate, nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import IP2LocationManager from '@/ip2location';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { LOG_ERROR } from '@/logger';
@@ -37,6 +38,8 @@ const DEFAULT_MII_DATA = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZg
  * Description: Creates a new user PNID
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
+	const clientIP = request.body.ip?.trim(); // * This has to be forwarded since this request comes from the websites server
+	const birthday = request.body.birthday?.trim();
 	const email = request.body.email?.trim();
 	const username = request.body.username?.trim();
 	const miiName = request.body.mii_name?.trim();
@@ -62,6 +65,53 @@ router.post('/', async (request: express.Request, response: express.Response): P
 				app: 'api',
 				status: 400,
 				error: 'Captcha verification failed'
+			});
+
+			return;
+		}
+	}
+
+	if (!clientIP || clientIP === '') {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'IP must be forwarded to check local laws'
+		});
+
+		return;
+	}
+
+	if (!birthday || birthday === '') {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Birthday must be set'
+		});
+
+		return;
+	}
+
+	if (!isValidBirthday(birthday)) {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Birthday must be a valid date'
+		});
+
+		return;
+	}
+
+	const age = getAgeFromDate(birthday);
+
+	if (age < 18) {
+		// TODO - Enable `CF-IPCountry` in Cloudflare and only use IP2Location as a fallback
+		const location = IP2LocationManager.lookup(clientIP);
+		if (location?.country === 'US' && location?.region === 'Mississippi') {
+			// * See https://bsky.social/about/blog/08-22-2025-mississippi-hb1126 for details
+			response.status(403).json({
+				app: 'api',
+				status: 403,
+				error: 'Mississippi law prevents us from collecting any data from any users under the age of 18 without extreme parental verification methods.' // TODO - Expand on this and translate it? this will be shown on the website
 			});
 
 			return;
