@@ -223,15 +223,22 @@ PNIDSchema.method('scrub', async function scrub() {
 	// * Remove all personal info from a PNID
 	// * Username and PID remain so thye do not get assigned again
 
-	if (this.connections?.stripe?.subscription_id) {
+	if (this.connections?.stripe?.customer_id) {
 		try {
+			const customerID = this.connections.stripe.customer_id;
+
 			if (stripe) {
-				await stripe.subscriptions.del(this.connections.stripe.subscription_id);
+				const customer = await stripe.customers.retrieve(customerID);
+
+				if (!customer.deleted) {
+					// * Deleting will also cancel subscriptions automatically
+					await stripe.customers.del(customerID);
+				}
 			} else {
-				LOG_WARN(`SCRUBBING USER DATA FOR USER ${this.username}. HAS STRIPE SUBSCRIPTION ${this.connections.stripe.subscription_id}, BUT STRIPE CLIENT NOT ENABLED. SUBSCRIPTION NOT CANCELED`);
+				LOG_WARN(`SCRUBBING USER DATA FOR USER ${this.username}. HAS STRIPE DATA UDER ID ${this.connections.stripe.customer_id}, BUT STRIPE CLIENT NOT ENABLED.`);
 			}
 		} catch (error) {
-			LOG_ERROR(`ERROR REMOVING ${this.username} STRIPE SUBSCRIPTION. ${error}`);
+			LOG_ERROR(`ERROR REMOVING ${this.username} STRIPE DATA. ${error}`);
 		}
 	}
 
