@@ -6,6 +6,8 @@ import TGA from 'tga';
 import got from 'got';
 import Mii from 'mii-js';
 import Stripe from 'stripe';
+import { createChannel, createClient, Metadata } from 'nice-grpc';
+import { MiiverseServiceDefinition } from '@pretendonetwork/grpc/miiverse/v2/miiverse_service';
 import { DeviceSchema } from '@/models/device';
 import { uploadCDNAsset } from '@/util';
 import { LOG_ERROR, LOG_WARN } from '@/logger';
@@ -21,6 +23,10 @@ if (config.stripe?.secret_key) {
 		typescript: true
 	});
 }
+
+// TODO - Make this optional later
+const gRPCMiiverseChannel = createChannel(`${config.grpc.miiverse.host}:${config.grpc.miiverse.port}`);
+const gRPCMiiverseClient = createClient(MiiverseServiceDefinition, gRPCMiiverseChannel);
 
 const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	deleted: {
@@ -256,6 +262,18 @@ PNIDSchema.method('scrub', async function scrub() {
 				}
 			});
 		}
+	}
+
+	try {
+		await gRPCMiiverseClient.deleteAccountData({
+			pid: this.pid
+		}, {
+			metadata: Metadata({
+				'X-API-Key': config.grpc.miiverse.api_key
+			})
+		});
+	} catch (error) {
+		LOG_ERROR(`ERROR REMOVING ${this.username} MIIVERSE DATA. ${error}`);
 	}
 
 	await this.updateMii({

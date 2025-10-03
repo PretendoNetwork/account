@@ -53,6 +53,11 @@ export interface Config {
 			api: string;
 		};
 		port: number;
+		miiverse: {
+			host: string;
+			port: number;
+			api_key: string;
+		};
 	};
 	stripe?: {
 		secret_key: string;

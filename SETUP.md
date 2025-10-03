@@ -93,3 +93,6 @@ Configurations are loaded through environment variables. `.env` files are suppor
 | `PN_ACT_CONFIG_DISCOURSE_FORUM_URL`           | Used for anonymizing user accounts on Discourse during account deletion. Forum anonymization skipped if not set | No       |
 | `PN_ACT_CONFIG_DISCOURSE_API_KEY`             | Used for anonymizing user accounts on Discourse during account deletion. Forum anonymization skipped if not set | No       |
 | `PN_ACT_CONFIG_DISCOURSE_API_USERNAME`        | Used for anonymizing user accounts on Discourse during account deletion. Forum anonymization skipped if not set | No       |
+| `PN_ACT_CONFIG_GRPC_MIIVERSE_HOST`            | Used to remove Miiverse user data during account deletion                                                       | Yes      |
+| `PN_ACT_CONFIG_GRPC_MIIVERSE_PORT`            | Used to remove Miiverse user data during account deletion                                                       | Yes      |
+| `PN_ACT_CONFIG_GRPC_MIIVERSE_KEY_API`         | Used to remove Miiverse user data during account deletion                                                       | Yes      |
