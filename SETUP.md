@@ -64,29 +64,32 @@ The Pretendo Network website uses this server as an API for querying user inform
 
 Configurations are loaded through environment variables. `.env` files are supported. All configuration options will be gone over, both required and optional. There also exists an example `.env` file
 
-| Name                                          | Description                                                                                    | Optional |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------- |
-| `PN_ACT_CONFIG_HTTP_PORT`                     | The HTTP port the server listens on                                                            | No       |
-| `PN_ACT_CONFIG_IP2LOCATION_TOKEN`             | Download token for https://lite.ip2location.com. Used to download the local IP databases       | Yes      |
-| `PN_ACT_CONFIG_MONGO_CONNECTION_STRING`       | MongoDB connection string                                                                      | No       |
-| `PN_ACT_CONFIG_MONGOOSE_CONNECT_OPTIONS_PATH` | Path to a `.json` file containing Mongoose connection options                                  | Yes      |
-| `PN_ACT_CONFIG_REDIS_URL`                     | Redis URL                                                                                      | Yes      |
-| `PN_ACT_CONFIG_EMAIL_SES_REGION`              | Amazon SES Region                                                                              | Yes      |
-| `PN_ACT_CONFIG_EMAIL_SES_ACCESS_KEY`          | Amazon SES Access Key                                                                          | Yes      |
-| `PN_ACT_CONFIG_EMAIL_SES_SECRET_KEY`          | Amazon SES Access Secret                                                                       | Yes      |
-| `PN_ACT_CONFIG_EMAIL_FROM`                    | Email "from" address                                                                           | Yes      |
-| `PN_ACT_CONFIG_S3_ENDPOINT`                   | s3 server endpoint                                                                             | Yes      |
-| `PN_ACT_CONFIG_S3_ACCESS_KEY`                 | s3 secret key                                                                                  | Yes      |
-| `PN_ACT_CONFIG_S3_ACCESS_SECRET`              | s3 secret                                                                                      | Yes      |
-| `PN_ACT_CONFIG_HCAPTCHA_SECRET`               | hCaptcha secret (in the form `0x...`)                                                          | Yes      |
-| `PN_ACT_CONFIG_CDN_SUBDOMAIN`                 | Subdomain used to serve CDN contents if s3 is disabled                                         | Yes      |
-| `PN_ACT_CONFIG_CDN_DISK_PATH`                 | File system path used to store CDN contents if s3 is disabled                                  | Yes      |
-| `PN_ACT_CONFIG_CDN_BASE_URL`                  | URL for serving CDN contents (usually the same as s3 endpoint)                                 | No       |
-| `PN_ACT_CONFIG_WEBSITE_BASE`                  | Website URL                                                                                    | Yes      |
-| `PN_ACT_CONFIG_AES_KEY`                       | AES-256 key used for encrypting tokens                                                         | No       |
-| `PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET`    | HMAC secret key (16 bytes in hex format) used to sign uploaded DataStore files                 | No       |
-| `PN_ACT_CONFIG_GRPC_MASTER_API_KEY_ACCOUNT`   | Master API key to interact with the account gRPC service                                       | No       |
-| `PN_ACT_CONFIG_GRPC_MASTER_API_KEY_API`       | Master API key to interact with the API gRPC service                                           | No       |
-| `PN_ACT_CONFIG_GRPC_PORT`                     | gRPC server port                                                                               | No       |
-| `PN_ACT_CONFIG_STRIPE_SECRET_KEY`             | Stripe API key. Used to cancel subscriptions when scrubbing PNIDs                              | Yes      |
-| `PN_ACT_CONFIG_SERVER_ENVIRONMENT`            | Server environment. Currently only used by the Wii U Account Settings app. `prod`/`test`/`dev` | Yes      |
+| Name                                          | Description                                                                                                     | Optional |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------- |
+| `PN_ACT_CONFIG_HTTP_PORT`                     | The HTTP port the server listens on                                                                             | No       |
+| `PN_ACT_CONFIG_IP2LOCATION_TOKEN`             | Download token for https://lite.ip2location.com. Used to download the local IP databases                        | Yes      |
+| `PN_ACT_CONFIG_MONGO_CONNECTION_STRING`       | MongoDB connection string                                                                                       | No       |
+| `PN_ACT_CONFIG_MONGOOSE_CONNECT_OPTIONS_PATH` | Path to a `.json` file containing Mongoose connection options                                                   | Yes      |
+| `PN_ACT_CONFIG_REDIS_URL`                     | Redis URL                                                                                                       | Yes      |
+| `PN_ACT_CONFIG_EMAIL_SES_REGION`              | Amazon SES Region                                                                                               | Yes      |
+| `PN_ACT_CONFIG_EMAIL_SES_ACCESS_KEY`          | Amazon SES Access Key                                                                                           | Yes      |
+| `PN_ACT_CONFIG_EMAIL_SES_SECRET_KEY`          | Amazon SES Access Secret                                                                                        | Yes      |
+| `PN_ACT_CONFIG_EMAIL_FROM`                    | Email "from" address                                                                                            | Yes      |
+| `PN_ACT_CONFIG_S3_ENDPOINT`                   | s3 server endpoint                                                                                              | Yes      |
+| `PN_ACT_CONFIG_S3_ACCESS_KEY`                 | s3 secret key                                                                                                   | Yes      |
+| `PN_ACT_CONFIG_S3_ACCESS_SECRET`              | s3 secret                                                                                                       | Yes      |
+| `PN_ACT_CONFIG_HCAPTCHA_SECRET`               | hCaptcha secret (in the form `0x...`)                                                                           | Yes      |
+| `PN_ACT_CONFIG_CDN_SUBDOMAIN`                 | Subdomain used to serve CDN contents if s3 is disabled                                                          | Yes      |
+| `PN_ACT_CONFIG_CDN_DISK_PATH`                 | File system path used to store CDN contents if s3 is disabled                                                   | Yes      |
+| `PN_ACT_CONFIG_CDN_BASE_URL`                  | URL for serving CDN contents (usually the same as s3 endpoint)                                                  | No       |
+| `PN_ACT_CONFIG_WEBSITE_BASE`                  | Website URL                                                                                                     | Yes      |
+| `PN_ACT_CONFIG_AES_KEY`                       | AES-256 key used for encrypting tokens                                                                          | No       |
+| `PN_ACT_CONFIG_DATASTORE_SIGNATURE_SECRET`    | HMAC secret key (16 bytes in hex format) used to sign uploaded DataStore files                                  | No       |
+| `PN_ACT_CONFIG_GRPC_MASTER_API_KEY_ACCOUNT`   | Master API key to interact with the account gRPC service                                                        | No       |
+| `PN_ACT_CONFIG_GRPC_MASTER_API_KEY_API`       | Master API key to interact with the API gRPC service                                                            | No       |
+| `PN_ACT_CONFIG_GRPC_PORT`                     | gRPC server port                                                                                                | No       |
+| `PN_ACT_CONFIG_STRIPE_SECRET_KEY`             | Stripe API key. Used to cancel subscriptions when scrubbing PNIDs                                               | Yes      |
+| `PN_ACT_CONFIG_SERVER_ENVIRONMENT`            | Server environment. Currently only used by the Wii U Account Settings app. `prod`/`test`/`dev`                  | Yes      |
+| `PN_ACT_CONFIG_DISCOURSE_FORUM_URL`           | Used for anonymizing user accounts on Discourse during account deletion. Forum anonymization skipped if not set | No       |
+| `PN_ACT_CONFIG_DISCOURSE_API_KEY`             | Used for anonymizing user accounts on Discourse during account deletion. Forum anonymization skipped if not set | No       |
+| `PN_ACT_CONFIG_DISCOURSE_API_USERNAME`        | Used for anonymizing user accounts on Discourse during account deletion. Forum anonymization skipped if not set | No       |

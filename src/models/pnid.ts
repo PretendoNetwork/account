@@ -242,6 +242,22 @@ PNIDSchema.method('scrub', async function scrub() {
 		}
 	}
 
+	if (config.discourse.forum_url && config.discourse.api_key && config.discourse.api_username) {
+		const response = await fetch(`${config.discourse.forum_url}/u/by-external/${this.pid}.json`);
+		const json = await response.json();
+
+		if (!json.errors && json.user) {
+			await fetch(`${config.discourse.forum_url}/admin/users/${json.user.id}/anonymize.json`, {
+				method: 'PUT',
+				headers: {
+					'content-type': 'application/json',
+					'Api-Key': config.discourse.api_key,
+					'Api-Username': config.discourse.api_username
+				}
+			});
+		}
+	}
+
 	await this.updateMii({
 		name: 'Default',
 		primary: 'Y',

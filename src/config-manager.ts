@@ -92,6 +92,11 @@ export const config: Config = {
 		local_cdn: (process.env.PN_ACT_CONFIG_DOMAINS_LOCAL_CDN || '').split(','),
 		nasc: (process.env.PN_ACT_CONFIG_DOMAINS_NASC || 'nasc.pretendo.cc').split(','),
 		nnas: (process.env.PN_ACT_CONFIG_DOMAINS_NNAS || 'c.account.pretendo.cc,account.pretendo.cc').split(',')
+	},
+	discourse: {
+		forum_url: process.env.PN_ACT_CONFIG_DISCOURSE_FORUM_URL || '',
+		api_key: process.env.PN_ACT_CONFIG_DISCOURSE_API_KEY || '',
+		api_username: process.env.PN_ACT_CONFIG_DISCOURSE_API_USERNAME || ''
 	}
 };
 

@@ -62,4 +62,9 @@ export interface Config {
 		signature_secret: string;
 	};
 	domains: Record<DomainService, string[]>;
+	discourse: {
+		forum_url: string;
+		api_key: string;
+		api_username: string;
+	};
 }
