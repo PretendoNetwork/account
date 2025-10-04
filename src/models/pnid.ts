@@ -6,6 +6,8 @@ import TGA from 'tga';
 import got from 'got';
 import Mii from 'mii-js';
 import Stripe from 'stripe';
+import { createChannel, createClient, Metadata } from 'nice-grpc';
+import { MiiverseServiceDefinition } from '@pretendonetwork/grpc/miiverse/v2/miiverse_service';
 import { DeviceSchema } from '@/models/device';
 import { uploadCDNAsset } from '@/util';
 import { LOG_ERROR, LOG_WARN } from '@/logger';
@@ -21,6 +23,10 @@ if (config.stripe?.secret_key) {
 		typescript: true
 	});
 }
+
+// TODO - Make this optional later
+const gRPCMiiverseChannel = createChannel(`${config.grpc.miiverse.host}:${config.grpc.miiverse.port}`);
+const gRPCMiiverseClient = createClient(MiiverseServiceDefinition, gRPCMiiverseChannel);
 
 const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 	deleted: {
@@ -223,16 +229,55 @@ PNIDSchema.method('scrub', async function scrub() {
 	// * Remove all personal info from a PNID
 	// * Username and PID remain so thye do not get assigned again
 
-	if (this.connections?.stripe?.subscription_id) {
+	if (this.connections?.stripe?.customer_id) {
 		try {
+			const customerID = this.connections.stripe.customer_id;
+
 			if (stripe) {
-				await stripe.subscriptions.del(this.connections.stripe.subscription_id);
+				const customer = await stripe.customers.retrieve(customerID);
+
+				if (!customer.deleted) {
+					// * Deleting will also cancel subscriptions automatically
+					await stripe.customers.del(customerID);
+				}
 			} else {
-				LOG_WARN(`SCRUBBING USER DATA FOR USER ${this.username}. HAS STRIPE SUBSCRIPTION ${this.connections.stripe.subscription_id}, BUT STRIPE CLIENT NOT ENABLED. SUBSCRIPTION NOT CANCELED`);
+				LOG_WARN(`SCRUBBING USER DATA FOR USER ${this.username}. HAS STRIPE DATA UDER ID ${this.connections.stripe.customer_id}, BUT STRIPE CLIENT NOT ENABLED.`);
 			}
 		} catch (error) {
-			LOG_ERROR(`ERROR REMOVING ${this.username} STRIPE SUBSCRIPTION. ${error}`);
+			LOG_ERROR(`ERROR REMOVING ${this.username} STRIPE DATA. ${error}`);
 		}
+	}
+
+	if (config.discourse.forum_url && config.discourse.api_key && config.discourse.api_username) {
+		try {
+			const response = await fetch(`${config.discourse.forum_url}/u/by-external/${this.pid}.json`);
+			const json = await response.json();
+
+			if (!json.errors && json.user) {
+				await fetch(`${config.discourse.forum_url}/admin/users/${json.user.id}/anonymize.json`, {
+					method: 'PUT',
+					headers: {
+						'content-type': 'application/json',
+						'Api-Key': config.discourse.api_key,
+						'Api-Username': config.discourse.api_username
+					}
+				});
+			}
+		} catch (error) {
+			LOG_ERROR(`ERROR REMOVING ${this.username} FORUM DATA. ${error}`);
+		}
+	}
+
+	try {
+		await gRPCMiiverseClient.deleteAccountData({
+			pid: this.pid
+		}, {
+			metadata: Metadata({
+				'X-API-Key': config.grpc.miiverse.api_key
+			})
+		});
+	} catch (error) {
+		LOG_ERROR(`ERROR REMOVING ${this.username} MIIVERSE DATA. ${error}`);
 	}
 
 	await this.updateMii({

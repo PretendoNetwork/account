@@ -53,6 +53,11 @@ export interface Config {
 			api: string;
 		};
 		port: number;
+		miiverse: {
+			host: string;
+			port: number;
+			api_key: string;
+		};
 	};
 	stripe?: {
 		secret_key: string;
@@ -62,4 +67,9 @@ export interface Config {
 		signature_secret: string;
 	};
 	domains: Record<DomainService, string[]>;
+	discourse: {
+		forum_url: string;
+		api_key: string;
+		api_username: string;
+	};
 }

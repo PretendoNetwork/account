@@ -77,7 +77,12 @@ export const config: Config = {
 			account: process.env.PN_ACT_CONFIG_GRPC_MASTER_API_KEY_ACCOUNT || '',
 			api: process.env.PN_ACT_CONFIG_GRPC_MASTER_API_KEY_API || ''
 		},
-		port: Number(process.env.PN_ACT_CONFIG_GRPC_PORT || '')
+		port: Number(process.env.PN_ACT_CONFIG_GRPC_PORT || ''),
+		miiverse: {
+			host: process.env.PN_ACT_CONFIG_GRPC_MIIVERSE_HOST || '',
+			port: Number(process.env.PN_ACT_CONFIG_GRPC_MIIVERSE_PORT || ''),
+			api_key: process.env.PN_ACT_CONFIG_GRPC_MIIVERSE_KEY_API || ''
+		}
 	},
 	server_environment: process.env.PN_ACT_CONFIG_SERVER_ENVIRONMENT || '',
 	datastore: {
@@ -92,6 +97,11 @@ export const config: Config = {
 		local_cdn: (process.env.PN_ACT_CONFIG_DOMAINS_LOCAL_CDN || '').split(','),
 		nasc: (process.env.PN_ACT_CONFIG_DOMAINS_NASC || 'nasc.pretendo.cc').split(','),
 		nnas: (process.env.PN_ACT_CONFIG_DOMAINS_NNAS || 'c.account.pretendo.cc,account.pretendo.cc').split(',')
+	},
+	discourse: {
+		forum_url: process.env.PN_ACT_CONFIG_DISCOURSE_FORUM_URL || '',
+		api_key: process.env.PN_ACT_CONFIG_DISCOURSE_API_KEY || '',
+		api_username: process.env.PN_ACT_CONFIG_DISCOURSE_API_USERNAME || ''
 	}
 };
 
