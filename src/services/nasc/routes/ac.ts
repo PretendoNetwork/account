@@ -1,8 +1,10 @@
 import express from 'express';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
 import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, generateToken } from '@/util';
 import { getServerByTitleID } from '@/database';
-import { NASCRequestParams } from '@/types/services/nasc/request-params';
-import { HydratedServerDocument } from '@/types/mongoose/server';
+import type { NASCRequestParams } from '@/types/services/nasc/request-params';
+import type { HydratedServerDocument } from '@/types/mongoose/server';
 
 const router = express.Router();
 
@@ -15,6 +17,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	const requestParams: NASCRequestParams = request.body;
 	const action = nintendoBase64Decode(requestParams.action).toString();
 	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
+	const gameServerID = nintendoBase64Decode(requestParams.gameid).toString();
 	const nexAccount = request.nexAccount;
 	let responseData = nascError('null');
 
@@ -23,24 +26,28 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	// TODO - REMOVE AFTER PUBLIC LAUNCH
-	// * LET EVERYONE IN THE `test` FRIENDS SERVER
-	// * THAT WAY EVERYONE CAN GET AN ASSIGNED PID
-	let serverAccessLevel = 'test';
-	if (titleID !== '0004013000003202') {
-		serverAccessLevel = nexAccount.server_access_level;
-	}
-
-	const server = await getServerByTitleID(titleID, serverAccessLevel);
+	const server = await getServerByTitleID(titleID, nexAccount.server_access_level);
 
 	if (!server || !server.aes_key) {
 		response.status(200).send(nascError('110').toString());
 		return;
 	}
 
+	if (gameServerID !== server.game_server_id) {
+		// * If there is a server for a given title ID but it has a different game server ID,
+		// * then the title probably requires custom patches. There is an error for an invalid
+		// * game ID, but that is irrelevant here since we search the server by the title ID.
+		// *
+		// * TODO - Keep the original game server ID and add a new "patched" field to support
+		// * searching by game server ID in the future.
+		// *
+		// * 152 is a custom error code
+		response.status(200).send(nascError('152').toString());
+		return;
+	}
+
 	if (server.maintenance_mode) {
-		// TODO - FIND THE REAL UNDER MAINTENANCE ERROR CODE. 110 IS NOT IT
-		response.status(200).send(nascError('110').toString());
+		response.status(200).send(nascError('101').toString());
 		return;
 	}
 
@@ -65,8 +72,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
 	const tokenOptions = {
-		system_type: 0x2, // * 3DS
-		token_type: 0x3, // * NEX token
+		system_type: SystemType.CTR,
+		token_type: TokenType.NEX,
 		pid: pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
@@ -83,18 +90,18 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('001'),
 		token: nexToken,
-		datetime: nintendoBase64Encode(nascDateTime()),
+		datetime: nintendoBase64Encode(nascDateTime())
 	});
 }
 
 async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
 	const tokenOptions = {
-		system_type: 0x2, // * 3DS
-		token_type: 0x4, // * Service token
+		system_type: SystemType.CTR,
+		token_type: TokenType.IndependentService,
 		pid: pid,
 		access_level: 0,
 		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now()) // TODO - Hack. Independent services expire their own tokens, so we give them the ISSUED time, not an EXPIRE time
 	};
 
 	// TODO - Handle null tokens
@@ -108,7 +115,7 @@ async function processServiceTokenRequest(server: HydratedServerDocument, pid: n
 		servicetoken: serviceToken,
 		statusdata: nintendoBase64Encode('Y'),
 		svchost: nintendoBase64Encode('n/a'),
-		datetime: nintendoBase64Encode(nascDateTime()),
+		datetime: nintendoBase64Encode(nascDateTime())
 	});
 }
 

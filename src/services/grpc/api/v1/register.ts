@@ -1,7 +1,5 @@
 import crypto from 'node:crypto';
 import { Status, ServerError } from 'nice-grpc';
-import { RegisterRequest, DeepPartial } from '@pretendonetwork/grpc/api/register_rpc';
-import { LoginResponse } from '@pretendonetwork/grpc/api/login_rpc';
 import emailvalidator from 'email-validator';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
@@ -12,7 +10,11 @@ import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/ut
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
+import type { LoginResponse } from '@pretendonetwork/grpc/api/login_rpc';
+import type { RegisterRequest, DeepPartial } from '@pretendonetwork/grpc/api/register_rpc';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -140,7 +142,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 		// * PNIDs can only be registered from a Wii U
 		// * So assume website users are WiiU NEX accounts
 		nexAccount = new NEXAccount({
-			device_type: 'wiiu',
+			device_type: 'wiiu'
 		});
 
 		await nexAccount.generatePID();
@@ -230,8 +232,8 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 	await sendConfirmationEmail(pnid);
 
 	const accessTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x1, // * OAuth Access
+		system_type: SystemType.API,
+		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
@@ -239,12 +241,12 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 	};
 
 	const refreshTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x2, // * OAuth Refresh
+		system_type: SystemType.API,
+		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
 	};
 
 	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);

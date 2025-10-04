@@ -1,4 +1,3 @@
-
 import crypto from 'node:crypto';
 import express from 'express';
 import emailvalidator from 'email-validator';
@@ -7,13 +6,16 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { isValidBirthday, getAgeFromDate, nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import IP2LocationManager from '@/ip2location';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
-import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
 
@@ -36,6 +38,8 @@ const DEFAULT_MII_DATA = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZg
  * Description: Creates a new user PNID
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
+	const clientIP = request.body.ip?.trim(); // * This has to be forwarded since this request comes from the websites server
+	const birthday = request.body.birthday?.trim();
 	const email = request.body.email?.trim();
 	const username = request.body.username?.trim();
 	const miiName = request.body.mii_name?.trim();
@@ -61,6 +65,53 @@ router.post('/', async (request: express.Request, response: express.Response): P
 				app: 'api',
 				status: 400,
 				error: 'Captcha verification failed'
+			});
+
+			return;
+		}
+	}
+
+	if (!clientIP || clientIP === '') {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'IP must be forwarded to check local laws'
+		});
+
+		return;
+	}
+
+	if (!birthday || birthday === '') {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Birthday must be set'
+		});
+
+		return;
+	}
+
+	if (!isValidBirthday(birthday)) {
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Birthday must be a valid date'
+		});
+
+		return;
+	}
+
+	const age = getAgeFromDate(birthday);
+
+	if (age < 18) {
+		// TODO - Enable `CF-IPCountry` in Cloudflare and only use IP2Location as a fallback
+		const location = IP2LocationManager.lookup(clientIP);
+		if (location?.country === 'US' && location?.region === 'Mississippi') {
+			// * See https://bsky.social/about/blog/08-22-2025-mississippi-hb1126 for details
+			response.status(403).json({
+				app: 'api',
+				status: 403,
+				error: 'Mississippi law prevents us from collecting any data from any users under the age of 18 without extreme parental verification methods.' // TODO - Expand on this and translate it? this will be shown on the website
 			});
 
 			return;
@@ -276,7 +327,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		// * PNIDs can only be registered from a Wii U
 		// * So assume website users are WiiU NEX accounts
 		nexAccount = new NEXAccount({
-			device_type: 'wiiu',
+			device_type: 'wiiu'
 		});
 
 		await nexAccount.generatePID();
@@ -347,7 +398,9 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		await session.commitTransaction();
 	} catch (error: any) {
 		LOG_ERROR('[POST] /v1/register: ' + error);
-		if (error.stack) console.error(error.stack);
+		if (error.stack) {
+			console.error(error.stack);
+		}
 
 		await session.abortTransaction();
 
@@ -367,8 +420,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	await sendConfirmationEmail(pnid);
 
 	const accessTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x1, // * OAuth Access
+		system_type: SystemType.API,
+		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
@@ -376,28 +429,41 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	};
 
 	const refreshTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x2, // * OAuth Refresh
+		system_type: SystemType.API,
+		token_type: TokenType.OAuthRefresh,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
 	};
 
-	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
+	try {
+		const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
+		const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
 
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const refreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+		const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
+		const refreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
 
-	// TODO - Handle null tokens
+		// TODO - Handle null tokens
 
-	response.json({
-		access_token: accessToken,
-		token_type: 'Bearer',
-		expires_in: 3600,
-		refresh_token: refreshToken
-	});
+		response.json({
+			access_token: accessToken,
+			token_type: 'Bearer',
+			expires_in: 3600,
+			refresh_token: refreshToken
+		});
+	} catch (error: any) {
+		LOG_ERROR('/v1/register - token generation: ' + error);
+		if (error.stack) {
+			console.error(error.stack);
+		}
+
+		response.status(500).json({
+			app: 'api',
+			status: 500,
+			error: 'Internal server error'
+		});
+	}
 });
 
 export default router;

@@ -2,6 +2,7 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
+import { TokenType } from '@/types/common/token-types';
 import { NEXAccount } from '@/models/nex-account';
 
 const router = express.Router();
@@ -91,11 +92,11 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 
 	const tokenOptions = {
 		system_type: server.device,
-		token_type: 0x4, // * Service token
+		token_type: TokenType.IndependentService,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now()) // TODO - Hack. Independent services expire their own tokens, so we give them the ISSUED time, not an EXPIRE time
 	};
 
 	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
@@ -214,7 +215,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 
 	const tokenOptions = {
 		system_type: server.device,
-		token_type: 0x3, // * nex token,
+		token_type: TokenType.NEX,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(parseInt(titleID, 16)),

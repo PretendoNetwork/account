@@ -1,19 +1,22 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
-import { IncomingHttpHeaders } from 'node:http';
-import { ObjectCannedACL, S3 } from '@aws-sdk/client-s3';
+import { S3 } from '@aws-sdk/client-s3';
 import fs from 'fs-extra';
-import express from 'express';
-import mongoose from 'mongoose';
-import { ParsedQs } from 'qs';
-import crc32 from 'buffer-crc32';
-import crc from 'crc';
+import bufferCrc32 from 'buffer-crc32';
+import { crc32 } from 'crc';
 import { sendMail } from '@/mailer';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
-import { TokenOptions } from '@/types/common/token-options';
-import { Token } from '@/types/common/token';
-import { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
-import { SafeQs } from '@/types/common/safe-qs';
+import type { ParsedQs } from 'qs';
+import type mongoose from 'mongoose';
+import type express from 'express';
+import type { ObjectCannedACL } from '@aws-sdk/client-s3';
+import type { IncomingHttpHeaders } from 'node:http';
+import type { TokenOptions } from '@/types/common/token-options';
+import type { Token } from '@/types/common/token';
+import type { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
+import type { SafeQs } from '@/types/common/safe-qs';
 
 let s3: S3;
 
@@ -25,8 +28,8 @@ if (!disabledFeatures.s3) {
 
 		credentials: {
 			accessKeyId: config.s3.key,
-			secretAccessKey: config.s3.secret,
-		},
+			secretAccessKey: config.s3.secret
+		}
 	});
 }
 
@@ -61,7 +64,7 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 	dataBuffer.writeUInt32LE(options.pid, 0x2);
 	dataBuffer.writeBigUInt64LE(options.expire_time, 0x6);
 
-	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
+	if ((options.token_type !== TokenType.OAuthAccess && options.token_type !== TokenType.OAuthRefresh) || options.system_type === SystemType.API) {
 		// * Access and refresh tokens have smaller bodies due to size constraints
 		// * The API does not have this restraint, however
 		if (options.title_id === undefined || options.access_level === undefined) {
@@ -87,9 +90,9 @@ export function generateToken(key: string, options: TokenOptions): Buffer | null
 
 	let final = encrypted;
 
-	if ((options.token_type !== 0x1 && options.token_type !== 0x2) || options.system_type === 0x3) {
+	if ((options.token_type !== TokenType.OAuthAccess && options.token_type !== TokenType.OAuthRefresh) || options.system_type === SystemType.API) {
 		// * Access and refresh tokens don't get a checksum due to size constraints
-		const checksum = crc32(dataBuffer);
+		const checksum = bufferCrc32(dataBuffer);
 
 		final = Buffer.concat([
 			checksum,
@@ -124,7 +127,7 @@ export function decryptToken(token: Buffer, key?: string): Buffer {
 		decipher.final()
 	]);
 
-	if (expectedChecksum && (expectedChecksum !== crc.crc32(decrypted))) {
+	if (expectedChecksum && (expectedChecksum !== crc32(decrypted))) {
 		throw new Error('Checksum did not match. Failed decrypt. Are you using the right key?');
 	}
 
@@ -139,7 +142,7 @@ export function unpackToken(token: Buffer): Token {
 		expire_time: token.readBigUInt64LE(0x6)
 	};
 
-	if (unpacked.token_type !== 0x1 && unpacked.token_type !== 0x2) {
+	if (unpacked.token_type !== TokenType.OAuthAccess && unpacked.token_type !== TokenType.OAuthRefresh) {
 		unpacked.title_id = token.readBigUInt64LE(0xE);
 		unpacked.access_level = token.readInt8(0x16);
 	}
@@ -193,7 +196,7 @@ export function nascError(errorCode: string): URLSearchParams {
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('1'),
 		returncd: errorCode == 'null' ? errorCode : nintendoBase64Encode(errorCode),
-		datetime: nintendoBase64Encode(nascDateTime()),
+		datetime: nintendoBase64Encode(nascDateTime())
 	});
 }
 
@@ -212,7 +215,7 @@ export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNI
 	await sendMail(options);
 }
 
-export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void>  {
+export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const options = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Email address confirmed',
@@ -224,7 +227,7 @@ export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IP
 	await sendMail(options);
 }
 
-export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void>  {
+export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const options = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Email address confirmed for Parental Controls',
@@ -238,8 +241,8 @@ export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.Hyd
 
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const tokenOptions = {
-		system_type: 0xF, // * API
-		token_type: 0x5, // * Password reset
+		system_type: SystemType.PasswordReset,
+		token_type: TokenType.PasswordReset,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
@@ -333,5 +336,51 @@ export function getValueFromHeaders(headers: IncomingHttpHeaders, key: string): 
 }
 
 export function mapToObject(map: Map<any, any>): object {
-	return Object.fromEntries(Array.from(map.entries(), ([ k, v ]) => v instanceof Map ? [ k, mapToObject(v) ] : [ k, v ]));
+	return Object.fromEntries(Array.from(map.entries(), ([k, v]) => v instanceof Map ? [k, mapToObject(v)] : [k, v]));
+}
+
+export function isValidBirthday(dateString: string): boolean {
+	// * Birthdays MUST be in the format YYYY-MM-DD. This is how the
+	// * console sends them, regardless of region
+
+	// * Make sure general format is right
+	const regex = /^\d{4}-\d{2}-\d{2}$/;
+	if (!regex.test(dateString)) {
+		return false;
+	}
+
+	// * Actually check that it's a valid date
+	const parts = dateString.split('-');
+	const year = parseInt(parts[0], 10);
+	const month = parseInt(parts[1], 10);
+	const day = parseInt(parts[2], 10);
+
+	const date = new Date(year, month - 1, day);
+
+	return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+
+export function getAgeFromDate(dateString: string): number {
+	if (!isValidBirthday(dateString)) {
+		return -1;
+	}
+
+	const parts = dateString.split('-');
+	const birthYear = parseInt(parts[0], 10);
+	const birthMonth = parseInt(parts[1], 10);
+	const birthDay = parseInt(parts[2], 10);
+
+	const today = new Date();
+	const currentYear = today.getFullYear();
+	const currentMonth = today.getMonth() + 1;
+	const currentDay = today.getDate();
+
+	let age = currentYear - birthYear;
+
+	// * Check if birthday has actually happened this year yet
+	if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
+		age--;
+	}
+
+	return age;
 }

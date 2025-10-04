@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import type mongoose from 'mongoose';
 
 export const domainServices = ['api', 'assets', 'cbvc', 'conntest', 'datastore', 'nasc', 'nnas', 'local_cdn'] as const;
 export type DomainService = typeof domainServices[number];
@@ -16,7 +16,7 @@ export interface Config {
 	redis: {
 		client: {
 			url: string;
-		}
+		};
 	};
 	email: {
 		ses: {
@@ -38,7 +38,7 @@ export interface Config {
 		secret: string;
 	};
 	cdn: {
-		/** 
+		/**
 		 * @deprecated Use `domains.cdn` instead
 		 */
 		subdomain?: string;
@@ -53,6 +53,11 @@ export interface Config {
 			api: string;
 		};
 		port: number;
+		miiverse: {
+			host: string;
+			port: number;
+			api_key: string;
+		};
 	};
 	stripe?: {
 		secret_key: string;
@@ -62,4 +67,9 @@ export interface Config {
 		signature_secret: string;
 	};
 	domains: Record<DomainService, string[]>;
+	discourse: {
+		forum_url: string;
+		api_key: string;
+		api_username: string;
+	};
 }

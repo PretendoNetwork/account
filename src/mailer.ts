@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import nodemailer from 'nodemailer';
 import * as aws from '@aws-sdk/client-ses';
 import { config, disabledFeatures } from '@/config-manager';
-import { MailerOptions } from '@/types/common/mailer-options';
+import type { MailerOptions } from '@/types/common/mailer-options';
 
 const genericEmailTemplate = fs.readFileSync(path.join(__dirname, './assets/emails/genericTemplate.html'), 'utf8');
 const confirmationEmailTemplate = fs.readFileSync(path.join(__dirname, './assets/emails/confirmationTemplate.html'), 'utf8');
@@ -30,7 +30,7 @@ if (!disabledFeatures.email) {
 
 export async function sendMail(options: MailerOptions): Promise<void> {
 	if (!disabledFeatures.email) {
-		const { to, subject, username, paragraph, preview, text, link, confirmation  } = options;
+		const { to, subject, username, paragraph, preview, text, link, confirmation } = options;
 
 		let html = confirmation ? confirmationEmailTemplate : genericEmailTemplate;
 

@@ -1,8 +1,8 @@
-import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getValueFromHeaders } from '@/util';
-import { getPNIDByBasicAuth, getPNIDByTokenAuth } from '@/database';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import { getPNIDByBasicAuth, getPNIDByNNASAccessToken } from '@/database';
+import type express from 'express';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 async function PNIDMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	const authHeader = getValueFromHeaders(request.headers, 'authorization');
@@ -14,16 +14,16 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 	const parts = authHeader.split(' ');
 	const type = parts[0];
 	let token = parts[1];
-	let pnid: HydratedPNIDDocument | null;
+	let pnid: HydratedPNIDDocument | null = null;
 
 	if (request.isCemu) {
 		token = Buffer.from(token, 'hex').toString('base64');
 	}
 
-	if (type === 'Basic') {
+	if (type === 'Basic' && request.path.includes('v1/api/people/@me/devices')) {
 		pnid = await getPNIDByBasicAuth(token);
-	} else {
-		pnid = await getPNIDByTokenAuth(token);
+	} else if (type === 'Bearer') {
+		pnid = await getPNIDByNNASAccessToken(token);
 	}
 
 	if (!pnid) {

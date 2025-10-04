@@ -6,15 +6,15 @@ import moment from 'moment';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import ratelimit from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
-import { getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import { getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import IP2LocationManager from '@/ip2location';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
 import timezones from '@/services/nnas/timezones.json';
-
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
-import { Person } from '@/types/services/nnas/person';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
+import type { Person } from '@/types/services/nnas/person';
 
 const router = express.Router();
 
@@ -64,6 +64,28 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	}
 
 	const person: Person = request.body.person;
+	const age = getAgeFromDate(person.birth_date);
+
+	if (age < 18) {
+		// TODO - Enable `CF-IPCountry` in Cloudflare and only use IP2Location as a fallback
+		const ip = request.ip;
+		if (ip) {
+			const location = IP2LocationManager.lookup(ip);
+			if (location?.country === 'US' && location?.region === 'Mississippi') {
+				// * See https://bsky.social/about/blog/08-22-2025-mississippi-hb1126 for details
+				response.status(403).send(xmlbuilder.create({
+					errors: {
+						error: {
+							code: '1228', // TODO - This is made up because 228 is a Mississippi area code /shrug
+							message: 'Mississippi law prevents us from collecting any data from any users under the age of 18 without extreme parental verification methods.' // TODO - Translate this? It wont show to end users so maybe not though
+						}
+					}
+				}).end());
+
+				return;
+			}
+		}
+	}
 
 	const userExists = await doesPNIDExist(person.user_id);
 
@@ -89,7 +111,7 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 
 	try {
 		nexAccount = new NEXAccount({
-			device_type: 'wiiu',
+			device_type: 'wiiu'
 		});
 
 		await nexAccount.generatePID();
@@ -443,7 +465,6 @@ router.get('/@me/devices/status', async (_request: express.Request, response: ex
 	}).end());
 });
 
-
 /**
  * [PUT]
  * Replacement for: https://account.nintendo.net/v1/api/people/@me/miis/@primary
@@ -657,7 +678,7 @@ router.get('/@me/emails', async (request: express.Request, response: express.Res
 					type: 'DEFAULT', // * what is this?
 					updated_by: 'USER', // * need to actually update this
 					validated: pnid.email.validated ? 'Y' : 'N',
-					validated_date: pnid.email.validated_date,
+					validated_date: pnid.email.validated_date
 				}
 			}
 		]

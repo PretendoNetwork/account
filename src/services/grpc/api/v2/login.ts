@@ -1,9 +1,11 @@
 import { Status, ServerError } from 'nice-grpc';
-import { LoginRequest, LoginResponse, DeepPartial } from '@pretendonetwork/grpc/api/login_rpc';
 import bcrypt from 'bcrypt';
-import { getPNIDByUsername, getPNIDByTokenAuth } from '@/database';
-import { nintendoPasswordHash, generateToken} from '@/util';
+import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
+import { nintendoPasswordHash, generateToken } from '@/util';
 import { config } from '@/config-manager';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
+import type { LoginRequest, LoginResponse, DeepPartial } from '@pretendonetwork/grpc/api/v2/login_rpc';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 export async function login(request: LoginRequest): Promise<DeepPartial<LoginResponse>> {
@@ -43,7 +45,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Password is incorrect');
 		}
 	} else {
-		pnid = await getPNIDByTokenAuth(refreshToken!); // * We know refreshToken will never be null here
+		pnid = await getPNIDByAPIRefreshToken(refreshToken!); // * We know refreshToken will never be null here
 
 		if (!pnid) {
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid or missing refresh token');
@@ -55,8 +57,8 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 	}
 
 	const accessTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x1, // * OAuth Access
+		system_type: SystemType.API,
+		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
@@ -64,26 +66,29 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 	};
 
 	const refreshTokenOptions = {
-		system_type: 0x3, // * API
-		token_type: 0x2, // * OAuth Refresh
+		system_type: SystemType.API,
+		token_type: TokenType.OAuthAccess,
 		pid: pnid.pid,
 		access_level: pnid.access_level,
 		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
+		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
 	};
 
 	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
 	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
 
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+	if (!accessTokenBuffer) {
+		throw new ServerError(Status.INTERNAL, 'Failed to generate access token');
+	}
 
-	// TODO - Handle null tokens
+	if (!refreshTokenBuffer) {
+		throw new ServerError(Status.INTERNAL, 'Failed to generate refresh token');
+	}
 
 	return {
-		accessToken: accessToken,
+		accessToken: accessTokenBuffer.toString('hex'),
 		tokenType: 'Bearer',
 		expiresIn: 3600,
-		refreshToken: newRefreshToken
+		refreshToken: refreshTokenBuffer.toString('hex')
 	};
 }

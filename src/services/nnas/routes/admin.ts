@@ -117,5 +117,4 @@ router.get('/time', async (request: express.Request, response: express.Response)
 	response.send('');
 });
 
-
 export default router;

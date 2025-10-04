@@ -1,15 +1,16 @@
-import { Status, ServerMiddlewareCall, CallContext, ServerError } from 'nice-grpc';
-import { getPNIDByTokenAuth } from '@/database';
+import { Status, ServerError } from 'nice-grpc';
+import { getPNIDByAPIAccessToken } from '@/database';
+import type { ServerMiddlewareCall, CallContext } from 'nice-grpc';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 // * These paths require that a token be present
 const TOKEN_REQUIRED_PATHS = [
-	'/api.API/GetUserData',
-	'/api.API/UpdateUserData',
-	'/api.API/ResetPassword', // * This paths token is not an authentication token, it is a password reset token
-	'/api.API/SetDiscordConnectionData',
-	'/api.API/SetStripeConnectionData',
-	'/api.API/RemoveConnection'
+	'/api.v2.ApiService/GetUserData',
+	'/api.v2.ApiService/UpdateUserData',
+	'/api.v2.ApiService/ResetPassword', // * This paths token is not an authentication token, it is a password reset token
+	'/api.v2.ApiService/SetDiscordConnectionData',
+	'/api.v2.ApiService/SetStripeConnectionData',
+	'/api.v2.ApiService/RemoveConnection'
 ];
 
 export type AuthenticationCallContextExt = {
@@ -18,7 +19,7 @@ export type AuthenticationCallContextExt = {
 
 export async function* authenticationMiddleware<Request, Response>(
 	call: ServerMiddlewareCall<Request, Response, AuthenticationCallContextExt>,
-	context: CallContext,
+	context: CallContext
 ): AsyncGenerator<Response, Response | void, undefined> {
 	const token = context.metadata.get('X-Token')?.trim();
 
@@ -30,7 +31,7 @@ export async function* authenticationMiddleware<Request, Response>(
 		let pnid = null;
 
 		if (token) {
-			pnid = await getPNIDByTokenAuth(token);
+			pnid = await getPNIDByAPIAccessToken(token);
 		}
 
 		if (!pnid && TOKEN_REQUIRED_PATHS.includes(call.method.path)) {

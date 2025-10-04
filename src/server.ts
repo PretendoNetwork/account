@@ -1,12 +1,3 @@
-process.title = 'Pretendo - Account';
-process.on('uncaughtException', (err, origin) => {
-	console.log(err);
-	console.log(origin);
-});
-process.on('SIGTERM', () => {
-	process.exit(0);
-});
-
 import express from 'express';
 import morgan from 'morgan';
 import xmlbuilder from 'xmlbuilder';
@@ -16,7 +7,6 @@ import { connect as connectDatabase } from '@/database';
 import { startGRPCServer } from '@/services/grpc/server';
 import { fullUrl, getValueFromHeaders } from '@/util';
 import { LOG_INFO, LOG_SUCCESS, LOG_WARN } from '@/logger';
-
 import conntest from '@/services/conntest';
 import cbvc from '@/services/cbvc';
 import nnas from '@/services/nnas';
@@ -25,14 +15,23 @@ import datastore from '@/services/datastore';
 import api from '@/services/api';
 import localcdn from '@/services/local-cdn';
 import assets from '@/services/assets';
-
 import { config, disabledFeatures } from '@/config-manager';
+
+process.title = 'Pretendo - Account';
+process.on('uncaughtException', (err, origin) => {
+	console.log(err);
+	console.log(origin);
+});
+process.on('SIGTERM', () => {
+	process.exit(0);
+});
 
 const app = express();
 
 // * START APPLICATION
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
+app.set('trust proxy', true); // TODO - Make this configurable
 
 // * Create router
 LOG_INFO('Setting up Middleware');

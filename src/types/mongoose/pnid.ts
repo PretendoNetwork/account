@@ -1,6 +1,6 @@
-import { Model, Types, HydratedDocument } from 'mongoose';
-import { IDevice } from '@/types/mongoose/device';
-import { PNIDPermissionFlag } from '@/types/common/permission-flags';
+import type { Model, Types, HydratedDocument } from 'mongoose';
+import type { IDevice } from '@/types/mongoose/device';
+import type { PNIDPermissionFlag } from '@/types/common/permission-flags';
 
 export interface IPNID {
 	deleted: boolean;
@@ -58,7 +58,7 @@ export interface IPNID {
 		refresh_token: {
 			value: string;
 			ttl: number;
-		}
+		};
 	};
 	connections: {
 		discord: {
@@ -79,7 +79,7 @@ export interface IPNIDMethods {
 	generatePID(): Promise<void>;
 	generateEmailValidationCode(): Promise<void>;
 	generateEmailValidationToken(): Promise<void>;
-	updateMii(mii: { name: string, primary: string, data: string}): Promise<void>;
+	updateMii(mii: { name: string; primary: string; data: string }): Promise<void>;
 	generateMiiImages(): Promise<void>;
 	scrub(): Promise<void>;
 	hasPermission(flag: PNIDPermissionFlag): boolean;
@@ -91,4 +91,4 @@ interface IPNIDQueryHelpers {}
 
 export interface PNIDModel extends Model<IPNID, IPNIDQueryHelpers, IPNIDMethods> {}
 
-export type HydratedPNIDDocument = HydratedDocument<IPNID, IPNIDMethods>
+export type HydratedPNIDDocument = HydratedDocument<IPNID, IPNIDMethods>;

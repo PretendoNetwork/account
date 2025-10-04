@@ -6,13 +6,15 @@ import { PNID } from '@/models/pnid';
 import { Server } from '@/models/server';
 import { LOG_ERROR } from '@/logger';
 import { config } from '@/config-manager';
-import { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import { IDeviceAttribute } from '@/types/mongoose/device-attribute';
-import { HydratedServerDocument } from '@/types/mongoose/server';
-import { PNIDProfile } from '@/types/services/nnas/pnid-profile';
-import { ConnectionData } from '@/types/services/api/connection-data';
-import { ConnectionResponse } from '@/types/services/api/connection-response';
-import { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
+import { TokenType } from '@/types/common/token-types';
+import { SystemType } from '@/types/common/system-types';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
+import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
+import type { HydratedServerDocument } from '@/types/mongoose/server';
+import type { PNIDProfile } from '@/types/services/nnas/pnid-profile';
+import type { ConnectionData } from '@/types/services/api/connection-data';
+import type { ConnectionResponse } from '@/types/services/api/connection-response';
+import type { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
 
 const connection_string = config.mongoose.connection_string;
 const options = config.mongoose.options;
@@ -104,12 +106,20 @@ export async function getPNIDByBasicAuth(token: string): Promise<HydratedPNIDDoc
 	return pnid;
 }
 
-export async function getPNIDByTokenAuth(token: string): Promise<HydratedPNIDDocument | null> {
+async function getPNIDByOAuthToken(token: string, expectedSystemType: SystemType, expectedTokenType: TokenType): Promise<HydratedPNIDDocument | null> {
 	verifyConnected();
 
 	try {
 		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
 		const unpackedToken = unpackToken(decryptedToken);
+
+		if (unpackedToken.system_type !== expectedSystemType) {
+			return null;
+		}
+		if (unpackedToken.token_type !== expectedTokenType) {
+			return null;
+		}
+
 		const pnid = await getPNIDByPID(unpackedToken.pid);
 
 		if (pnid) {
@@ -126,6 +136,22 @@ export async function getPNIDByTokenAuth(token: string): Promise<HydratedPNIDDoc
 		LOG_ERROR(error);
 		return null;
 	}
+}
+
+export async function getPNIDByNNASAccessToken(token: string): Promise<HydratedPNIDDocument | null> {
+	return getPNIDByOAuthToken(token, SystemType.WUP, TokenType.OAuthAccess);
+}
+
+export async function getPNIDByNNASRefreshToken(token: string): Promise<HydratedPNIDDocument | null> {
+	return getPNIDByOAuthToken(token, SystemType.WUP, TokenType.OAuthRefresh);
+}
+
+export async function getPNIDByAPIAccessToken(token: string): Promise<HydratedPNIDDocument | null> {
+	return getPNIDByOAuthToken(token, SystemType.API, TokenType.OAuthAccess);
+}
+
+export async function getPNIDByAPIRefreshToken(token: string): Promise<HydratedPNIDDocument | null> {
+	return getPNIDByOAuthToken(token, SystemType.API, TokenType.OAuthRefresh);
 }
 
 export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile | null> {
@@ -202,7 +228,7 @@ export async function getPNIDProfileJSONByPID(pid: number): Promise<PNIDProfile 
 				}
 			},
 			name: pnid.mii.name,
-			primary: pnid.mii.primary ? 'Y' : 'N',
+			primary: pnid.mii.primary ? 'Y' : 'N'
 		},
 		region: pnid.region,
 		tz_name: pnid.timezone.name,
@@ -221,7 +247,9 @@ export async function getServerByGameServerID(gameServerID: string, accessMode: 
 
 	for (const mode of searchModes) {
 		const server = servers.find(s => s.access_mode === mode);
-		if (server) return server;
+		if (server) {
+			return server;
+		}
 	}
 
 	return null;
@@ -237,7 +265,9 @@ export async function getServerByTitleID(titleID: string, accessMode: string): P
 
 	for (const mode of searchModes) {
 		const server = servers.find(s => s.access_mode === mode);
-		if (server) return server;
+		if (server) {
+			return server;
+		}
 	}
 
 	return null;
@@ -253,7 +283,9 @@ export async function getServerByClientID(clientID: string, accessMode: string):
 
 	for (const mode of searchModes) {
 		const server = servers.find(s => s.access_mode === mode);
-		if (server) return server;
+		if (server) {
+			return server;
+		}
 	}
 
 	return null;

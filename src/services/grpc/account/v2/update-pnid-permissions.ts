@@ -1,8 +1,8 @@
 import { Status, ServerError } from 'nice-grpc';
-import { UpdatePNIDPermissionsRequest } from '@pretendonetwork/grpc/account/update_pnid_permissions';
 import { getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
-import type { Empty } from '@pretendonetwork/grpc/api/google/protobuf/empty';
+import type { UpdatePNIDPermissionsRequest } from '@pretendonetwork/grpc/account/v2/update_pnid_permissions';
+import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
 
 export async function updatePNIDPermissions(request: UpdatePNIDPermissionsRequest): Promise<Empty> {
 	const pnid = await getPNIDByPID(request.pid);
@@ -10,14 +10,14 @@ export async function updatePNIDPermissions(request: UpdatePNIDPermissionsReques
 	if (!pnid) {
 		throw new ServerError(
 			Status.INVALID_ARGUMENT,
-			'No PNID found',
+			'No PNID found'
 		);
 	}
 
 	if (!request.permissions) {
 		throw new ServerError(
 			Status.INVALID_ARGUMENT,
-			'Permissions flags not found',
+			'Permissions flags not found'
 		);
 	}
 

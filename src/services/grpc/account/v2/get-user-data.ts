@@ -1,20 +1,31 @@
 import { Status, ServerError } from 'nice-grpc';
-import { ExchangeTokenForUserDataRequest } from '@pretendonetwork/grpc/account/exchange_token_for_user_data';
-import { GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
-import { getPNIDByTokenAuth } from '@/database';
+import { getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
+import { Device } from '@/models/device';
+import type { GetUserDataRequest, GetUserDataResponse } from '@pretendonetwork/grpc/account/v2/get_user_data_rpc';
 
-export async function exchangeTokenForUserData(request: ExchangeTokenForUserDataRequest): Promise<GetUserDataResponse> {
-	if (!request.token.trim()) {
-		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
-	}
-
-	const pnid = await getPNIDByTokenAuth(request.token);
+export async function getUserData(request: GetUserDataRequest): Promise<GetUserDataResponse> {
+	const pnid = await getPNIDByPID(request.pid);
 
 	if (!pnid) {
-		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
+		throw new ServerError(
+			Status.INVALID_ARGUMENT,
+			'No PNID found'
+		);
 	}
+
+	const devices = (await Device.find({
+		linked_pids: pnid.pid
+	})).map((device) => {
+		return {
+			model: device.get('model'), // ".model" gives the Mongoose model...
+			serial: device.serial,
+			linkedPids: device.linked_pids,
+			accessLevel: device.access_level,
+			serverAccessLevel: device.server_access_level
+		};
+	});
 
 	return {
 		deleted: pnid.deleted,
@@ -25,7 +36,7 @@ export async function exchangeTokenForUserData(request: ExchangeTokenForUserData
 		mii: {
 			name: pnid.mii.name,
 			data: pnid.mii.data,
-			url: `${config.cdn.base_url}/mii/${pnid.pid}/standard.tga`,
+			url: `${config.cdn.base_url}/mii/${pnid.pid}/standard.tga`
 		},
 		creationDate: pnid.creation_date,
 		birthdate: pnid.birthdate,
@@ -57,6 +68,7 @@ export async function exchangeTokenForUserData(request: ExchangeTokenForUserData
 			updateBossFiles: pnid.hasPermission(PNID_PERMISSION_FLAGS.UPDATE_BOSS_FILES),
 			deleteBossFiles: pnid.hasPermission(PNID_PERMISSION_FLAGS.DELETE_BOSS_FILES),
 			updatePnidPermissions: pnid.hasPermission(PNID_PERMISSION_FLAGS.UPDATE_PNID_PERMISSIONS)
-		}
+		},
+		linkedDevices: devices
 	};
 }
