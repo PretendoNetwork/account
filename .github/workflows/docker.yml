@@ -99,5 +99,7 @@ jobs:
           push: ${{ env.SHOULD_PUSH_IMAGE }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          secrets: |
+            "ip2location-token=${{ secrets.IP2LOCATION_TOKEN }}"
           cache-from: type=gha
           cache-to: type=gha,mode=max
