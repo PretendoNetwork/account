@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "build": "npm run lint && npm run clean && npx tsc && npx tsc-alias && npm run copy-static && node ./scripts/download-ip2location-databases.js",
+    "download-geoip-db": "node ./scripts/download-ip2location-databases.js",
+    "build": "npm run lint && npm run clean && npx tsc && npx tsc-alias && npm run copy-static && npm run download-geoip-db",
     "clean": "rimraf ./dist",
     "copy-static": "copyfiles -e \"src/**/*.ts\" -u 1 \"src/**/*\" dist",
     "start": "node .",

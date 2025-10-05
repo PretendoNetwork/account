@@ -27,8 +27,9 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 	npm ci
 
 COPY . .
-RUN npm run build
 
+RUN --mount=type=secret,id=ip2location-token,env=PN_ACT_CONFIG_IP2LOCATION_TOKEN \
+	npm run build
 
 # * Running the final application
 FROM base AS final

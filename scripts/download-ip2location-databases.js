@@ -18,12 +18,15 @@ const databases = {
 
 async function main() {
 	if (!process.env.PN_ACT_CONFIG_IP2LOCATION_TOKEN) {
-		// * Optional
+		console.warn('IP2Location token not found in environment variables. Skipping database download.');
 		return;
 	}
 
+	console.log(`Downloading ${Object.keys(databases).length} IP2Location databases...`);
+
 	for (const name in databases) {
 		const database = databases[name];
+		console.log(`Downloading ${database.file_name}...`);
 		const response = await fetch(`https://www.ip2location.com/download/?token=${process.env.PN_ACT_CONFIG_IP2LOCATION_TOKEN}&file=${name}`);
 		const arrayBuffer = await response.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);
