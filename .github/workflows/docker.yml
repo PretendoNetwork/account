@@ -8,8 +8,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  DEFAULT_BRANCH: ${{ format('refs/heads/{0}', github.event.repository.default_branch) }}
-  SHOULD_PUSH_IMAGE: ${{ (github.event_name == 'push' && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/dev')) || github.event_name == 'workflow_dispatch' }}
+  RELEASE_BRANCH: refs/heads/master
+  SHOULD_PUSH_IMAGE: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')) || github.event_name == 'workflow_dispatch' }}
   SHOULD_DOWNLOAD_IP2LOCATION_DB: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == env.DEFAULT_BRANCH }}
+            type=raw,value=latest,enable=${{ github.ref == env.RELEASE_BRANCH }}
             type=raw,value=edge,enable=${{ github.ref == 'refs/heads/dev' }}
             type=sha
 
@@ -87,7 +87,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest-arm,enable=${{ github.ref == env.DEFAULT_BRANCH }}
+            type=raw,value=latest-arm,enable=${{ github.ref == env.RELEASE_BRANCH }}
             type=raw,value=edge-arm,enable=${{ github.ref == 'refs/heads/dev' }}
             type=sha,suffix=-arm
 
