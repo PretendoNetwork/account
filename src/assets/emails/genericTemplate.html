@@ -15,30 +15,44 @@
       body.email-body,
       table.centerer,
       table.wrapper {
-        background-color: #FFFFFF !important;
-        color: #FFFFFF !important;
+        background-color: #673DB6 !important;
+        color: #673DB6 !important;
       }
       table.card {
-        background-color: #673DB6 !important;
+        background-color: #fff !important;
       }
       span.shoutout {
-        color: #D9C6FA !important;
+        color: #9D6FF3 !important;
       }
-      td.confirm-link {
+      td {
+        color: #673DB6 !important;
+      }
+      td a {
+        color: #673DB6 !important;
+        font-weight: 700 !important;
+        text-decoration: underline !important;
+      }
+      td.primary, td.primary a {
         background-color: #9D6FF3 !important;
+        color: #fff !important;
       }
-      td.confirm-code {
+      td.secondary, td.secondary a {
         background-color: #D9C6FA !important;
         color: #45297A !important;
       }
+      td.primary a, td.secondary a {
+        text-decoration: none !important;
+      }
       td.notice {
-        color: #9D6FF3 !important;
+        color: #c5adf2 !important;
       }
       td.notice a {
-        color: #673DB6 !important;
+        color: #fff !important;
+        font-weight: 700 !important;
       }
-      img.logo {
-        content: url("https://assets.pretendo.cc/images/pretendo-wordmark-singlecolor-purple.png") !important;
+      strong {
+        font-weight: 700 !important;
+        color: #9D6FF3 !important;
       }
     }
     @media (prefers-color-scheme: dark) {
@@ -46,7 +60,7 @@
       table.centerer,
       table.wrapper {
         background-color: #1B1F3B !important;
-        color: #FFFFFF !important;
+        color: #A1A8D9 !important;
       }
       table.card {
         background-color: #23274A !important;
@@ -54,28 +68,52 @@
       span.shoutout {
         color: #CAB1FB !important;
       }
-      td.confirm-link {
+      td {
+        color: #A1A8D9 !important;
+      }
+      td a {
+        color: #fff !important;
+        font-weight: 700 !important;
+        text-decoration: underline !important;
+      }
+      td.header {
+        color: #fff !important;
+      }
+      td.primary {
         background-color: #673DB6 !important;
       }
-      td.confirm-code {
+      td.secondary {
         background-color: #373C65 !important;
-        color: #ffffff !important;
+        color: #fff !important;
+      }
+      td.primary a, td.secondary a {
+        text-decoration: none !important;
+      }
+      td.signature {
+        color: #A1A8D9 !important;
       }
       td.notice {
         color: #8990C1 !important;
       }
       td.notice a {
-        color: #CAC1F5 !important;
+        color: #fff !important;
+      }
+      strong {
+        font-weight: 700 !important;
+        color: #fff !important;
+      }
+      img.logo {
+        content: url("https://assets.pretendo.cc/images/pretendo-wordmark-multicolor-purple+white.png") !important;
       }
     }
   </style>
 </head>
 <body class="email-body" bgcolor="#1B1F3B" style="margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; font-family: Poppins, Arial, Helvetica, sans-serif;">
-  <div style="display:none;">{{preview}}</div>
+  <div style="display:none;"><!--plainText--></div>
   <table class="centerer" bgcolor="#1B1F3B" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
     <tr>
       <td align="center">
-        <table class="wrapper" bgcolor="#1B1F3B" style="font-family: Poppins, Arial, Helvetica, sans-serif;" border="0" cellpadding="0" cellspacing="0" height="100%" width="420px">
+        <table class="wrapper" bgcolor="#1B1F3B" style="font-family: Poppins, Arial, Helvetica, sans-serif;" border="0" cellpadding="0" cellspacing="0" height="100%" width="600px">
           <tr>
             <td>
               <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
@@ -92,7 +130,7 @@
                             <tr>
                               <td>
                                 <a href="https://pretendo.network">
-                                  <img class="logo" width="auto" height="48px" src="https://assets.pretendo.cc/images/pretendo-wordmark-multicolor-purple+white.png" alt="Pretendo">
+                                  <img class="logo" width="auto" height="48px" src="/home/limes/Downloads/pretendo-wordmark-white.png" alt="Pretendo">
                                 </a> 
                               </td>
                             </tr>
@@ -101,42 +139,30 @@
                             </tr>
                             <tr>
                               <td>
-                                <table class="card" bgcolor="#23274a" style="color: #ffffff; border-radius: 10px;" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
+                                <table class="card" bgcolor="#23274a" style="color: #A1A8D9; border-radius: 10px;" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
                                   <tr>
-                                    <td width="24px" height="100%">&nbsp;</td>
+                                    <td width="36px" height="100%">&nbsp;</td>
                                     <td>
                                       <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
-                                        <tr width="100%" height="48px" style="line-height: 48px;">
+                                        <tr width="100%" height="36px" style="line-height: 36px;">
                                           <td>&nbsp;</td>
                                         </tr>
-                                        <tr style="font-size: 24px; font-weight: 700;">
-                                          <td>
-                                            Dear <span class="shoutout" style="color: #cab1fb;">{{username}}</span>,
-                                          </td>
-                                        </tr>
+
+                                        <!--innerHTML-->
+
+                                        <tr><td width="100%" height="32px" style="line-height: 32px;">&nbsp;</td></tr>
+
                                         <tr>
-                                          <td width="100%" height="24px" style="line-height: 24px;">&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                          <td style="color: #ffffff; ">
-                                            {{paragraph}}
-                                          </td>
-                                        </tr>
-                                        <!--{{buttonPlaceholder}}-->
-                                        <tr>
-                                          <td width="100%" height="36px" style="line-height: 36px;">&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                          <td align="right">
+                                          <td align="right" class="signature">
                                             The Pretendo Network team
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td width="100%" height="24px" style="line-height: 24px;">&nbsp;</td>
+                                          <td width="100%" height="36px" style="line-height: 36px;">&nbsp;</td>
                                         </tr>
                                       </table>
                                     </td>
-                                    <td width="24px" height="100%">&nbsp;</td>
+                                    <td width="36px" height="100%">&nbsp;</td>
                                   </tr>
                                 </table>
                               </td>
@@ -145,8 +171,8 @@
                               <td width="100%" height="18px" style="line-height: 18px;">&nbsp;</td>
                             </tr>
                             <tr>
-                              <td class="notice" style="color: #8990c1; font-size: 12px;">
-                                Note: this email message was auto-generated, please do not respond. For further assistance, please join our <a href="https://invite.gg/pretendo" style="text-decoration: none; color: #ffffff; ">Discord server</a> or make a post on our <a href="https://forum.pretendo.network" style="text-decoration: none; color: #ffffff; ">Forum</a>.
+                              <td class="notice" style="color: #8990c1; font-size: 13px; text-align: center;">
+                                Note: this email message was auto-generated, please do not respond. For further assistance, please join our <a href="https://discord.pretendo.network" style="text-decoration: none; color: #ffffff; ">Discord server</a> or make a post on our <a href="https://forum.pretendo.network" style="text-decoration: none; color: #ffffff; ">Forum</a>.
                               </td>
                             </tr>
                             <tr>

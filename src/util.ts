@@ -4,7 +4,7 @@ import { S3 } from '@aws-sdk/client-s3';
 import fs from 'fs-extra';
 import bufferCrc32 from 'buffer-crc32';
 import { crc32 } from 'crc';
-import { sendMail } from '@/mailer';
+import { sendMail, CreateEmail } from '@/mailer';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
@@ -201,39 +201,47 @@ export function nascError(errorCode: string): URLSearchParams {
 }
 
 export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
+	const email = new CreateEmail()
+		.addHeader('Hello {{pnid}}!', { pnid: pnid.username })
+		.addParagraph('Your <strong>Pretendo Network ID</strong> activation is almost complete. Please click the link below to confirm your e-mail address and complete the activation process.')
+		.addButton('Confirm email address', `https://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token}`)
+		.addParagraph('You may also enter the following 6-digit code on your console:')
+		.addButton(pnid.identification.email_code, '', false)
+		.addParagraph('We hope you have fun using our services!');
+
 	const options = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Please confirm your email address',
-		username: pnid.username,
-		confirmation: {
-			href: `https://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token}`,
-			code: pnid.identification.email_code
-		},
-		text: `Hello ${pnid.username}! \r\n\r\nYour Pretendo Network ID activation is almost complete. Please click the link to confirm your e-mail address and complete the activation process: \r\nhttps://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token} \r\n\r\nYou may also enter the following 6-digit code on your console: ${pnid.identification.email_code}`
+		email
 	};
 
 	await sendMail(options);
 }
 
 export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
+	const email = new CreateEmail()
+		.addHeader('Dear {{pnid}}!', { pnid: pnid.username })
+		.addParagraph('Your email address has been confirmed.')
+		.addParagraph('We hope you have fun on Pretendo Network!');
+
 	const options = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Email address confirmed',
-		username: pnid.username,
-		paragraph: 'your email address has been confirmed. We hope you have fun on Pretendo Network!',
-		text: `Dear ${pnid.username}, \r\n\r\nYour email address has been confirmed. We hope you have fun on Pretendo Network!`
+		email
 	};
 
 	await sendMail(options);
 }
 
 export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
+	const email = new CreateEmail()
+		.addHeader('Dear {{pnid}},', { pnid: pnid.username })
+		.addParagraph('your email address has been confirmed for use with Parental Controls.');
+
 	const options = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Email address confirmed for Parental Controls',
-		username: pnid.username,
-		paragraph: 'your email address has been confirmed for use with Parental Controls.',
-		text: `Dear ${pnid.username}, \r\n\r\nYour email address has been confirmed for use with Parental Controls.`
+		email
 	};
 
 	await sendMail(options);
@@ -254,31 +262,33 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 
 	// TODO - Handle null token
 
+	const email = new CreateEmail()
+		.addHeader('Dear {{pnid}},', { pnid: pnid.username })
+		.addParagraph('a password reset has been requested from this account.')
+		.addParagraph('If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.')
+		.addButton('Reset password', `${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`);
+
 	const mailerOptions = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Forgot Password',
-		username: pnid.username,
-		paragraph: 'a password reset has been requested from this account. If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.',
-		link: {
-			text: 'Reset password',
-			href: `${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
-		},
-		text: `Dear ${pnid.username}, a password reset has been requested from this account. \r\n\r\nIf you did not request the password reset, please ignore this email. \r\nIf you did request this password reset, please click the link to reset your password: ${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`
+		email
 	};
 
 	await sendMail(mailerOptions);
 }
 
-export async function sendPNIDDeletedEmail(email: string, username: string): Promise<void> {
+export async function sendPNIDDeletedEmail(emailAddress: string, username: string): Promise<void> {
+	const email = new CreateEmail()
+		.addHeader('Dear {{pnid}},', { pnid: username })
+		.addParagraph('your PNID has successfully been deleted.')
+		.addParagraph('If you had a tier subscription, a separate cancellation email will be sent.')
+		.addParagraph('If you do not receive this cancellation email, or your subscription is still being charged, please contact @jonbarrow on our Discord server.')
+		.addButton('Join the Discord', 'https://discord.pretendo.network/');
+
 	const options = {
-		to: email,
+		to: emailAddress,
 		subject: '[Pretendo Network] PNID Deleted',
-		username: username,
-		link: {
-			text: 'Discord Server',
-			href: 'https://discord.com/invite/pretendo'
-		},
-		text: `Your PNID ${username} has successfully been deleted. If you had a tier subscription, a separate cancellation email will be sent. If you do not receive this cancellation email, or your subscription is still being charged, please contact @jon on our Discord server`
+		email
 	};
 
 	await sendMail(options);
