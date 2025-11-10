@@ -42,7 +42,6 @@ interface buttonComponent {
 	link?: string;
 	primary?: boolean;
 }
-
 interface emailTextReplacements {
 	[key: string]: string;
 }
@@ -52,8 +51,8 @@ export class CreateEmail {
 	private readonly componentArray: (emailComponent | paddingComponent | buttonComponent)[] = [];
 
 	/**
-	 * utility function which returns a table row of the specified height to use as padding.
-	 */
+	* adds padding of the specified height in px
+	*/
 	private addPadding(size: number): paddingComponent {
 		return {
 			type: 'padding',
@@ -62,7 +61,7 @@ export class CreateEmail {
 	}
 
 	/**
-	* adds a header. for greetings, do addHeader("Hi {{pnid}}!", { pnid: "theUsername" }).
+	* adds a header. for greetings, do addHeader("Hi {{pnid}}!", { pnid: "theUsername" })
 	*/
 	public addHeader(text: string, replacements?: emailTextReplacements): this {
 		const component: emailComponent = { type: 'header', text, replacements };
@@ -72,7 +71,7 @@ export class CreateEmail {
 	}
 
 	/**
-	* adds a paragraph. for links, do addParagraph("this is a [named link](https://example.org)."). for greetings, do addParagraph("Hi {pnid}!", { pnid: "theUsername" }).
+	* adds a paragraph. for links, do addParagraph("this is a [named link](https://example.org)."). for greetings, do addParagraph("Hi {{pnid}}!", { pnid: "theUsername" })
 	*/
 	public addParagraph(text: string, replacements?: emailTextReplacements): this {
 		const component: emailComponent = { type: 'paragraph', text, replacements };
@@ -82,7 +81,7 @@ export class CreateEmail {
 	}
 
 	/**
-	* adds a button.
+	* adds a button
 	*
 	* @param {String} text the button text
 	* @param {String} [link] the link
