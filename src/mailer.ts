@@ -65,7 +65,7 @@ export class CreateEmail {
 	*/
 	public addHeader(text: string, replacements?: emailTextReplacements): this {
 		const component: emailComponent = { type: 'header', text, replacements };
-		this.componentArray.push(component, this.addPadding(24));
+		this.componentArray.push(this.addPadding(36), component, this.addPadding(24));
 
 		return this;
 	}
