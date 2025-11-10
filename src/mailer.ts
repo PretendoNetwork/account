@@ -116,7 +116,7 @@ export class CreateEmail {
 			if (plainText) {
 				c.text = c.text.replace(linkRegex, `$<linkText> ($<linkAddress>)`);
 			} else {
-				c.text = c.text.replace(linkRegex, `<a href="$<linkAddress>" style="text-decoration: none; font-weight: 700; color: #ffffff; ">$<linkText></a>`);
+				c.text = c.text.replace(linkRegex, `<a href="$<linkAddress>" style="text-decoration: underline; font-weight: 700; color: #ffffff; "><u>$<linkText></u></a>`);
 			}
 		}
 	}
@@ -139,7 +139,7 @@ export class CreateEmail {
 					innerHTML += `\n<tr><td>${c.text}</td></tr>`;
 					break;
 				case 'button':
-					innerHTML += `\n<tr><td class="${c.primary ? 'primary' : 'secondary'}" bgcolor="#673db6" style="font-weight: 700; border-radius: 10px; padding: 12px" align="center"><a href="${c.link || ''}" style="color: #ffffff; " width="100%">${c.text}</a></td></tr>`;
+					innerHTML += `\n<tr><td ${c.primary ? 'class="primary" bgcolor="#673db6"' : 'class="secondary" bgcolor="#373C65"'} style="font-weight: 700; border-radius: 10px; padding: 12px" align="center"><a href="${c.link || ''}" style="color: #ffffff; " width="100%">${c.text}</a></td></tr>`;
 					break;
 			}
 		});

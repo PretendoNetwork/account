@@ -50,11 +50,15 @@
         color: #fff !important;
         font-weight: 700 !important;
       }
-      strong {
+      strong, b {
         font-weight: 700 !important;
         color: #9D6FF3 !important;
       }
+      img.logo {
+        content: url("https://assets.pretendo.cc/images/wordmark-white.png") !important;
+      }
     }
+
     @media (prefers-color-scheme: dark) {
       body.email-body,
       table.centerer,
@@ -98,14 +102,17 @@
       td.notice a {
         color: #fff !important;
       }
-      strong {
+      strong, b {
         font-weight: 700 !important;
         color: #fff !important;
       }
+      /* isn't this redundant? no. icloud web doesn't display the logo correctly without this. */
       img.logo {
-        content: url("https://assets.pretendo.cc/images/pretendo-wordmark-multicolor-purple+white.png") !important;
+        content: url("https://assets.pretendo.cc/images/wordmark-purple-white.png") !important;
       }
     }
+    
+    
   </style>
 </head>
 <body class="email-body" bgcolor="#1B1F3B" style="margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; font-family: Poppins, Arial, Helvetica, sans-serif;">
@@ -130,7 +137,7 @@
                             <tr>
                               <td>
                                 <a href="https://pretendo.network">
-                                  <img class="logo" width="auto" height="48px" src="https://assets.pretendo.cc/images/pretendo-wordmark-singlecolor-white.png" alt="Pretendo">
+                                  <img class="logo" width="auto" height="48px" src="https://assets.pretendo.cc/images/wordmark-purple-white.png" alt="Pretendo">
                                 </a> 
                               </td>
                             </tr>

@@ -203,7 +203,7 @@ export function nascError(errorCode: string): URLSearchParams {
 export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const email = new CreateEmail()
 		.addHeader('Hello {{pnid}}!', { pnid: pnid.username })
-		.addParagraph('Your <strong>Pretendo Network ID</strong> activation is almost complete. Please click the link below to confirm your e-mail address and complete the activation process.')
+		.addParagraph('Your <b>Pretendo Network ID</b> activation is almost complete. Please click the link below to confirm your e-mail address and complete the activation process.')
 		.addButton('Confirm email address', `https://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token}`)
 		.addParagraph('You may also enter the following 6-digit code on your console:')
 		.addButton(pnid.identification.email_code, '', false)
