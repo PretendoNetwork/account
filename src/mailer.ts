@@ -94,6 +94,10 @@ export class CreateEmail {
 		return this;
 	}
 
+	private addGmailDarkModeFix(el: string): string {
+		return `<div class="gmail-s"><div class="gmail-d">${el}</div></div>`;
+	}
+
 	// parses pnid name and links. set the plaintext bool (false by default) to use no html
 	private parseReplacements(c: emailComponent, plainText: boolean = false): void {
 		// for now only replaces the pnid for shoutouts. could easily be expanded to add more.
@@ -126,20 +130,24 @@ export class CreateEmail {
 		let innerHTML = '';
 
 		this.componentArray.forEach((c) => {
+			let el = '';
 			switch (c.type) {
 				case 'padding':
 					innerHTML += `\n<tr><td width="100%" height="${c.size}px" style="line-height: ${c.size}px;">&nbsp;</td></tr>`;
 					break;
 				case 'header':
 					this.parseReplacements(c);
-					innerHTML += `\n<tr style="font-size: 24px; font-weight: 700; color: #fff"><td class="header">${c.text}</td></tr>`;
+					el = this.addGmailDarkModeFix(c.text);
+					innerHTML += `\n<tr style="font-size: 24px; font-weight: 700; color: #fff"><td class="header">${el}</td></tr>`;
 					break;
 				case 'paragraph':
 					this.parseReplacements(c);
-					innerHTML += `\n<tr><td>${c.text}</td></tr>`;
+					el = this.addGmailDarkModeFix(c.text);
+					innerHTML += `\n<tr><td>${el}</td></tr>`;
 					break;
 				case 'button':
-					innerHTML += `\n<tr><td ${c.primary ? 'class="primary" bgcolor="#673db6"' : 'class="secondary" bgcolor="#373C65"'} style="font-weight: 700; border-radius: 10px; padding: 12px" align="center"><a href="${c.link || ''}" style="color: #ffffff; " width="100%">${c.text}</a></td></tr>`;
+					el = this.addGmailDarkModeFix(c.text);
+					innerHTML += `\n<tr><td ${c.primary ? 'class="primary" bgcolor="#673db6"' : 'class="secondary" bgcolor="#373C65"'} style="font-weight: 700; border-radius: 10px; padding: 12px" align="center"><a href="${c.link || ''}" style="color: #ffffff; " width="100%">${el}</a></td></tr>`;
 					break;
 			}
 		});
