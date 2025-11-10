@@ -140,7 +140,7 @@ export class CreateEmail {
 					innerHTML += `\n<tr><td>${c.text}</td></tr>`;
 					break;
 				case 'button':
-					innerHTML += `\n<tr><td class="${c.primary ? 'primary' : 'secondary'}" bgcolor="#673db6" style="font-size: 14px; font-weight: 700; border-radius: 10px; padding: 12px" align="center"><a href="${c.link || ''}" style="color: #ffffff; " width="100%">${c.text}</a></td></tr>`;
+					innerHTML += `\n<tr><td class="${c.primary ? 'primary' : 'secondary'}" bgcolor="#673db6" style="font-weight: 700; border-radius: 10px; padding: 12px" align="center"><a href="${c.link || ''}" style="color: #ffffff; " width="100%">${c.text}</a></td></tr>`;
 					break;
 			}
 		});
