@@ -35,17 +35,21 @@
         text-decoration: underline !important;
       }
       td.primary,
-      td.primary a {
+      td.primary a,
+      td.primary span {
         background-color: #9D6FF3 !important;
         color: #fff !important;
       }
       td.secondary,
-      td.secondary a {
+      td.secondary a,
+      td.secondary span {
         background-color: #D9C6FA !important;
         color: #45297A !important;
       }
       td.primary a,
-      td.secondary a {
+      td.secondary a,
+      td.primary span,
+      td.secondary span {
         text-decoration: none !important;
       }
       td.notice {
@@ -97,7 +101,9 @@
         color: #fff !important;
       }
       td.primary a,
-      td.secondary a {
+      td.secondary a,
+      td.primary span,
+      td.secondary span {
         text-decoration: none !important;
       }
       td.signature {
@@ -109,8 +115,8 @@
       td.notice a {
         color: #fff !important;
       }
-      strong,
-      b {
+      td strong,
+      td b {
         font-weight: 700 !important;
         color: #fff !important;
       }
@@ -144,19 +150,23 @@
       text-decoration: underline !important;
     }
     u+.email-body td.primary,
-    u+.email-body td.primary a {
+    u+.email-body td.primary a,
+    u+.email-body td.primary span {
       background-color: #9D6FF3 !important;
       background-image: linear-gradient(#9D6FF3, #9D6FF3) !important;
       color: #fff !important;
     }
     u+.email-body td.secondary,
-    u+.email-body td.secondary a {
+    u+.email-body td.secondary a,
+    u+.email-body td.secondary span {
       background-color: #373C65 !important;
       background-image: linear-gradient(#373C65, #373C65) !important;
       color: #fff !important;
     }
     u+.email-body td.primary a,
-    u+.email-body td.secondary a {
+    u+.email-body td.secondary a,
+    u+.email-body td.primary span,
+    u+.email-body td.secondary span {
       text-decoration: none !important;
     }
     u+.email-body td.notice {
@@ -183,14 +193,14 @@
 </head>
 
 <body class="email-body" bgcolor="#1B1F3B"
-  style="margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; font-family: Poppins, Arial, Helvetica, sans-serif;">
+  style="margin-left:0;margin-right:0;margin-top:0;margin-bottom:0;padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;font-family:Poppins, Arial, Helvetica, sans-serif;">
   <div style="display:none;"><!--plainText--></div>
 
   <table class="centerer" bgcolor="#1B1F3B" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%"
-    style="max-width: 100%;">
+    style="max-width:100%;">
     <tr>
       <td align="center">
-        <table class="wrapper" bgcolor="#1B1F3B" style="font-family: Poppins, Arial, Helvetica, sans-serif;" border="0"
+        <table class="wrapper" bgcolor="#1B1F3B" style="font-family:Poppins, Arial, Helvetica, sans-serif;" border="0"
           cellpadding="0" cellspacing="0" height="100%" width="600px">
           <tr>
             <td>
@@ -200,7 +210,7 @@
                   <td>
                     <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
                       <tr>
-                        <td height="36px" style="line-height: 36px;" width="100%">&nbsp;</td>
+                        <td style="line-height:4em;" width="100%">&nbsp;</td>
                       </tr>
                       <tr>
                         <td>
@@ -214,11 +224,11 @@
                               </td>
                             </tr>
                             <tr>
-                              <td width="100%" height="36px" style="line-height: 36px;">&nbsp;</td>
+                              <td width="100%" style="line-height:3em;">&nbsp;</td>
                             </tr>
                             <tr>
                               <td>
-                                <table class="card" bgcolor="#23274a" style="color: #A1A8D9; border-radius: 10px;"
+                                <table class="card" bgcolor="#23274a" style="color:#A1A8D9;border-radius:10px;"
                                   border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
                                   <tr>
                                     <td width="36px" height="100%">&nbsp;</td>
@@ -228,7 +238,7 @@
                                         <!--innerHTML-->
 
                                         <tr>
-                                          <td width="100%" height="32px" style="line-height: 32px;">&nbsp;</td>
+                                          <td width="100%" style="line-height:2em;">&nbsp;</td>
                                         </tr>
 
                                         <tr>
@@ -241,7 +251,7 @@
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td width="100%" height="36px" style="line-height: 36px;">&nbsp;</td>
+                                          <td width="100%" style="line-height:3em;">&nbsp;</td>
                                         </tr>
                                       </table>
                                     </td>
@@ -251,23 +261,23 @@
                               </td>
                             </tr>
                             <tr>
-                              <td width="100%" height="18px" style="line-height: 18px;">&nbsp;</td>
+                              <td width="100%" style="line-height:1.5em;">&nbsp;</td>
                             </tr>
                             <tr>
-                              <td class="notice" style="color: #8990c1; font-size: 13px; text-align: center;">
+                              <td class="notice" style="color:#8990c1;font-size:13px;text-align:center;">
                                 <div class="gmail-s">
                                   <div class="gmail-d">
                                     Note: this email message was auto-generated, please do not respond. For further
                                     assistance, please join our <a href="https://discord.pretendo.network"
-                                      style="text-decoration: none; color: #ffffff; ">Discord server</a> or make a
+                                      style="text-decoration:none;color:#fff;">Discord server</a> or make a
                                     post on our <a href="https://forum.pretendo.network"
-                                      style="text-decoration: none; color: #ffffff; ">Forum</a>.
+                                      style="text-decoration:none;color:#fff;">Forum</a>.
                                   </div>
                                 </div>
                               </td>
                             </tr>
                             <tr>
-                              <td width="100%" height="48px" style="line-height: 48px;">&nbsp;</td>
+                              <td width="100%" style="line-height:5em;">&nbsp;</td>
                             </tr>
                           </table>
                         </td>

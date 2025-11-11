@@ -51,7 +51,7 @@ export class CreateEmail {
 	private readonly componentArray: (emailComponent | paddingComponent | buttonComponent)[] = [];
 
 	/**
-	* adds padding of the specified height in px
+	* adds padding of the specified height in em units
 	*/
 	private addPadding(size: number): paddingComponent {
 		return {
@@ -65,7 +65,7 @@ export class CreateEmail {
 	*/
 	public addHeader(text: string, replacements?: emailTextReplacements): this {
 		const component: emailComponent = { type: 'header', text, replacements };
-		this.componentArray.push(this.addPadding(36), component, this.addPadding(24));
+		this.componentArray.push(this.addPadding(3), component, this.addPadding(2));
 
 		return this;
 	}
@@ -75,7 +75,7 @@ export class CreateEmail {
 	*/
 	public addParagraph(text: string, replacements?: emailTextReplacements): this {
 		const component: emailComponent = { type: 'paragraph', text, replacements };
-		this.componentArray.push(component, this.addPadding(16));
+		this.componentArray.push(component, this.addPadding(0.5));
 
 		return this;
 	}
@@ -89,7 +89,7 @@ export class CreateEmail {
 	*/
 	public addButton(text: string, link?: string, primary: boolean = true): this {
 		const component: buttonComponent = { type: 'button', text, link, primary };
-		this.componentArray.push(this.addPadding(4), component, this.addPadding(32));
+		this.componentArray.push(component, this.addPadding(2));
 
 		return this;
 	}
@@ -107,7 +107,7 @@ export class CreateEmail {
 					if (plainText) {
 						c.text = c.text.replace(/{{pnid}}/g, value);
 					} else {
-						c.text = c.text.replace(/{{pnid}}/g, `<span class="shoutout" style="color: #cab1fb;">${value}</span>`);
+						c.text = c.text.replace(/{{pnid}}/g, `<span class="shoutout" style="color:#cab1fb;">${value}</span>`);
 					}
 				}
 			});
@@ -120,7 +120,7 @@ export class CreateEmail {
 			if (plainText) {
 				c.text = c.text.replace(linkRegex, `$<linkText> ($<linkAddress>)`);
 			} else {
-				c.text = c.text.replace(linkRegex, `<a href="$<linkAddress>" style="text-decoration: underline; font-weight: 700; color: #ffffff; "><u>$<linkText></u></a>`);
+				c.text = c.text.replace(linkRegex, `<a href="$<linkAddress>" style="text-decoration:underline;font-weight:700;color:#fff;"><u>$<linkText></u></a>`);
 			}
 		}
 	}
@@ -130,24 +130,29 @@ export class CreateEmail {
 		let innerHTML = '';
 
 		this.componentArray.forEach((c) => {
-			let el = '';
+			let el = '&nbsp;';
+			if (c.type !== 'padding') {
+				el = this.addGmailDarkModeFix(c.text);
+			}
 			switch (c.type) {
 				case 'padding':
-					innerHTML += `\n<tr><td width="100%" height="${c.size}px" style="line-height: ${c.size}px;">&nbsp;</td></tr>`;
+					innerHTML += `\n<tr><td width="100%" style="line-height:${c.size}em;">${el}</td></tr>`;
 					break;
 				case 'header':
 					this.parseReplacements(c);
-					el = this.addGmailDarkModeFix(c.text);
-					innerHTML += `\n<tr style="font-size: 24px; font-weight: 700; color: #fff"><td class="header">${el}</td></tr>`;
+					innerHTML += `\n<tr style="font-size:24px;font-weight:700;color:#fff"><td class="header">${el}</td></tr>`;
 					break;
 				case 'paragraph':
 					this.parseReplacements(c);
-					el = this.addGmailDarkModeFix(c.text);
 					innerHTML += `\n<tr><td>${el}</td></tr>`;
 					break;
 				case 'button':
-					el = this.addGmailDarkModeFix(c.text);
-					innerHTML += `\n<tr><td ${c.primary ? 'class="primary" bgcolor="#673db6"' : 'class="secondary" bgcolor="#373C65"'} style="font-weight: 700; border-radius: 10px; padding: 12px" align="center"><a href="${c.link || ''}" style="color: #ffffff; " width="100%">${el}</a></td></tr>`;
+					if (c.link) {
+						el = `<a href="${c.link}" style="color:#fff;" width="100%">${el}</a>`;
+					} else {
+						el = `<span style="color:#fff;" width="100%">${el}</span>`;
+					}
+					innerHTML += `\n<tr><td ${c.primary ? 'class="primary" bgcolor="#673db6"' : 'class="secondary" bgcolor="#373C65"'} style="font-weight:700;border-radius:10px;padding:12px" align="center">${el}</td></tr>`;
 					break;
 			}
 		});
