@@ -198,6 +198,9 @@ export class CreateEmail {
 		// the signature is baked into the template, so it needs to be added manually to the plaintext version
 		plainText += '\n\n- The Pretendo Network team';
 
+		// and so is the notice about the email being auto-generated
+		plainText += '\n\nNote: This is an automatic email; please do not respond. For assistance, please visit https://forum.pretendo.network.';
+
 		plainText = plainText.replace(/(<([^>]+)>)/gi, '');
 
 		return plainText;
