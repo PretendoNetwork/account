@@ -46,12 +46,6 @@
         background-color: #D9C6FA !important;
         color: #45297A !important;
       }
-      td.primary a,
-      td.secondary a,
-      td.primary span,
-      td.secondary span {
-        text-decoration: none !important;
-      }
       td.notice {
         color: #c5adf2 !important;
       }
@@ -59,8 +53,7 @@
         color: #fff !important;
         font-weight: 700 !important;
       }
-      strong,
-      b {
+      td strong {
         font-weight: 700 !important;
         color: #9D6FF3 !important;
       }
@@ -100,12 +93,6 @@
         background-color: #373C65 !important;
         color: #fff !important;
       }
-      td.primary a,
-      td.secondary a,
-      td.primary span,
-      td.secondary span {
-        text-decoration: none !important;
-      }
       td.signature {
         color: #A1A8D9 !important;
       }
@@ -124,6 +111,17 @@
       img.logo {
         content: url("https://assets.pretendo.cc/images/wordmark-purple-white.png") !important;
       }
+    }
+
+    td.primary a,
+    td.secondary a,
+    td.primary span,
+    td.secondary span,
+    u+.email-body td.primary a,
+    u+.email-body td.secondary a,
+    u+.email-body td.primary span,
+    u+.email-body td.secondary span {
+      text-decoration: none !important;
     }
 
     /* the following specifically targets gmail, because it doesn't support media queries and automatically inverts colors */
@@ -145,7 +143,7 @@
       color: #fff !important;
     }
     u+.email-body td a {
-      color: #673DB6 !important;
+      color: #fff !important;
       font-weight: 700 !important;
       text-decoration: underline !important;
     }
@@ -162,12 +160,6 @@
       background-color: #373C65 !important;
       background-image: linear-gradient(#373C65, #373C65) !important;
       color: #fff !important;
-    }
-    u+.email-body td.primary a,
-    u+.email-body td.secondary a,
-    u+.email-body td.primary span,
-    u+.email-body td.secondary span {
-      text-decoration: none !important;
     }
     u+.email-body td.notice {
       color: #fff !important;
@@ -192,8 +184,9 @@
   </style>
 </head>
 
-<body class="email-body" bgcolor="#1B1F3B"
-  style="margin-left:0;margin-right:0;margin-top:0;margin-bottom:0;padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;font-family:Poppins, Arial, Helvetica, sans-serif;">
+<body class="email-body" bgcolor="#1B1F3B" color="#A1A8D9"
+  style="margin-left:0;margin-right:0;margin-top:0;margin-bottom:0;padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;font-family:Poppins, Arial, Helvetica, sans-serif;color:#A1A8D9">
+
   <div style="display:none;"><!--plainText--></div>
 
   <table class="centerer" bgcolor="#1B1F3B" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%"
@@ -206,7 +199,7 @@
             <td>
               <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
                 <tr>
-                  <td width="32px">&nbsp;</td>
+                  <td width="16px">&nbsp;</td>
                   <td>
                     <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
                       <tr>
@@ -264,7 +257,7 @@
                               <td width="100%" style="line-height:1.5em;">&nbsp;</td>
                             </tr>
                             <tr>
-                              <td class="notice" style="color:#8990c1;font-size:13px;text-align:center;">
+                              <td class="notice" style="color:#8990c1;text-align:center;font-size:14px;">
                                 <div class="gmail-s">
                                   <div class="gmail-d">
                                     Note: this email message was auto-generated, please do not respond. For further
@@ -284,7 +277,7 @@
                       </tr>
                     </table>
                   </td>
-                  <td width="32px">&nbsp;</td>
+                  <td width="16px">&nbsp;</td>
                 </tr>
               </table>
             </td>

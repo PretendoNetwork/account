@@ -75,7 +75,7 @@ export class CreateEmail {
 	*/
 	public addParagraph(text: string, replacements?: emailTextReplacements): this {
 		const component: emailComponent = { type: 'paragraph', text, replacements };
-		this.componentArray.push(component, this.addPadding(0.5));
+		this.componentArray.push(component, this.addPadding(1));
 
 		return this;
 	}
@@ -118,9 +118,9 @@ export class CreateEmail {
 
 		if (linkRegex.test(c.text)) {
 			if (plainText) {
-				c.text = c.text.replace(linkRegex, `$<linkText> ($<linkAddress>)`);
+				c.text = c.text.replace(linkRegex, '$<linkText> ($<linkAddress>)');
 			} else {
-				c.text = c.text.replace(linkRegex, `<a href="$<linkAddress>" style="text-decoration:underline;font-weight:700;color:#fff;"><u>$<linkText></u></a>`);
+				c.text = c.text.replace(linkRegex, '<a href="$<linkAddress>" style="text-decoration:underline;font-weight:700;color:#fff;"><u>$<linkText></u></a>');
 			}
 		}
 	}
@@ -129,8 +129,15 @@ export class CreateEmail {
 	public toHTML(): string {
 		let innerHTML = '';
 
-		this.componentArray.forEach((c) => {
+		this.componentArray.map((c, i) => {
 			let el = '&nbsp;';
+
+			/* double padding causes issues, and the signature already has padding, so if the last element
+			*  is padding we just yeet it
+			*/
+			if (i === this.componentArray.length - 1 && c.type === 'padding') {
+				return;
+			}
 			if (c.type !== 'padding') {
 				el = this.addGmailDarkModeFix(c.text);
 			}
