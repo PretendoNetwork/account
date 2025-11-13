@@ -113,15 +113,20 @@ export class CreateEmail {
 			});
 		}
 
+		// wrap <b> and <strong> in a <span> element, to fix color on thunderbird and weight on icloud mail web
+		const bRegex = /<b ?>.*?<\/b>|<strong ?>.*?<\/strong>/g;
+
+		if (!plainText) {
+			c.text = c.text.replace(bRegex, el => `<span style="color:#fff;font-weight:bold;">${el}</span>`);
+		}
+
 		// replace [links](https://example.com) with html anchor tags or a plaintext representation
 		const linkRegex = /\[(?<linkText>.*?)\]\((?<linkAddress>.*?)\)/g;
 
-		if (linkRegex.test(c.text)) {
-			if (plainText) {
-				c.text = c.text.replace(linkRegex, '$<linkText> ($<linkAddress>)');
-			} else {
-				c.text = c.text.replace(linkRegex, '<a href="$<linkAddress>" style="text-decoration:underline;font-weight:700;color:#fff;"><u>$<linkText></u></a>');
-			}
+		if (plainText) {
+			c.text = c.text.replace(linkRegex, '$<linkText> ($<linkAddress>)');
+		} else {
+			c.text = c.text.replace(linkRegex, '<a href="$<linkAddress>" style="text-decoration:underline;font-weight:700;color:#fff;"><u>$<linkText></u></a>');
 		}
 	}
 
@@ -159,7 +164,7 @@ export class CreateEmail {
 					} else {
 						el = `<span style="color:#fff;" width="100%">${el}</span>`;
 					}
-					innerHTML += `\n<tr><td ${c.primary ? 'class="primary" bgcolor="#673db6"' : 'class="secondary" bgcolor="#373C65"'} style="font-weight:700;border-radius:10px;padding:12px" align="center">${el}</td></tr>`;
+					innerHTML += `\n<tr><td ${c.primary ? 'class="primary button" bgcolor="#673db6"' : 'class="secondary button" bgcolor="#373C65"'} style="font-weight:700;border-radius:10px;padding:12px" align="center">${el}</td></tr>`;
 					break;
 			}
 		});
