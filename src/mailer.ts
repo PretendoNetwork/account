@@ -99,15 +99,17 @@ export class CreateEmail {
 	}
 
 	// parses pnid name and links. set the plaintext bool (false by default) to use no html
-	private parseReplacements(c: emailComponent, plainText: boolean = false): void {
+	private parseReplacements(c: emailComponent, plainText: boolean = false): string {
+		let tempText = c.text;
+
 		// for now only replaces the pnid for shoutouts. could easily be expanded to add more.
 		if (c?.replacements) {
 			Object.entries(c.replacements).forEach(([key, value]) => {
 				if (key === 'pnid') {
 					if (plainText) {
-						c.text = c.text.replace(/{{pnid}}/g, value);
+						tempText = tempText.replace(/{{pnid}}/g, value);
 					} else {
-						c.text = c.text.replace(/{{pnid}}/g, `<span class="shoutout" style="color:#cab1fb;">${value}</span>`);
+						tempText = tempText.replace(/{{pnid}}/g, `<span class="shoutout" style="color:#cab1fb;">${value}</span>`);
 					}
 				}
 			});
@@ -117,17 +119,19 @@ export class CreateEmail {
 		const bRegex = /<b ?>.*?<\/b>|<strong ?>.*?<\/strong>/g;
 
 		if (!plainText) {
-			c.text = c.text.replace(bRegex, el => `<span style="color:#fff;font-weight:bold;">${el}</span>`);
+			tempText = tempText.replace(bRegex, el => `<span style="color:#fff;font-weight:bold;">${el}</span>`);
 		}
 
 		// replace [links](https://example.com) with html anchor tags or a plaintext representation
 		const linkRegex = /\[(?<linkText>.*?)\]\((?<linkAddress>.*?)\)/g;
 
 		if (plainText) {
-			c.text = c.text.replace(linkRegex, '$<linkText> ($<linkAddress>)');
+			tempText = tempText.replace(linkRegex, '$<linkText> ($<linkAddress>)');
 		} else {
-			c.text = c.text.replace(linkRegex, '<a href="$<linkAddress>" style="text-decoration:underline;font-weight:700;color:#fff;"><u>$<linkText></u></a>');
+			tempText = tempText.replace(linkRegex, '<a href="$<linkAddress>" style="text-decoration:underline;font-weight:700;color:#fff;"><u>$<linkText></u></a>');
 		}
+
+		return tempText;
 	}
 
 	// generates the html version of the email
@@ -135,7 +139,7 @@ export class CreateEmail {
 		let innerHTML = '';
 
 		this.componentArray.map((c, i) => {
-			let el = '&nbsp;';
+			let el = '';
 
 			/* double padding causes issues, and the signature already has padding, so if the last element
 			*  is padding we just yeet it
@@ -143,20 +147,18 @@ export class CreateEmail {
 			if (i === this.componentArray.length - 1 && c.type === 'padding') {
 				return;
 			}
-			if (c.type !== 'padding') {
-				el = this.addGmailDarkModeFix(c.text);
-			}
+
 			switch (c.type) {
 				case 'padding':
-					innerHTML += `\n<tr><td width="100%" style="line-height:${c.size}em;">${el}</td></tr>`;
+					innerHTML += `\n<tr><td width="100%" style="line-height:${c.size}em;">&nbsp;</td></tr>`;
 					break;
 				case 'header':
-					this.parseReplacements(c);
-					innerHTML += `\n<tr style="font-size:24px;font-weight:700;color:#fff"><td class="header">${el}</td></tr>`;
+					el = this.parseReplacements(c);
+					innerHTML += `\n<tr style="font-size:24px;font-weight:700;color:#fff"><td class="header">${this.addGmailDarkModeFix(el)}</td></tr>`;
 					break;
 				case 'paragraph':
-					this.parseReplacements(c);
-					innerHTML += `\n<tr><td>${el}</td></tr>`;
+					el = this.parseReplacements(c);
+					innerHTML += `\n<tr><td>${this.addGmailDarkModeFix(el)}</td></tr>`;
 					break;
 				case 'button':
 					if (c.link) {
@@ -164,7 +166,7 @@ export class CreateEmail {
 					} else {
 						el = `<span style="color:#fff;" width="100%">${el}</span>`;
 					}
-					innerHTML += `\n<tr><td ${c.primary ? 'class="primary button" bgcolor="#673db6"' : 'class="secondary button" bgcolor="#373C65"'} style="font-weight:700;border-radius:10px;padding:12px" align="center">${el}</td></tr>`;
+					innerHTML += `\n<tr><td ${c.primary ? 'class="primary button" bgcolor="#673db6"' : 'class="secondary button" bgcolor="#373C65"'} style="font-weight:700;border-radius:10px;padding:12px" align="center">${this.addGmailDarkModeFix(el)}</td></tr>`;
 					break;
 			}
 		});
@@ -179,16 +181,17 @@ export class CreateEmail {
 		let plainText = '';
 
 		this.componentArray.forEach((c) => {
+			let el = '';
 			switch (c.type) {
 				case 'padding':
 					break;
 				case 'header':
-					this.parseReplacements(c, true);
-					plainText += `\n${c.text}`;
+					el = this.parseReplacements(c, true);
+					plainText += `\n${el}`;
 					break;
 				case 'paragraph':
-					this.parseReplacements(c, true);
-					plainText += `\n${c.text}`;
+					el = this.parseReplacements(c, true);
+					plainText += `\n${el}`;
 					break;
 				case 'button':
 					if (c.link) {

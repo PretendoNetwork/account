@@ -281,9 +281,7 @@ export async function sendPNIDDeletedEmail(emailAddress: string, username: strin
 	const email = new CreateEmail()
 		.addHeader('Dear {{pnid}},', { pnid: username })
 		.addParagraph('your PNID has successfully been deleted.')
-		.addParagraph('If you had a tier subscription, a separate cancellation email will be sent.')
-		.addParagraph('If you do not receive this cancellation email, or your subscription is still being charged, please contact @jonbarrow on our Discord server.')
-		.addButton('Join the Discord', 'https://discord.pretendo.network/');
+		.addParagraph('If you had a tier subscription, a separate cancellation email will be sent. If you do not receive this cancellation email, or you are still being charged for your subscription, please contact <b>@jonbarrow</b> on our [Discord server](https://discord.pretendo.network/).');
 
 	const options = {
 		to: emailAddress,
