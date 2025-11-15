@@ -174,7 +174,9 @@ export class CreateEmail {
 			}
 		});
 
-		const generatedHTML = genericEmailTemplate.replace('<!--innerHTML-->', innerHTML);
+		const generatedHTML = genericEmailTemplate
+			.replace('<!--innerHTML-->', innerHTML)
+			.replace('<!--plainText-->', this.toPlainText());
 
 		return generatedHTML;
 	}
