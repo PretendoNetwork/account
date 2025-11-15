@@ -2,6 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import nodemailer from 'nodemailer';
 import * as aws from '@aws-sdk/client-ses';
+import { encode } from 'he';
 import { config, disabledFeatures } from '@/config-manager';
 import type { MailerOptions } from '@/types/common/mailer-options';
 
@@ -105,11 +106,13 @@ export class CreateEmail {
 		// for now only replaces the pnid for shoutouts. could easily be expanded to add more.
 		if (c?.replacements) {
 			Object.entries(c.replacements).forEach(([key, value]) => {
+				const safeValue = encode(value);
+
 				if (key === 'pnid') {
 					if (plainText) {
-						tempText = tempText.replace(/{{pnid}}/g, value);
+						tempText = tempText.replace(/{{pnid}}/g, safeValue);
 					} else {
-						tempText = tempText.replace(/{{pnid}}/g, `<span class="shoutout" style="color:#cab1fb;">${value}</span>`);
+						tempText = tempText.replace(/{{pnid}}/g, `<span class="shoutout" style="color:#cab1fb;">${safeValue}</span>`);
 					}
 				}
 			});
