@@ -1,5 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+  lang="en">
 <html lang="en">
+
 <head>
   <meta name="color-scheme" content="light dark">
   <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
@@ -8,45 +10,65 @@
 
     :root {
       color-scheme: light dark;
-      supported-color-schemes:light dark;
+      supported-color-schemes: light dark;
     }
 
     @media (prefers-color-scheme: light) {
       body.email-body,
       table.centerer,
       table.wrapper {
-        background-color: #FFFFFF !important;
-        color: #FFFFFF !important;
+        background-color: #673DB6 !important;
+        color: #673DB6 !important;
       }
       table.card {
-        background-color: #673DB6 !important;
+        background-color: #fff !important;
       }
       span.shoutout {
-        color: #D9C6FA !important;
+        color: #9D6FF3 !important;
       }
-      td.confirm-link {
+      td {
+        color: #673DB6 !important;
+      }
+      td a {
+        color: #673DB6 !important;
+        font-weight: 700 !important;
+        text-decoration: underline !important;
+      }
+      td.primary,
+      td.primary a,
+      td.primary span {
         background-color: #9D6FF3 !important;
+        color: #fff !important;
       }
-      td.confirm-code {
+      td.secondary,
+      td.secondary a,
+      td.secondary span {
         background-color: #D9C6FA !important;
         color: #45297A !important;
       }
       td.notice {
-        color: #9D6FF3 !important;
+        color: #c5adf2 !important;
       }
       td.notice a {
-        color: #673DB6 !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+      }
+      td strong,
+      td b {
+        font-weight: 700 !important;
+        color: #9D6FF3 !important;
       }
       img.logo {
-        content: url("https://assets.pretendo.cc/images/pretendo-wordmark-singlecolor-purple.png") !important;
+        content: url("https://assets.pretendo.cc/images/wordmark-white.png") !important;
       }
     }
+
     @media (prefers-color-scheme: dark) {
       body.email-body,
       table.centerer,
       table.wrapper {
         background-color: #1B1F3B !important;
-        color: #FFFFFF !important;
+        color: #A1A8D9 !important;
       }
       table.card {
         background-color: #23274A !important;
@@ -54,37 +76,131 @@
       span.shoutout {
         color: #CAB1FB !important;
       }
-      td.confirm-link {
+      td {
+        color: #A1A8D9 !important;
+      }
+      td a {
+        color: #fff !important;
+        font-weight: 700 !important;
+        text-decoration: underline !important;
+      }
+      td.header {
+        color: #fff !important;
+      }
+      td.primary {
         background-color: #673DB6 !important;
       }
-      td.confirm-code {
+      td.secondary {
         background-color: #373C65 !important;
-        color: #ffffff !important;
+        color: #fff !important;
+      }
+      td.signature {
+        color: #A1A8D9 !important;
       }
       td.notice {
         color: #8990C1 !important;
       }
       td.notice a {
-        color: #CAC1F5 !important;
+        color: #fff !important;
       }
+      td strong,
+      td b {
+        font-weight: 700 !important;
+        color: #fff !important;
+      }
+      /* isn't this redundant? no. icloud web doesn't display the logo correctly without this. */
+      img.logo {
+        content: url("https://assets.pretendo.cc/images/wordmark-purple-white.png") !important;
+      }
+    }
+
+    td.button a,
+    td.button span,
+    u+.email-body td.button a,
+    u+.email-body td.button span {
+      text-decoration: none !important;
+    }
+
+    /* the following specifically targets gmail, because it doesn't support media queries and automatically inverts colors */
+    u+.email-body,
+    u+.email-body table.centerer,
+    u+.email-body table.wrapper {
+      background-color: #1B1F3B !important;
+      background-image: linear-gradient(#1B1F3B, #1B1F3B) !important;
+      color: #fff !important;
+    }
+    u+.email-body table.card {
+      background-color: #23274A !important;
+      background-image: linear-gradient(#23274A, #23274A) !important;
+    }
+    u+.email-body span.shoutout {
+      color: #fff !important;
+    }
+    u+.email-body td {
+      color: #fff !important;
+    }
+    u+.email-body td a {
+      color: #fff !important;
+      font-weight: 700 !important;
+      text-decoration: underline !important;
+    }
+    u+.email-body td.primary,
+    u+.email-body td.primary a,
+    u+.email-body td.primary span {
+      background-color: #9D6FF3 !important;
+      background-image: linear-gradient(#9D6FF3, #9D6FF3) !important;
+      color: #fff !important;
+    }
+    u+.email-body td.secondary,
+    u+.email-body td.secondary a,
+    u+.email-body td.secondary span {
+      background-color: #373C65 !important;
+      background-image: linear-gradient(#373C65, #373C65) !important;
+      color: #fff !important;
+    }
+    u+.email-body td.notice {
+      color: #fff !important;
+    }
+    u+.email-body td.notice a {
+      color: #fff !important;
+      font-weight: 700 !important;
+    }
+    u+.email-body strong,
+    u+.email-body b {
+      font-weight: 700 !important;
+      color: #fff !important;
+    }
+    u+.email-body .gmail-s {
+      background: #000 !important;
+      mix-blend-mode: screen !important;
+    }
+    u+.email-body .gmail-d {
+      background: #000 !important;
+      mix-blend-mode: difference !important;
     }
   </style>
 </head>
-<body class="email-body" bgcolor="#1B1F3B" style="margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; font-family: Poppins, Arial, Helvetica, sans-serif;">
-  <div style="display:none;">{{preview}}</div>
-  <table class="centerer" bgcolor="#1B1F3B" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
+
+<body class="email-body" bgcolor="#1B1F3B" color="#A1A8D9"
+  style="margin-left:0;margin-right:0;margin-top:0;margin-bottom:0;padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;font-family:Poppins, Arial, Helvetica, sans-serif;color:#A1A8D9">
+
+  <div style="display:none;"><!--plainText--></div>
+
+  <table class="centerer" bgcolor="#1B1F3B" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%"
+    style="max-width:100%;">
     <tr>
       <td align="center">
-        <table class="wrapper" bgcolor="#1B1F3B" style="font-family: Poppins, Arial, Helvetica, sans-serif;" border="0" cellpadding="0" cellspacing="0" height="100%" width="420px">
+        <table class="wrapper" bgcolor="#1B1F3B" style="font-family:Poppins, Arial, Helvetica, sans-serif;" border="0"
+          cellpadding="0" cellspacing="0" height="100%" width="600px">
           <tr>
             <td>
               <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
                 <tr>
-                  <td width="32px">&nbsp;</td>
+                  <td width="16px">&nbsp;</td>
                   <td>
                     <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
                       <tr>
-                        <td height="36px" style="line-height: 36px;" width="100%">&nbsp;</td>
+                        <td style="line-height:4em;" width="100%">&nbsp;</td>
                       </tr>
                       <tr>
                         <td>
@@ -92,72 +208,71 @@
                             <tr>
                               <td>
                                 <a href="https://pretendo.network">
-                                  <img class="logo" width="auto" height="48px" src="https://assets.pretendo.cc/images/pretendo-wordmark-multicolor-purple+white.png" alt="Pretendo">
-                                </a> 
+                                  <img class="logo" width="auto" height="48px"
+                                    src="https://assets.pretendo.cc/images/wordmark-purple-white.png" alt="Pretendo">
+                                </a>
                               </td>
                             </tr>
                             <tr>
-                              <td width="100%" height="36px" style="line-height: 36px;">&nbsp;</td>
+                              <td width="100%" style="line-height:3em;">&nbsp;</td>
                             </tr>
                             <tr>
                               <td>
-                                <table class="card" bgcolor="#23274a" style="color: #ffffff; border-radius: 10px;" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
+                                <table class="card" bgcolor="#23274a" style="color:#A1A8D9;border-radius:10px;"
+                                  border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
                                   <tr>
-                                    <td width="24px" height="100%">&nbsp;</td>
+                                    <td width="36px" height="100%">&nbsp;</td>
                                     <td>
                                       <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
-                                        <tr width="100%" height="48px" style="line-height: 48px;">
-                                          <td>&nbsp;</td>
+
+                                        <!--innerHTML-->
+
+                                        <tr>
+                                          <td width="100%" style="line-height:2em;">&nbsp;</td>
                                         </tr>
-                                        <tr style="font-size: 24px; font-weight: 700;">
-                                          <td>
-                                            Dear <span class="shoutout" style="color: #cab1fb;">{{username}}</span>,
+
+                                        <tr>
+                                          <td align="right" class="signature">
+                                            <div class="gmail-s">
+                                              <div class="gmail-d">
+                                                The Pretendo Network team
+                                              </div>
+                                            </div>
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td width="100%" height="24px" style="line-height: 24px;">&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                          <td style="color: #ffffff; ">
-                                            {{paragraph}}
-                                          </td>
-                                        </tr>
-                                        <!--{{buttonPlaceholder}}-->
-                                        <tr>
-                                          <td width="100%" height="36px" style="line-height: 36px;">&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                          <td align="right">
-                                            The Pretendo Network team
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <td width="100%" height="24px" style="line-height: 24px;">&nbsp;</td>
+                                          <td width="100%" style="line-height:3em;">&nbsp;</td>
                                         </tr>
                                       </table>
                                     </td>
-                                    <td width="24px" height="100%">&nbsp;</td>
+                                    <td width="36px" height="100%">&nbsp;</td>
                                   </tr>
                                 </table>
                               </td>
                             </tr>
                             <tr>
-                              <td width="100%" height="18px" style="line-height: 18px;">&nbsp;</td>
+                              <td width="100%" style="line-height:1.5em;">&nbsp;</td>
                             </tr>
                             <tr>
-                              <td class="notice" style="color: #8990c1; font-size: 12px;">
-                                Note: this email message was auto-generated, please do not respond. For further assistance, please join our <a href="https://invite.gg/pretendo" style="text-decoration: none; color: #ffffff; ">Discord server</a> or make a post on our <a href="https://forum.pretendo.network" style="text-decoration: none; color: #ffffff; ">Forum</a>.
+                              <td class="notice" style="color:#8990c1;text-align:center;font-size:14px;">
+                                <div class="gmail-s">
+                                  <div class="gmail-d">
+                                    Note: This is an automatic email; please do not respond.<br />For assistance, please
+                                    visit <a href="https://forum.pretendo.network"
+                                      style="text-decoration:none;color:#fff;">forum.pretendo.network</a>.
+                                  </div>
+                                </div>
                               </td>
                             </tr>
                             <tr>
-                              <td width="100%" height="48px" style="line-height: 48px;">&nbsp;</td>
+                              <td width="100%" style="line-height:5em;">&nbsp;</td>
                             </tr>
                           </table>
                         </td>
                       </tr>
                     </table>
                   </td>
-                  <td width="32px">&nbsp;</td>
+                  <td width="16px">&nbsp;</td>
                 </tr>
               </table>
             </td>
@@ -166,5 +281,7 @@
       </td>
     </tr>
   </table>
+
 </body>
+
 </html>
