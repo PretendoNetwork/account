@@ -165,9 +165,9 @@ export class CreateEmail {
 					break;
 				case 'button':
 					if (c.link) {
-						el = `<a href="${c.link}" style="color:#fff;" width="100%">${el}</a>`;
+						el = `<a href="${c.link}" style="color:#fff;" width="100%">${c.text}</a>`;
 					} else {
-						el = `<span style="color:#fff;" width="100%">${el}</span>`;
+						el = `<span style="color:#fff;" width="100%">${c.text}</span>`;
 					}
 					innerHTML += `\n<tr><td ${c.primary ? 'class="primary button" bgcolor="#673db6"' : 'class="secondary button" bgcolor="#373C65"'} style="font-weight:700;border-radius:10px;padding:12px" align="center">${this.addGmailDarkModeFix(el)}</td></tr>`;
 					break;
