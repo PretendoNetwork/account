@@ -7,9 +7,11 @@ import type express from 'express';
 async function consoleStatusVerificationMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
 	if (!request.certificate || !request.certificate.valid) {
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				code: '0110',
-				message: 'Unlinked device'
+			errors: {
+				error: {
+					code: '0110',
+					message: 'Unlinked device'
+				}
 			}
 		}).end());
 
@@ -20,9 +22,11 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 
 	if (!deviceIDHeader) {
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				code: '0002',
-				message: 'deviceId format is invalid'
+			errors: {
+				error: {
+					code: '0002',
+					message: 'deviceId format is invalid'
+				}
 			}
 		}).end());
 
@@ -33,9 +37,11 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 
 	if (isNaN(deviceID)) {
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				code: '0002',
-				message: 'deviceId format is invalid'
+			errors: {
+				error: {
+					code: '0002',
+					message: 'deviceId format is invalid'
+				}
 			}
 		}).end());
 
@@ -47,10 +53,12 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 	if (deviceID !== certificateDeviceID) {
 		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
+			errors: {
+				error: {
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
 			}
 		}).end());
 
@@ -74,9 +82,11 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 	// * compare against. We are not so lucky
 	if (!serialNumber) {
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				code: '0002',
-				message: 'serialNumber format is invalid'
+			errors: {
+				error: {
+					code: '0002',
+					message: 'serialNumber format is invalid'
+				}
 			}
 		}).end());
 
@@ -96,9 +106,11 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		// * know that serial tampering happened on the 3DS if this fails
 		// * to find a device document.
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				code: '0002',
-				message: 'serialNumber format is invalid'
+			errors: {
+				error: {
+					code: '0002',
+					message: 'serialNumber format is invalid'
+				}
 			}
 		}).end());
 
@@ -127,10 +139,12 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 	if (device.serial !== serialNumber) {
 		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
+			errors: {
+				error: {
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
 			}
 		}).end());
 
