@@ -53,10 +53,12 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 	if (!request.certificate || !request.certificate.valid) {
 		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
+			errors: {
+				error: {
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
 			}
 		}).end());
 
@@ -205,10 +207,12 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		await session.abortTransaction();
 
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'Bad Request',
-				code: '1600',
-				message: 'Unable to process request'
+			errors: {
+				error: {
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
 			}
 		}).end());
 
