@@ -5,6 +5,7 @@ import login_v1 from '@/services/api/routes/v1/login';
 import register_v1 from '@/services/api/routes/v1/register';
 import resetPassword_v1 from '@/services/api/routes/v1/resetPassword';
 import user_v1 from '@/services/api/routes/v1/user';
+import repair_uidhmac_v1 from '@/services/api/routes/v1/repair-uidhmac';
 
 export const V1 = {
 	CONNECTIONS: connections_v1,
@@ -13,5 +14,6 @@ export const V1 = {
 	LOGIN: login_v1,
 	REGISTER: register_v1,
 	RESET_PASSWORD: resetPassword_v1,
-	USER: user_v1
+	USER: user_v1,
+	REPAIR_UIDHMAC: repair_uidhmac_v1
 };

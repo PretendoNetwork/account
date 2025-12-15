@@ -102,7 +102,8 @@ export const config: Config = {
 		forum_url: process.env.PN_ACT_CONFIG_DISCOURSE_FORUM_URL || '',
 		api_key: process.env.PN_ACT_CONFIG_DISCOURSE_API_KEY || '',
 		api_username: process.env.PN_ACT_CONFIG_DISCOURSE_API_USERNAME || ''
-	}
+	},
+	uidhmac_key: process.env.PN_ACT_CONFIG_UIDHMAC_KEY || ''
 };
 
 if (process.env.PN_ACT_CONFIG_STRIPE_SECRET_KEY) {
@@ -265,6 +266,11 @@ if (!config.grpc.master_api_keys.api) {
 
 if (!config.grpc.port) {
 	LOG_ERROR('Failed to find gRPC port. Set the PN_ACT_CONFIG_GRPC_PORT environment variable');
+	configValid = false;
+}
+
+if (!config.uidhmac_key) {
+	LOG_ERROR('Failed to find NASC uidhmac key. Set the PN_ACT_CONFIG_UIDHMAC_KEY environment variable');
 	configValid = false;
 }
 
