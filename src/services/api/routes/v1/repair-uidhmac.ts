@@ -23,7 +23,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	if (!nexPassword || !/^[0-9A-Za-z]{16}$/.test(nexPassword)) {
+	if (!nexPassword || !/^[\x21-\x5B\x5D-\x7D]{16}$/.test(nexPassword)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
