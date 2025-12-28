@@ -78,13 +78,11 @@ NEXAccountSchema.method('generatePassword', function generatePassword(): void {
 });
 
 NEXAccountSchema.method('generateUIDHMAC', function generateUIDHMAC(): void {
-	const pidByteArray = Buffer.alloc(4);
-	pidByteArray.writeUInt32LE(this.pid);
+	const CHAR_SET = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}';
+	const hmac = crypto.createHmac('sha256', config.uidhmac_key).update(this.pid.toString());
+	const hash = hmac.digest();
 
-	const mac = crypto.createHmac('md5', config.uidhmac_key);
-	mac.update(pidByteArray);
-
-	this.uidhmac = mac.digest('hex');
+	this.uidhmac = Array.from(hash.subarray(0, 8), byte => CHAR_SET[byte % CHAR_SET.length]).join('');
 });
 
 export const NEXAccount = model<INEXAccount, NEXAccountModel>('NEXAccount', NEXAccountSchema);
