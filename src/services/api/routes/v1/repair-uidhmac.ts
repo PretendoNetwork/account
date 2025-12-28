@@ -59,7 +59,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			}
 		});
 	} catch (error: any) {
-		LOG_ERROR('[POST] /v1/register: ' + error);
+		LOG_ERROR('[POST] /v1/repair-uidhmac: ' + error);
 		if (error.stack) {
 			console.error(error.stack);
 		}
