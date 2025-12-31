@@ -25,10 +25,12 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 
 	if (!['password', 'refresh_token'].includes(grantType)) {
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				cause: 'grant_type',
-				code: '0004',
-				message: 'Invalid Grant Type'
+			errors: {
+				error: {
+					cause: 'grant_type',
+					code: '0004',
+					message: 'Invalid Grant Type'
+				}
 			}
 		}).end());
 
@@ -40,10 +42,12 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 	if (grantType === 'password') {
 		if (!username || username.trim() === '') {
 			response.status(400).send(xmlbuilder.create({
-				error: {
-					cause: 'user_id',
-					code: '0002',
-					message: 'user_id format is invalid'
+				errors: {
+					error: {
+						cause: 'user_id',
+						code: '0002',
+						message: 'user_id format is invalid'
+					}
 				}
 			}).end());
 
@@ -52,10 +56,12 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 
 		if (!password || password.trim() === '') {
 			response.status(400).send(xmlbuilder.create({
-				error: {
-					cause: 'password',
-					code: '0002',
-					message: 'password format is invalid'
+				errors: {
+					error: {
+						cause: 'password',
+						code: '0002',
+						message: 'password format is invalid'
+					}
 				}
 			}).end());
 
@@ -79,10 +85,12 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 	} else {
 		if (!refreshToken || refreshToken.trim() === '') {
 			response.status(400).send(xmlbuilder.create({
-				error: {
-					cause: 'refresh_token',
-					code: '0106',
-					message: 'Invalid Refresh Token'
+				errors: {
+					error: {
+						cause: 'refresh_token',
+						code: '0106',
+						message: 'Invalid Refresh Token'
+					}
 				}
 			}).end());
 
@@ -94,10 +102,12 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 
 			if (!pnid) {
 				response.status(400).send(xmlbuilder.create({
-					error: {
-						cause: 'refresh_token',
-						code: '0106',
-						message: 'Invalid Refresh Token'
+					errors: {
+						error: {
+							cause: 'refresh_token',
+							code: '0106',
+							message: 'Invalid Refresh Token'
+						}
 					}
 				}).end());
 
@@ -105,10 +115,12 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 			}
 		} catch {
 			response.status(400).send(xmlbuilder.create({
-				error: {
-					cause: 'refresh_token',
-					code: '0106',
-					message: 'Invalid Refresh Token'
+				errors: {
+					error: {
+						cause: 'refresh_token',
+						code: '0106',
+						message: 'Invalid Refresh Token'
+					}
 				}
 			}).end());
 
@@ -121,9 +133,11 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		// * 0143 is the "The link to this Nintendo Network ID has been temporarliy removed" error,
 		// * maybe that is a better error to use here?
 		response.status(400).send(xmlbuilder.create({
-			error: {
-				code: '0112',
-				message: pnid.username
+			errors: {
+				error: {
+					code: '0112',
+					message: pnid.username
+				}
 			}
 		}).end());
 
