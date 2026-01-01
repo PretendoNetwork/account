@@ -36,11 +36,9 @@ export async function handleServerProvisioning(): Promise<void> {
 	LOG_INFO('Starting server provisioning');
 	for (const server of serverData.servers) {
 		const id = new mongoose.Types.ObjectId(server.id);
-		const result = await Server.findOneAndUpdate({
-			id
-		}, {
+		const result = await Server.findOneAndUpdate(id, {
 			$set: {
-				id,
+				_id: id,
 				service_name: server.name,
 				ip: server.ip,
 				port: server.port
@@ -50,6 +48,7 @@ export async function handleServerProvisioning(): Promise<void> {
 			LOG_WARN(`Could not find existing server DB entry for ID ${server.id} - skipping provisioning`);
 		}
 	}
+	LOG_INFO(`Finished provisioning ${serverData.servers.length} servers`);
 }
 
 export function startProvisioner(): void {
