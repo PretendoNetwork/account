@@ -1,14 +1,14 @@
+import crypto from 'node:crypto';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
 import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
-import { generateToken } from '@/util';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
-import { config } from '@/config-manager';
 import { Device } from '@/models/device';
+import { OAuthToken } from '@/models/oauth_token';
 
 const router = express.Router();
 
@@ -167,33 +167,44 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		return;
 	}
 
-	const accessTokenOptions = {
-		system_type: SystemType.WUP,
-		token_type: TokenType.OAuthAccess,
+	const clientID = request.header('x-nintendo-client-id');
+	const clientSecret = request.header('x-nintendo-client-secret');
+
+	const accessToken = await OAuthToken.create({
+		token: crypto.randomBytes(16).toString('hex'),
+		client_id: clientID,
+		client_secret: clientSecret,
 		pid: pnid.pid,
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
+		info: {
+			system_type: SystemType.WUP,
+			token_type: TokenType.OAuthAccess,
+			title_id: BigInt(0), // TODO - Add this?
+			issued: new Date(),
+			expires: new Date(Date.now() + 12 * 3600 * 1000)
+		}
+	});
 
-	const refreshTokenOptions = {
-		system_type: SystemType.WUP,
-		token_type: TokenType.OAuthRefresh,
+	const newRefreshToken = await OAuthToken.create({
+		token: crypto.randomBytes(20).toString('hex'),
+		client_id: clientID,
+		client_secret: clientSecret,
 		pid: pnid.pid,
-		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
-	};
-
-	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
-
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+		info: {
+			system_type: SystemType.WUP,
+			token_type: TokenType.OAuthRefresh,
+			title_id: BigInt(0), // TODO - Add this?
+			issued: new Date(),
+			expires: new Date(Date.now() + 12 * 3600 * 1000)
+		}
+	});
 
 	// TODO - Handle null tokens
 
 	response.send(xmlbuilder.create({
 		OAuth20: {
 			access_token: {
-				token: accessToken,
-				refresh_token: newRefreshToken,
+				token: accessToken.token,
+				refresh_token: newRefreshToken.token,
 				expires_in: 3600
 			}
 		}

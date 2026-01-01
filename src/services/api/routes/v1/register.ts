@@ -6,12 +6,13 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { isValidBirthday, getAgeFromDate, nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { isValidBirthday, getAgeFromDate, nintendoPasswordHash, sendConfirmationEmail } from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
+import { OAuthToken } from '@/models/oauth_token';
 import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
@@ -419,32 +420,34 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 	await sendConfirmationEmail(pnid);
 
-	const accessTokenOptions = {
-		system_type: SystemType.API,
-		token_type: TokenType.OAuthAccess,
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
-	const refreshTokenOptions = {
-		system_type: SystemType.API,
-		token_type: TokenType.OAuthRefresh,
-		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
-	};
-
 	try {
-		const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-		const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
+		const accessToken = await OAuthToken.create({
+			token: crypto.randomBytes(16).toString('hex'),
+			client_id: 'a2efa818a34fa16b8afbc8a74eba3eda', // TODO - This is the Wii U config, change this?
+			client_secret: 'c91cdb5658bd4954ade78533a339cf9a', // TODO - This is the Wii U config, change this?
+			pid: pnid.pid,
+			info: {
+				system_type: SystemType.API,
+				token_type: TokenType.OAuthAccess,
+				title_id: BigInt(0),
+				issued: new Date(),
+				expires: new Date(Date.now() + 12 * 3600 * 1000)
+			}
+		});
 
-		const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-		const refreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
-
-		// TODO - Handle null tokens
+		const refreshToken = await OAuthToken.create({
+			token: crypto.randomBytes(20).toString('hex'),
+			client_id: 'a2efa818a34fa16b8afbc8a74eba3eda', // TODO - This is the Wii U config, change this?
+			client_secret: 'c91cdb5658bd4954ade78533a339cf9a', // TODO - This is the Wii U config, change this?
+			pid: pnid.pid,
+			info: {
+				system_type: SystemType.API,
+				token_type: TokenType.OAuthRefresh,
+				title_id: BigInt(0),
+				issued: new Date(),
+				expires: new Date(Date.now() + 12 * 3600 * 1000)
+			}
+		});
 
 		response.json({
 			access_token: accessToken,
