@@ -23,6 +23,7 @@ api.use('/v1/login', V1.LOGIN);
 api.use('/v1/register', V1.REGISTER);
 api.use('/v1/reset-password', V1.RESET_PASSWORD);
 api.use('/v1/user', V1.USER);
+api.use('/v1/repair-uidhmac', V1.REPAIR_UIDHMAC);
 
 // * Main router for endpoints
 const router = express.Router();
