@@ -4,14 +4,14 @@ import got from 'got';
 import { z } from 'zod';
 import { getServerByClientID, getPNIDByPID } from '@/database';
 import { LOG_ERROR } from '@/logger';
-import { decryptToken, unpackToken, getValueFromHeaders, sendConfirmationEmail } from '@/util';
+import { getValueFromHeaders, sendConfirmationEmail } from '@/util';
 import { config } from '@/config-manager';
+import { IndependentServiceToken } from '@/models/independent_service_token';
 import timezones from '@/services/nnas/timezones.json';
 import regionsList from '@/services/nnas/regions.json';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { AccountSettings } from '@/types/services/nnas/account-settings';
-import type { Token } from '@/types/common/token';
 import type { RegionLanguages } from '@/types/services/nnas/region-languages';
 import type { RegionTimezone, RegionTimezones } from '@/types/services/nnas/region-timezones';
 import type { Country, Region } from '@/types/services/nnas/regions';
@@ -44,13 +44,22 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 		return;
 	}
 
-	const aes_key: string = server?.aes_key;
-	const decryptedToken = decryptToken(Buffer.from(token, 'base64'), aes_key);
+	const serviceToken = await IndependentServiceToken.findOne({
+		token: token
+	});
 
-	const tokenContents: Token = unpackToken(decryptedToken);
+	if (!serviceToken) {
+		response.sendStatus(504);
+		return;
+	}
+
+	if (serviceToken.client_id !== '3f3928cc6f780638d360f0485cef973f') {
+		response.sendStatus(504);
+		return;
+	}
 
 	try {
-		const PNID: HydratedPNIDDocument | null = await getPNIDByPID(tokenContents.pid);
+		const PNID: HydratedPNIDDocument | null = await getPNIDByPID(serviceToken.pid);
 
 		if (!PNID) {
 			response.sendStatus(504);
@@ -127,12 +136,22 @@ router.post('/update', async function (request: express.Request, response: expre
 		return;
 	}
 
-	const aesKey = server?.aes_key;
-	const decryptedToken = decryptToken(Buffer.from(token, 'base64'), aesKey);
-	const tokenContents: Token = unpackToken(decryptedToken);
+	const serviceToken = await IndependentServiceToken.findOne({
+		token: token
+	});
+
+	if (!serviceToken) {
+		response.sendStatus(504);
+		return;
+	}
+
+	if (serviceToken.client_id !== '3f3928cc6f780638d360f0485cef973f') {
+		response.sendStatus(504);
+		return;
+	}
 
 	try {
-		const pnid: HydratedPNIDDocument | null = await getPNIDByPID(tokenContents.pid);
+		const pnid: HydratedPNIDDocument | null = await getPNIDByPID(serviceToken.pid);
 		const personBody: AccountSettings = request.body;
 
 		if (!pnid) {

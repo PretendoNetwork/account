@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import joi from 'joi';
-import { nintendoPasswordHash, decryptToken, unpackToken } from '@/util';
+import { nintendoPasswordHash } from '@/util';
+import { OAuthToken } from '@/models/oauth_token';
 import { PNID } from '@/models/pnid';
 import { Server } from '@/models/server';
 import { LOG_ERROR } from '@/logger';
@@ -110,20 +111,26 @@ async function getPNIDByOAuthToken(token: string, expectedSystemType: SystemType
 	verifyConnected();
 
 	try {
-		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
-		const unpackedToken = unpackToken(decryptedToken);
+		const oauthToken = await OAuthToken.findOne({
+			token: token
+		});
 
-		if (unpackedToken.system_type !== expectedSystemType) {
-			return null;
-		}
-		if (unpackedToken.token_type !== expectedTokenType) {
+		if (!oauthToken) {
 			return null;
 		}
 
-		const pnid = await getPNIDByPID(unpackedToken.pid);
+		if (oauthToken.info.system_type !== expectedSystemType) {
+			return null;
+		}
+
+		if (oauthToken.info.token_type !== expectedTokenType) {
+			return null;
+		}
+
+		const pnid = await getPNIDByPID(oauthToken.pid);
 
 		if (pnid) {
-			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
+			const expireTime = Math.floor((Number(oauthToken.info.expires) / 1000));
 
 			if (Math.floor(Date.now() / 1000) > expireTime) {
 				return null;
