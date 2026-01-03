@@ -137,6 +137,11 @@ async function getPNIDByOAuthToken(token: string, expectedSystemType: SystemType
 			}
 		}
 
+		// * Refresh tokens are single use
+		if (expectedTokenType === TokenType.OAuthRefresh) {
+			await oauthToken.deleteOne();
+		}
+
 		return pnid;
 	} catch (error: any) {
 		// TODO - Handle error
