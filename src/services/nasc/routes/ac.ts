@@ -1,8 +1,11 @@
+import crypto from 'node:crypto';
 import express from 'express';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
-import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, generateToken } from '@/util';
+import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError } from '@/util';
 import { getServerByTitleID } from '@/database';
+import { IndependentServiceToken } from '@/models/independent_service_token';
+import { NEXToken } from '@/models/nex_token';
 import type { NASCRequestParams } from '@/types/services/nasc/request-params';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
 
@@ -71,48 +74,47 @@ router.post('/', async (request: express.Request, response: express.Response): P
 });
 
 async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
-	const tokenOptions = {
-		system_type: SystemType.CTR,
-		token_type: TokenType.NEX,
+	const nexToken = await NEXToken.create({
+		token: nintendoBase64Encode(crypto.randomBytes(112)),
+		game_server_id: server.game_server_id,
 		pid: pid,
-		access_level: 0,
-		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
-	// TODO - Handle null tokens
-
-	const nexTokenBuffer = await generateToken(server.aes_key, tokenOptions);
-	const nexToken = nintendoBase64Encode(nexTokenBuffer || '');
+		info: {
+			system_type: SystemType.CTR,
+			token_type: TokenType.NEX,
+			title_id: BigInt(parseInt(titleID, 16)),
+			issued: new Date(),
+			expires: new Date(Date.now() + (3600 * 1000))
+		}
+	});
 
 	return new URLSearchParams({
 		locator: nintendoBase64Encode(`${server.ip}:${server.port}`),
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('001'),
-		token: nexToken,
+		token: nexToken.token,
 		datetime: nintendoBase64Encode(nascDateTime())
 	});
 }
 
-async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
-	const tokenOptions = {
-		system_type: SystemType.CTR,
-		token_type: TokenType.IndependentService,
+async function processServiceTokenRequest(_server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
+	const serviceToken = await IndependentServiceToken.create({
+		token: crypto.randomBytes(36).toString('base64'),
+		client_id: '', // * Unused in NASC
+		title_ids: [titleID],
 		pid: pid,
-		access_level: 0,
-		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now()) // TODO - Hack. Independent services expire their own tokens, so we give them the ISSUED time, not an EXPIRE time
-	};
-
-	// TODO - Handle null tokens
-
-	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
-	const serviceToken = nintendoBase64Encode(serviceTokenBuffer || '');
+		info: {
+			system_type: SystemType.CTR,
+			token_type: TokenType.IndependentService,
+			title_id: BigInt(parseInt(titleID, 16)),
+			issued: new Date(),
+			expires: new Date(Date.now() + 12 * 3600 * 1000) // * These don't technicaly expire, thats up to the independent server, but adding this as a suggested expiration anyway
+		}
+	});
 
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('007'),
-		servicetoken: serviceToken,
+		servicetoken: serviceToken.token,
 		statusdata: nintendoBase64Encode('Y'),
 		svchost: nintendoBase64Encode('n/a'),
 		datetime: nintendoBase64Encode(nascDateTime())
