@@ -180,7 +180,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 			token_type: TokenType.OAuthAccess,
 			title_id: BigInt(0), // TODO - Add this?
 			issued: new Date(),
-			expires: new Date(Date.now() + 12 * 3600 * 1000)
+			expires: new Date(Date.now() + (3600 * 1000))
 		}
 	});
 

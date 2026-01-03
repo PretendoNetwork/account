@@ -431,7 +431,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 				token_type: TokenType.OAuthAccess,
 				title_id: BigInt(0),
 				issued: new Date(),
-				expires: new Date(Date.now() + 12 * 3600 * 1000)
+				expires: new Date(Date.now() + (3600 * 1000))
 			}
 		});
 
