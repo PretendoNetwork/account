@@ -5,7 +5,7 @@ import type { Model, HydratedDocument } from 'mongoose';
 export interface IIndependentServiceToken {
 	token: string;
 	client_id: string;
-	title_ids: string[];
+	title_id: string;
 	pid: number;
 	info: {
 		system_type: number;
@@ -27,7 +27,7 @@ export type HydratedIndependentServiceTokenDocument = HydratedDocument<IIndepend
 const IndependentServiceTokenSchema = new Schema<IIndependentServiceToken, IndependentServiceTokenModel, IIndependentServiceTokenMethods>({
 	token: String,
 	client_id: String,
-	title_ids: [String],
+	title_id: String,
 	pid: Number,
 	info: {
 		system_type: Number,

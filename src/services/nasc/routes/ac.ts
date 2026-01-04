@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import express from 'express';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
-import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError } from '@/util';
+import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, createServiceToken } from '@/util';
 import { getServerByTitleID } from '@/database';
 import { IndependentServiceToken } from '@/models/independent_service_token';
 import { NEXToken } from '@/models/nex_token';
@@ -96,18 +96,25 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 	});
 }
 
-async function processServiceTokenRequest(_server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
-	const serviceToken = await IndependentServiceToken.create({
-		token: crypto.randomBytes(36).toString('base64'),
-		client_id: '', // * Unused in NASC
-		title_ids: [titleID],
+async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
+	const serviceTokenOptions = {
 		pid: pid,
+		title_id: titleID,
+		issued: new Date(),
+		expires: new Date(Date.now() + 24 * 3600 * 1000)
+	};
+
+	const serviceToken = await IndependentServiceToken.create({
+		token: nintendoBase64Encode(createServiceToken(server, serviceTokenOptions)),
+		client_id: server.game_server_id,
+		title_id: serviceTokenOptions.title_id,
+		pid: serviceTokenOptions.pid,
 		info: {
 			system_type: SystemType.CTR,
 			token_type: TokenType.IndependentService,
 			title_id: BigInt(parseInt(titleID, 16)),
-			issued: new Date(),
-			expires: new Date(Date.now() + 12 * 3600 * 1000) // * These don't technicaly expire, thats up to the independent server, but adding this as a suggested expiration anyway
+			issued: serviceTokenOptions.issued,
+			expires: serviceTokenOptions.expires
 		}
 	});
 

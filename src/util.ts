@@ -14,6 +14,8 @@ import type { ObjectCannedACL } from '@aws-sdk/client-s3';
 import type { IncomingHttpHeaders } from 'node:http';
 import type { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import type { SafeQs } from '@/types/common/safe-qs';
+import type { HydratedServerDocument } from '@/types/mongoose/server';
+import type { ServiceTokenOptions } from '@/types/common/service-token-options';
 
 let s3: S3;
 
@@ -51,6 +53,24 @@ export function nintendoBase64Decode(encoded: string): Buffer {
 export function nintendoBase64Encode(decoded: string | Buffer): string {
 	const encoded = Buffer.from(decoded).toString('base64');
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
+}
+
+export function createServiceToken(server: HydratedServerDocument, options: ServiceTokenOptions): Buffer {
+	const dataBuffer = Buffer.alloc(28);
+
+	dataBuffer.writeUInt32BE(options.pid, 0);
+	dataBuffer.writeBigUInt64BE(BigInt(parseInt(options.title_id, 16)), 4);
+	dataBuffer.writeBigUInt64BE(BigInt(options.issued.getTime()), 12);
+	dataBuffer.writeBigUInt64BE(BigInt(options.expires.getTime()), 20);
+
+	// * Not using AES anymore but fuck it, it's here already
+	// TODO - rename the AES field
+	const hmac = crypto.createHmac('sha256', server.aes_key).update(dataBuffer).digest();
+
+	return Buffer.concat([
+		dataBuffer,
+		hmac
+	]);
 }
 
 export function fullUrl(request: express.Request): string {

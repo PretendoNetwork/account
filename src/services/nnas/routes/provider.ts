@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
-import { getValueFromHeaders, getValueFromQueryString } from '@/util';
+import { createServiceToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { TokenType } from '@/types/common/token-types';
 import { IndependentServiceToken } from '@/models/independent_service_token';
 import { NEXToken } from '@/models/nex_token';
@@ -93,17 +93,24 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	const serviceToken = await IndependentServiceToken.create({
-		token: crypto.randomBytes(36).toString('base64'),
-		client_id: clientID,
-		title_ids: [titleID],
+	const serviceTokenOptions = {
 		pid: pnid.pid,
+		title_id: titleID,
+		issued: new Date(),
+		expires: new Date(Date.now() + 24 * 3600 * 1000)
+	};
+
+	const serviceToken = await IndependentServiceToken.create({
+		token: createServiceToken(server, serviceTokenOptions).toString('base64'),
+		client_id: clientID,
+		title_id: serviceTokenOptions.title_id,
+		pid: serviceTokenOptions.pid,
 		info: {
 			system_type: server.device,
 			token_type: TokenType.IndependentService,
 			title_id: BigInt(parseInt(titleID, 16)),
-			issued: new Date(),
-			expires: new Date(Date.now() + 12 * 3600 * 1000) // * These don't technicaly expire, thats up to the independent server, but adding this as a suggested expiration anyway
+			issued: serviceTokenOptions.issued,
+			expires: serviceTokenOptions.expires
 		}
 	});
 
