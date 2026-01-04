@@ -36,4 +36,6 @@ const NEXTokenSchema = new Schema<INEXToken, NEXTokenModel, INEXTokenMethods>({
 	}
 });
 
+NEXTokenSchema.index({ 'info.expires': 1 }, { expireAfterSeconds: 0 });
+
 export const NEXToken = model<INEXToken, NEXTokenModel>('NEXToken', NEXTokenSchema);

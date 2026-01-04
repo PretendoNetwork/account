@@ -38,4 +38,6 @@ const IndependentServiceTokenSchema = new Schema<IIndependentServiceToken, Indep
 	}
 });
 
+IndependentServiceTokenSchema.index({ 'info.expires': 1 }, { expireAfterSeconds: 0 });
+
 export const IndependentServiceToken = model<IIndependentServiceToken, IndependentServiceTokenModel>('IndependentServiceToken', IndependentServiceTokenSchema);
