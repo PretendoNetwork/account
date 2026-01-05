@@ -6,7 +6,7 @@ import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, cr
 import { getServerByTitleID } from '@/database';
 import { IndependentServiceToken } from '@/models/independent_service_token';
 import { NEXToken } from '@/models/nex_token';
-import type { NASCRequestParams } from '@/types/services/nasc/request-params';
+import type { NASCACRequestParams, NASCLoginACRequestParams, NASCServiceTokenACRequestParams } from '@/types/services/nasc/ac-request-params';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
 
 const router = express.Router();
@@ -17,7 +17,7 @@ const router = express.Router();
  * Description: Gets a NEX server address and token
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
-	const requestParams: NASCRequestParams = request.body;
+	const requestParams: NASCACRequestParams = request.body;
 	const action = nintendoBase64Decode(requestParams.action).toString();
 	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
 	const gameServerID = nintendoBase64Decode(requestParams.gameid).toString();
@@ -63,17 +63,18 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 	switch (action) {
 		case 'LOGIN':
-			responseData = await processLoginRequest(server, nexAccount.pid, titleID);
+			responseData = await processLoginRequest(server, nexAccount.pid, requestParams as NASCLoginACRequestParams); // TODO - Remove this "as" with field checking
 			break;
 		case 'SVCLOC':
-			responseData = await processServiceTokenRequest(server, nexAccount.pid, titleID);
+			responseData = await processServiceTokenRequest(server, nexAccount.pid, requestParams as NASCServiceTokenACRequestParams); // TODO - Remove this "as" with field checking
 			break;
 	}
 
 	response.status(200).send(responseData.toString());
 });
 
-async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
+async function processLoginRequest(server: HydratedServerDocument, pid: number, requestParams: NASCLoginACRequestParams): Promise<URLSearchParams> {
+	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
 	const nexToken = await NEXToken.create({
 		token: nintendoBase64Encode(crypto.randomBytes(112)),
 		game_server_id: server.game_server_id,
@@ -96,7 +97,8 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 	});
 }
 
-async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
+async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, requestParams: NASCServiceTokenACRequestParams): Promise<URLSearchParams> {
+	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
 	const serviceTokenOptions = {
 		pid: pid,
 		title_id: titleID,
@@ -106,7 +108,7 @@ async function processServiceTokenRequest(server: HydratedServerDocument, pid: n
 
 	const serviceToken = await IndependentServiceToken.create({
 		token: nintendoBase64Encode(createServiceToken(server, serviceTokenOptions)),
-		client_id: server.game_server_id,
+		client_id: nintendoBase64Decode(requestParams.keyhash).toString(),
 		title_id: serviceTokenOptions.title_id,
 		pid: serviceTokenOptions.pid,
 		info: {
