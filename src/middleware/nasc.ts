@@ -6,10 +6,10 @@ import { connection as databaseConnection } from '@/database';
 import NintendoCertificate from '@/nintendo-certificate';
 import { LOG_ERROR } from '@/logger';
 import type express from 'express';
-import type { NASCRequestParams } from '@/types/services/nasc/request-params';
+import type { NASCACRequestParams } from '@/types/services/nasc/ac-request-params';
 
 async function NASCMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
-	const requestParams: NASCRequestParams = request.body;
+	const requestParams: NASCACRequestParams = request.body;
 
 	if (!requestParams.action ||
 		!requestParams.fcdcert ||
@@ -37,15 +37,15 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	let pidHmac = '';
 	let password = '';
 
-	if (requestParams.userid) {
+	if ('userid' in requestParams) {
 		pid = Number(nintendoBase64Decode(requestParams.userid).toString());
 	}
 
-	if (requestParams.uidhmac) {
+	if ('uidhmac' in requestParams) {
 		pidHmac = nintendoBase64Decode(requestParams.uidhmac).toString();
 	}
 
-	if (requestParams.passwd) {
+	if ('passwd' in requestParams) {
 		password = nintendoBase64Decode(requestParams.passwd).toString();
 	}
 

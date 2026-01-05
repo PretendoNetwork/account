@@ -1,8 +1,11 @@
+import crypto from 'node:crypto';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
-import { generateToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
+import { createServiceToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { TokenType } from '@/types/common/token-types';
+import { IndependentServiceToken } from '@/models/independent_service_token';
+import { NEXToken } from '@/models/nex_token';
 import { NEXAccount } from '@/models/nex-account';
 
 const router = express.Router();
@@ -90,25 +93,30 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		return;
 	}
 
-	const tokenOptions = {
-		system_type: server.device,
-		token_type: TokenType.IndependentService,
+	const serviceTokenOptions = {
 		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now()) // TODO - Hack. Independent services expire their own tokens, so we give them the ISSUED time, not an EXPIRE time
+		title_id: titleID,
+		issued: new Date(),
+		expires: new Date(Date.now() + 24 * 3600 * 1000)
 	};
 
-	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
-	let serviceToken = serviceTokenBuffer ? serviceTokenBuffer.toString('base64') : '';
-
-	if (request.isCemu) {
-		serviceToken = Buffer.from(serviceToken, 'base64').toString('hex');
-	}
+	const serviceToken = await IndependentServiceToken.create({
+		token: createServiceToken(server, serviceTokenOptions).toString('base64'),
+		client_id: clientID,
+		title_id: serviceTokenOptions.title_id,
+		pid: serviceTokenOptions.pid,
+		info: {
+			system_type: server.device,
+			token_type: TokenType.IndependentService,
+			title_id: BigInt(parseInt(titleID, 16)),
+			issued: serviceTokenOptions.issued,
+			expires: serviceTokenOptions.expires
+		}
+	});
 
 	response.send(xmlbuilder.create({
 		service_token: {
-			token: serviceToken
+			token: serviceToken.token
 		}
 	}).end());
 });
@@ -213,21 +221,18 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	const tokenOptions = {
-		system_type: server.device,
-		token_type: TokenType.NEX,
+	const nexToken = await NEXToken.create({
+		token: crypto.randomBytes(36).toString('base64'),
+		game_server_id: gameServerID,
 		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
-	const nexTokenBuffer = await generateToken(server.aes_key, tokenOptions);
-	let nexToken = nexTokenBuffer ? nexTokenBuffer.toString('base64') : '';
-
-	if (request.isCemu) {
-		nexToken = Buffer.from(nexToken || '', 'base64').toString('hex');
-	}
+		info: {
+			system_type: server.device,
+			token_type: TokenType.NEX,
+			title_id: BigInt(parseInt(titleID, 16)),
+			issued: new Date(),
+			expires: new Date(Date.now() + (3600 * 1000))
+		}
+	});
 
 	response.send(xmlbuilder.create({
 		nex_token: {
@@ -235,7 +240,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 			nex_password: nexAccount.password,
 			pid: nexAccount.pid,
 			port: server.port,
-			token: nexToken
+			token: nexToken.token
 		}
 	}).end());
 });
