@@ -229,12 +229,13 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		nexToken = Buffer.from(nexToken || '', 'base64').toString('hex');
 	}
 
+	const connectInfo = await server.getServerConnectInfo();
 	response.send(xmlbuilder.create({
 		nex_token: {
-			host: server.ip,
+			host: connectInfo.ip,
 			nex_password: nexAccount.password,
 			pid: nexAccount.pid,
-			port: server.port,
+			port: connectInfo.port,
 			token: nexToken
 		}
 	}).end());

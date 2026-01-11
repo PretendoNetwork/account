@@ -13,7 +13,8 @@ const serverProvisioningSchema = z.object({
 	servers: z.array(z.object({
 		id: z.string(),
 		name: z.string(),
-		ip: z.string(),
+		ip: z.string().optional(),
+		ipList: z.array(z.string()).optional(),
 		port: z.coerce.number()
 	}))
 });
@@ -40,6 +41,7 @@ export async function handleServerProvisioning(): Promise<void> {
 			$set: {
 				_id: id,
 				service_name: server.name,
+				ipList: server.ipList,
 				ip: server.ip,
 				port: server.port
 			}
