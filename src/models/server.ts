@@ -1,6 +1,49 @@
+import dgram from 'node:dgram';
+import crypto from 'node:crypto';
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import type { IServer, IServerConnectInfo, IServerMethods, ServerModel } from '@/types/mongoose/server';
+
+// * Kinda ugly to slap this in with the Mongoose stuff but it's fine for now
+// TODO - Maybe move this one day?
+const socket = dgram.createSocket('udp4');
+const pendingHealthCheckRequests = new Map<string, () => void>();
+
+socket.on('message', (msg: Buffer, _rinfo: dgram.RemoteInfo) => {
+	const uuid = msg.toString();
+	const resolve = pendingHealthCheckRequests.get(uuid);
+
+	if (resolve) {
+		resolve();
+	}
+});
+
+socket.bind();
+
+function healthCheck(target: { host: string; port: number }): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const uuid = crypto.randomUUID();
+
+		const timeout = setTimeout(() => {
+			pendingHealthCheckRequests.delete(uuid);
+			reject(new Error('No valid response received'));
+		}, 5 * 1000); // TODO - Make this configurable? 5 seconds seems fine for now
+
+		pendingHealthCheckRequests.set(uuid, () => {
+			clearTimeout(timeout);
+			pendingHealthCheckRequests.delete(uuid);
+			resolve(target.host);
+		});
+
+		socket.send(Buffer.from(uuid), target.port, target.host, (error) => {
+			if (error) {
+				clearTimeout(timeout);
+				pendingHealthCheckRequests.delete(uuid);
+				reject(error);
+			}
+		});
+	});
+}
 
 const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 	client_id: String,
@@ -20,7 +63,8 @@ const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 	access_mode: String,
 	maintenance_mode: Boolean,
 	device: Number,
-	aes_key: String
+	aes_key: String,
+	health_check_port: Number
 });
 
 ServerSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
@@ -31,9 +75,26 @@ ServerSchema.method('getServerConnectInfo', async function (): Promise<IServerCo
 		throw new Error(`No IP configured for server ${this._id}`);
 	}
 
-	const randomIp = ipList[Math.floor(Math.random() * ipList.length)];
+	const healthCheckTargets = ipList.map(ip => ({
+		host: ip,
+		port: this.health_check_port
+	}));
+
+	let target: string | undefined;
+
+	try {
+		// * Pick the first address that wins the health check. If no address responds in 5 seconds
+		// * nothing is returned
+		target = await Promise.race(healthCheckTargets.map(target => healthCheck(target)));
+	} catch {
+		// * Eat error for now, this means that no address responded in time
+		// TODO - Handle this
+	}
+
+	const randomIP = ipList[Math.floor(Math.random() * ipList.length)];
+
 	return {
-		ip: randomIp,
+		ip: target || randomIP, // * Just use a random IP if nothing responded in time and Hope For The Best:tm:
 		port: this.port
 	};
 });

@@ -13,6 +13,7 @@ export interface IServer {
 	maintenance_mode: boolean;
 	device: number;
 	aes_key: string;
+	health_check_port: number;
 }
 
 export interface IServerConnectInfo {
