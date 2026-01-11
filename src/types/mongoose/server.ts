@@ -3,7 +3,7 @@ import type { Model, HydratedDocument } from 'mongoose';
 export interface IServer {
 	client_id: string;
 	ip?: string;
-	ipList?: string[];
+	ip_list?: string[];
 	port: number;
 	service_name: string;
 	service_type: string;

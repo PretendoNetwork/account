@@ -4,8 +4,14 @@ import type { IServer, IServerConnectInfo, IServerMethods, ServerModel } from '@
 
 const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 	client_id: String,
-	ip: String,
-	ipList: [String], // If specified, clients will be given a random IP from this list
+	ip: {
+		type: String,
+		required: false
+	},
+	ip_list: {
+		type: [String],
+		required: false
+	},
 	port: Number,
 	service_name: String,
 	service_type: String,
@@ -20,7 +26,7 @@ const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 ServerSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 
 ServerSchema.method('getServerConnectInfo', async function (): Promise<IServerConnectInfo> {
-	const ipList = (this.ipList ?? [this.ip]).filter((v): v is string => !!v);
+	const ipList = [this.ip_list, this.ip].flat().filter((v): v is string => !!v);
 	if (ipList.length === 0) {
 		throw new Error(`No IP configured for server ${this._id}`);
 	}
