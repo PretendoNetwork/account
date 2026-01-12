@@ -15,7 +15,8 @@ const serverProvisioningSchema = z.object({
 		name: z.string(),
 		ip: z.string().optional(),
 		ipList: z.array(z.string()).optional(),
-		port: z.coerce.number()
+		port: z.coerce.number(),
+		health_check_port: z.coerce.number().optional()
 	}))
 });
 
@@ -43,7 +44,8 @@ export async function handleServerProvisioning(): Promise<void> {
 				service_name: server.name,
 				ipList: server.ipList,
 				ip: server.ip,
-				port: server.port
+				port: server.port,
+				health_check_port: server.health_check_port
 			}
 		});
 		if (!result) {
