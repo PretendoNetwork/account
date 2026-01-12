@@ -64,7 +64,10 @@ const ServerSchema = new Schema<IServer, ServerModel, IServerMethods>({
 	maintenance_mode: Boolean,
 	device: Number,
 	aes_key: String,
-	health_check_port: Number
+	health_check_port: {
+		type: Number,
+		required: false
+	}
 });
 
 ServerSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
@@ -75,9 +78,18 @@ ServerSchema.method('getServerConnectInfo', async function (): Promise<IServerCo
 		throw new Error(`No IP configured for server ${this._id}`);
 	}
 
+	const randomIP = ipList[Math.floor(Math.random() * ipList.length)];
+
+	if (!this.health_check_port) {
+		return {
+			ip: randomIP,
+			port: this.port
+		};
+	}
+
 	const healthCheckTargets = ipList.map(ip => ({
 		host: ip,
-		port: this.health_check_port
+		port: this.health_check_port!
 	}));
 
 	let target: string | undefined;
@@ -90,8 +102,6 @@ ServerSchema.method('getServerConnectInfo', async function (): Promise<IServerCo
 		// * Eat error for now, this means that no address responded in time
 		// TODO - Handle this
 	}
-
-	const randomIP = ipList[Math.floor(Math.random() * ipList.length)];
 
 	return {
 		ip: target || randomIP, // * Just use a random IP if nothing responded in time and Hope For The Best:tm:
