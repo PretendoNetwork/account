@@ -2,8 +2,8 @@ import dgram from 'node:dgram';
 import crypto from 'node:crypto';
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
-import type { IServer, IServerConnectInfo, IServerMethods, ServerModel } from '@/types/mongoose/server';
 import { LOG_WARN } from '@/logger';
+import type { IServer, IServerConnectInfo, IServerMethods, ServerModel } from '@/types/mongoose/server';
 
 // * Kinda ugly to slap this in with the Mongoose stuff but it's fine for now
 // TODO - Maybe move this one day?
