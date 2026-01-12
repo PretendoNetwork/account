@@ -88,25 +88,34 @@ ServerSchema.method('getServerConnectInfo', async function (): Promise<IServerCo
 		};
 	}
 
-	const healthCheckTargets = ipList.map(ip => ({
+	// * Remove the random IP from the race pool to remove the duplicate health check
+	const healthCheckTargets = ipList.filter(ip => ip !== randomIP).map(ip => ({
 		host: ip,
 		port: this.health_check_port!
 	}));
 
-	let target: string | undefined;
+	// * Default to the random IP in case nothing responded in time
+	// * and just Hope For The Best:tm:
+	let target = randomIP;
 
-	try {
-		// * Pick the first address that wins the health check. If no address responds in 2 seconds
-		// * nothing is returned
-		target = await Promise.race(healthCheckTargets.map(target => healthCheck(target)));
-	} catch {
-		// * Eat error for now, this means that no address responded in time
-		// TODO - Handle this
-		LOG_WARN(`Server ${this.service_name} faield to find healthy NEX server. Falling back to random IP`);
+	// * Check the random IP and start the race at the same time, preferring
+	// * the result of the random IP should it succeed. Worst case scenario
+	// * this takes 2 seconds to complete
+	const [randomResult, raceResult] = await Promise.allSettled([
+		healthCheck({ host: randomIP, port: this.health_check_port! }),
+		Promise.race(healthCheckTargets.map(target => healthCheck(target)))
+	]);
+
+	if (randomResult.status === 'rejected') {
+		if (raceResult.status === 'fulfilled') {
+			target = raceResult.value;
+		} else {
+			LOG_WARN(`Server ${this.service_name} failed to find healthy NEX server. Using the randomly selected IP ${target}`);
+		}
 	}
 
 	return {
-		ip: target || randomIP, // * Just use a random IP if nothing responded in time and Hope For The Best:tm:
+		ip: target,
 		port: this.port
 	};
 });
