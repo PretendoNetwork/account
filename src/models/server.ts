@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import type { IServer, IServerConnectInfo, IServerMethods, ServerModel } from '@/types/mongoose/server';
+import { LOG_WARN } from '@/logger';
 
 // * Kinda ugly to slap this in with the Mongoose stuff but it's fine for now
 // TODO - Maybe move this one day?
@@ -101,6 +102,7 @@ ServerSchema.method('getServerConnectInfo', async function (): Promise<IServerCo
 	} catch {
 		// * Eat error for now, this means that no address responded in time
 		// TODO - Handle this
+		LOG_WARN(`Server ${this.service_name} faield to find healthy NEX server. Falling back to random IP`);
 	}
 
 	return {
