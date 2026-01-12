@@ -28,7 +28,7 @@ function healthCheck(target: { host: string; port: number }): Promise<string> {
 		const timeout = setTimeout(() => {
 			pendingHealthCheckRequests.delete(uuid);
 			reject(new Error('No valid response received'));
-		}, 5 * 1000); // TODO - Make this configurable? 5 seconds seems fine for now
+		}, 2 * 1000); // TODO - Make this configurable? 2 seconds seems fine for now
 
 		pendingHealthCheckRequests.set(uuid, () => {
 			clearTimeout(timeout);
@@ -96,7 +96,7 @@ ServerSchema.method('getServerConnectInfo', async function (): Promise<IServerCo
 	let target: string | undefined;
 
 	try {
-		// * Pick the first address that wins the health check. If no address responds in 5 seconds
+		// * Pick the first address that wins the health check. If no address responds in 2 seconds
 		// * nothing is returned
 		target = await Promise.race(healthCheckTargets.map(target => healthCheck(target)));
 	} catch {
