@@ -13,11 +13,12 @@ import { Server } from './models/server';
 const serverProvisioningSchema = z.object({
 	servers: z.array(z.object({
 		id: z.string(),
-		name: z.string(),
+		name: z.string().optional(),
 		ip: z.string().nullable().optional(),
-		ip_list: z.array(z.string()).default([]),
-		port: z.number(),
-		health_check_port: z.number().nullable().optional()
+		ip_list: z.array(z.string()).optional(),
+		port: z.number().optional(),
+		health_check_port: z.number().nullable().optional(),
+		aes_key: z.string().optional()
 	}))
 });
 
@@ -46,7 +47,8 @@ export async function handleServerProvisioning(): Promise<void> {
 				ip_list: server.ip_list,
 				ip: server.ip,
 				port: server.port,
-				health_check_port: server.health_check_port
+				health_check_port: server.health_check_port,
+				aes_key: server.aes_key
 			}
 		});
 		if (!result) {
