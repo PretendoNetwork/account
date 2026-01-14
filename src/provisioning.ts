@@ -8,15 +8,16 @@ import { Server } from './models/server';
 // Provisioning has a couple edgecases:
 // - It will only update existing entries, will not add new one
 // - Only the fields in the below schema will be updated
+// - Set fields to null to unset them. Undefined means it won't be modified
 
 const serverProvisioningSchema = z.object({
 	servers: z.array(z.object({
 		id: z.string(),
 		name: z.string(),
-		ip: z.string().optional(),
-		ipList: z.array(z.string()).optional(),
-		port: z.coerce.number(),
-		health_check_port: z.coerce.number().optional()
+		ip: z.string().nullable().optional(),
+		ip_list: z.array(z.string()).default([]),
+		port: z.number(),
+		health_check_port: z.number().nullable().optional()
 	}))
 });
 
@@ -42,7 +43,7 @@ export async function handleServerProvisioning(): Promise<void> {
 			$set: {
 				_id: id,
 				service_name: server.name,
-				ipList: server.ipList,
+				ip_list: server.ip_list,
 				ip: server.ip,
 				port: server.port,
 				health_check_port: server.health_check_port
