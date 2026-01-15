@@ -171,8 +171,10 @@ export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.Hyd
 }
 
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
-	const passwordResetToken = await PasswordResetToken.create({
-		token: crypto.randomBytes(36).toString('hex'),
+	const token = crypto.randomBytes(36).toString('hex');
+
+	await PasswordResetToken.create({
+		token: crypto.createHash('sha256').update(token).digest('hex'),
 		pid: pnid.pid,
 		info: {
 			system_type: SystemType.PasswordReset,
@@ -187,7 +189,7 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 		.addHeader('Dear {{pnid}},', { pnid: pnid.username })
 		.addParagraph('a password reset has been requested from this account.')
 		.addParagraph('If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.')
-		.addButton('Reset password', `${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken.token)}`);
+		.addButton('Reset password', `${config.website_base}/account/reset-password?token=${encodeURIComponent(token)}`);
 
 	const mailerOptions = {
 		to: pnid.email.address,

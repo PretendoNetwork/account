@@ -45,7 +45,7 @@ router.get('/ui/profile', async function (request: express.Request, response: ex
 	}
 
 	const serviceToken = await IndependentServiceToken.findOne({
-		token: token
+		token: crypto.createHash('sha256').update(token).digest('hex')
 	});
 
 	if (!serviceToken) {
@@ -137,7 +137,7 @@ router.post('/update', async function (request: express.Request, response: expre
 	}
 
 	const serviceToken = await IndependentServiceToken.findOne({
-		token: token
+		token: crypto.createHash('sha256').update(token).digest('hex')
 	});
 
 	if (!serviceToken) {

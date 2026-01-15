@@ -114,8 +114,11 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	}
 
 	try {
-		const accessToken = await OAuthToken.create({
-			token: crypto.randomBytes(16).toString('hex'),
+		const accessToken = crypto.randomBytes(16).toString('hex');
+		const newRefreshToken = crypto.randomBytes(20).toString('hex');
+
+		await OAuthToken.create({
+			token: crypto.createHash('sha256').update(accessToken).digest('hex'),
 			client_id: 'a2efa818a34fa16b8afbc8a74eba3eda', // TODO - This is the Wii U config, change this?
 			client_secret: 'c91cdb5658bd4954ade78533a339cf9a', // TODO - This is the Wii U config, change this?
 			pid: pnid.pid,
@@ -128,8 +131,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			}
 		});
 
-		const newRefreshToken = await OAuthToken.create({
-			token: crypto.randomBytes(20).toString('hex'),
+		await OAuthToken.create({
+			token: crypto.createHash('sha256').update(newRefreshToken).digest('hex'),
 			client_id: 'a2efa818a34fa16b8afbc8a74eba3eda', // TODO - This is the Wii U config, change this?
 			client_secret: 'c91cdb5658bd4954ade78533a339cf9a', // TODO - This is the Wii U config, change this?
 			pid: pnid.pid,

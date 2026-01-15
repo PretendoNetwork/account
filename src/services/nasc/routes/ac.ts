@@ -75,8 +75,10 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 async function processLoginRequest(server: HydratedServerDocument, pid: number, requestParams: NASCLoginACRequestParams): Promise<URLSearchParams> {
 	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
-	const nexToken = await NEXToken.create({
-		token: nintendoBase64Encode(crypto.randomBytes(112)),
+	const token = nintendoBase64Encode(crypto.randomBytes(112));
+
+	await NEXToken.create({
+		token: crypto.createHash('sha256').update(token).digest('hex'),
 		game_server_id: server.game_server_id,
 		pid: pid,
 		info: {
@@ -92,7 +94,7 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 		locator: nintendoBase64Encode(`${server.ip}:${server.port}`),
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('001'),
-		token: nexToken.token,
+		token: token,
 		datetime: nintendoBase64Encode(nascDateTime())
 	});
 }
@@ -106,8 +108,10 @@ async function processServiceTokenRequest(server: HydratedServerDocument, pid: n
 		expires: new Date(Date.now() + 24 * 3600 * 1000)
 	};
 
-	const serviceToken = await IndependentServiceToken.create({
-		token: nintendoBase64Encode(createServiceToken(server, serviceTokenOptions)),
+	const token = nintendoBase64Encode(createServiceToken(server, serviceTokenOptions));
+
+	await IndependentServiceToken.create({
+		token: crypto.createHash('sha256').update(token).digest('hex'),
 		client_id: nintendoBase64Decode(requestParams.keyhash).toString(),
 		title_id: serviceTokenOptions.title_id,
 		pid: serviceTokenOptions.pid,
@@ -123,7 +127,7 @@ async function processServiceTokenRequest(server: HydratedServerDocument, pid: n
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('007'),
-		servicetoken: serviceToken.token,
+		servicetoken: token,
 		statusdata: nintendoBase64Encode('Y'),
 		svchost: nintendoBase64Encode('n/a'),
 		datetime: nintendoBase64Encode(nascDateTime())

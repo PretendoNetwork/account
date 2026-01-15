@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import joi from 'joi';
@@ -112,7 +113,7 @@ async function getPNIDByOAuthToken(token: string, expectedSystemType: SystemType
 
 	try {
 		const oauthToken = await OAuthToken.findOne({
-			token: token
+			token: crypto.createHash('sha256').update(token).digest('hex')
 		});
 
 		if (!oauthToken) {

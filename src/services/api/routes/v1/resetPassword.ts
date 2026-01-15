@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { PasswordResetToken } from '@/models/password_reset_token';
@@ -33,7 +34,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	let pnid: HydratedPNIDDocument | null = null;
 	try {
 		const passwordResetToken = await PasswordResetToken.findOne({
-			token: token
+			token: crypto.createHash('sha256').update(token).digest('hex')
 		});
 
 		if (!passwordResetToken) {

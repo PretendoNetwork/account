@@ -170,8 +170,11 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 	const clientID = request.header('x-nintendo-client-id');
 	const clientSecret = request.header('x-nintendo-client-secret');
 
-	const accessToken = await OAuthToken.create({
-		token: crypto.randomBytes(16).toString('hex'),
+	const accessToken = crypto.randomBytes(16).toString('hex');
+	const newRefreshToken = crypto.randomBytes(20).toString('hex');
+
+	await OAuthToken.create({
+		token: crypto.createHash('sha256').update(accessToken).digest('hex'),
 		client_id: clientID,
 		client_secret: clientSecret,
 		pid: pnid.pid,
@@ -184,8 +187,8 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		}
 	});
 
-	const newRefreshToken = await OAuthToken.create({
-		token: crypto.randomBytes(20).toString('hex'),
+	await OAuthToken.create({
+		token: crypto.createHash('sha256').update(newRefreshToken).digest('hex'),
 		client_id: clientID,
 		client_secret: clientSecret,
 		pid: pnid.pid,
@@ -203,8 +206,8 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 	response.send(xmlbuilder.create({
 		OAuth20: {
 			access_token: {
-				token: accessToken.token,
-				refresh_token: newRefreshToken.token,
+				token: accessToken,
+				refresh_token: newRefreshToken,
 				expires_in: 3600
 			}
 		}

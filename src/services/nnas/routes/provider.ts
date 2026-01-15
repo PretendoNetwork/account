@@ -100,8 +100,10 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 		expires: new Date(Date.now() + 24 * 3600 * 1000)
 	};
 
-	const serviceToken = await IndependentServiceToken.create({
-		token: createServiceToken(server, serviceTokenOptions).toString('base64'),
+	const token = createServiceToken(server, serviceTokenOptions).toString('base64');
+
+	await IndependentServiceToken.create({
+		token: crypto.createHash('sha256').update(token).digest('hex'),
 		client_id: clientID,
 		title_id: serviceTokenOptions.title_id,
 		pid: serviceTokenOptions.pid,
@@ -116,7 +118,7 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 
 	response.send(xmlbuilder.create({
 		service_token: {
-			token: serviceToken.token
+			token: token
 		}
 	}).end());
 });
@@ -221,8 +223,10 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 		return;
 	}
 
-	const nexToken = await NEXToken.create({
-		token: crypto.randomBytes(36).toString('base64'),
+	const token = crypto.randomBytes(36).toString('base64');
+
+	await NEXToken.create({
+		token: crypto.createHash('sha256').update(token).digest('hex'),
 		game_server_id: gameServerID,
 		pid: pnid.pid,
 		info: {
@@ -240,7 +244,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 			nex_password: nexAccount.password,
 			pid: nexAccount.pid,
 			port: server.port,
-			token: nexToken.token
+			token: token
 		}
 	}).end());
 });
