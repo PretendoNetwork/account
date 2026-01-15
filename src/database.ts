@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import joi from 'joi';
 import { nintendoPasswordHash } from '@/util';
-import { OAuthToken } from '@/models/oauth_token';
+import { OAuthToken } from '@/models/oauth-token';
 import { PNID } from '@/models/pnid';
 import { Server } from '@/models/server';
 import { LOG_ERROR } from '@/logger';

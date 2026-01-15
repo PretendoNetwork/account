@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { Status, ServerError } from 'nice-grpc';
-import { PasswordResetToken } from '@/models/password_reset_token';
+import { PasswordResetToken } from '@/models/password-reset-token';
 import { nintendoPasswordHash } from '@/util';
 import { getPNIDByPID } from '@/database';
 import { SystemType } from '@/types/common/system-types';

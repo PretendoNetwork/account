@@ -10,7 +10,7 @@ import { nintendoPasswordHash, sendConfirmationEmail } from '@/util';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
-import { OAuthToken } from '@/models/oauth_token';
+import { OAuthToken } from '@/models/oauth-token';
 import { config, disabledFeatures } from '@/config-manager';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';

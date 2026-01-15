@@ -3,7 +3,7 @@ import { Status, ServerError } from 'nice-grpc';
 import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
 import { nintendoPasswordHash } from '@/util';
-import { OAuthToken } from '@/models/oauth_token';
+import { OAuthToken } from '@/models/oauth-token';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import type { LoginRequest, LoginResponse, DeepPartial } from '@pretendonetwork/grpc/api/login_rpc';

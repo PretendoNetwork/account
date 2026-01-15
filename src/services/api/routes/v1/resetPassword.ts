@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { PasswordResetToken } from '@/models/password_reset_token';
+import { PasswordResetToken } from '@/models/password-reset-token';
 import { nintendoPasswordHash } from '@/util';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';

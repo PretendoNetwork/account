@@ -8,7 +8,7 @@ import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { Device } from '@/models/device';
-import { OAuthToken } from '@/models/oauth_token';
+import { OAuthToken } from '@/models/oauth-token';
 
 const router = express.Router();
 

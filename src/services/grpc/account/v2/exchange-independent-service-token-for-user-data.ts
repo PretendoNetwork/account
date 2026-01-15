@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { Status, ServerError } from 'nice-grpc';
-import { IndependentServiceToken } from '@/models/independent_service_token';
+import { IndependentServiceToken } from '@/models/independent-service-token';
 import { Device } from '@/models/device';
 import { NEXAccount } from '@/models/nex-account';
 import { getPNIDByPID } from '@/database';
@@ -9,7 +9,7 @@ import { config } from '@/config-manager';
 import type { ExchangeIndependentServiceTokenForUserDataRequest, ExchangeIndependentServiceTokenForUserDataResponse } from '@pretendonetwork/grpc/account/v2/exchange_independent_service_token_for_user_data_rpc';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
-import type { HydratedIndependentServiceTokenDocument } from '@/models/independent_service_token';
+import type { HydratedIndependentServiceTokenDocument } from '@/models/independent-service-token';
 
 export async function exchangeIndependentServiceTokenForUserData(request: ExchangeIndependentServiceTokenForUserDataRequest): Promise<ExchangeIndependentServiceTokenForUserDataResponse> {
 	let pnid: HydratedPNIDDocument | null = null;

@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { Status, ServerError } from 'nice-grpc';
-import { OAuthToken } from '@/models/oauth_token';
+import { OAuthToken } from '@/models/oauth-token';
 import { Device } from '@/models/device';
 import { NEXAccount } from '@/models/nex-account';
 import { getPNIDByPID } from '@/database';
@@ -9,7 +9,7 @@ import { config } from '@/config-manager';
 import type { ExchangeOAuthTokenForUserDataRequest, ExchangeOAuthTokenForUserDataResponse } from '@pretendonetwork/grpc/account/v2/exchange_oauth_token_for_user_data_rpc';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
-import type { HydratedOAuthTokenDocument } from '@/models/oauth_token';
+import type { HydratedOAuthTokenDocument } from '@/models/oauth-token';
 
 export async function exchangeOAuthTokenForUserData(request: ExchangeOAuthTokenForUserDataRequest): Promise<ExchangeOAuthTokenForUserDataResponse> {
 	let pnid: HydratedPNIDDocument | null = null;

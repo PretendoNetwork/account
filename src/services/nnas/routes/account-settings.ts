@@ -6,7 +6,7 @@ import { getServerByClientID, getPNIDByPID } from '@/database';
 import { LOG_ERROR } from '@/logger';
 import { getValueFromHeaders, sendConfirmationEmail } from '@/util';
 import { config } from '@/config-manager';
-import { IndependentServiceToken } from '@/models/independent_service_token';
+import { IndependentServiceToken } from '@/models/independent-service-token';
 import timezones from '@/services/nnas/timezones.json';
 import regionsList from '@/services/nnas/regions.json';
 import type { HydratedServerDocument } from '@/types/mongoose/server';

@@ -6,7 +6,7 @@ import { sendMail, CreateEmail } from '@/mailer';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
-import { PasswordResetToken } from '@/models/password_reset_token';
+import { PasswordResetToken } from '@/models/password-reset-token';
 import type { ParsedQs } from 'qs';
 import type mongoose from 'mongoose';
 import type express from 'express';

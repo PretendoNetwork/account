@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
 import { Status, ServerError } from 'nice-grpc';
-import { NEXToken } from '@/models/nex_token';
+import { NEXToken } from '@/models/nex-token';
 import { NEXAccount } from '@/models/nex-account';
 import type { ExchangeNEXTokenForUserDataRequest, ExchangeNEXTokenForUserDataResponse } from '@pretendonetwork/grpc/account/v2/exchange_nex_token_for_user_data_rpc';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
-import type { HydratedNEXTokenDocument } from '@/models/nex_token';
+import type { HydratedNEXTokenDocument } from '@/models/nex-token';
 
 export async function exchangeNEXTokenForUserData(request: ExchangeNEXTokenForUserDataRequest): Promise<ExchangeNEXTokenForUserDataResponse> {
 	let nexAccount: HydratedNEXAccountDocument | null = null;

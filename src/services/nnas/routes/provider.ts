@@ -4,8 +4,8 @@ import xmlbuilder from 'xmlbuilder';
 import { getServerByClientID, getServerByGameServerID } from '@/database';
 import { createServiceToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { TokenType } from '@/types/common/token-types';
-import { IndependentServiceToken } from '@/models/independent_service_token';
-import { NEXToken } from '@/models/nex_token';
+import { IndependentServiceToken } from '@/models/independent-service-token';
+import { NEXToken } from '@/models/nex-token';
 import { NEXAccount } from '@/models/nex-account';
 
 const router = express.Router();

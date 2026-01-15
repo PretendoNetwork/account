@@ -4,8 +4,8 @@ import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, createServiceToken } from '@/util';
 import { getServerByTitleID } from '@/database';
-import { IndependentServiceToken } from '@/models/independent_service_token';
-import { NEXToken } from '@/models/nex_token';
+import { IndependentServiceToken } from '@/models/independent-service-token';
+import { NEXToken } from '@/models/nex-token';
 import type { NASCACRequestParams, NASCLoginACRequestParams, NASCServiceTokenACRequestParams } from '@/types/services/nasc/ac-request-params';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
 

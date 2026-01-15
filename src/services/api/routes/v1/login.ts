@@ -3,7 +3,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { getPNIDByUsername, getPNIDByAPIRefreshToken } from '@/database';
 import { nintendoPasswordHash } from '@/util';
-import { OAuthToken } from '@/models/oauth_token';
+import { OAuthToken } from '@/models/oauth-token';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { LOG_ERROR } from '@/logger';

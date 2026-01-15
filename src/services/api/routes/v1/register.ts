@@ -12,7 +12,7 @@ import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
-import { OAuthToken } from '@/models/oauth_token';
+import { OAuthToken } from '@/models/oauth-token';
 import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';

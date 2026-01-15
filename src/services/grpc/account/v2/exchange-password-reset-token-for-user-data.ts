@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { Status, ServerError } from 'nice-grpc';
-import { PasswordResetToken } from '@/models/password_reset_token';
+import { PasswordResetToken } from '@/models/password-reset-token';
 import { Device } from '@/models/device';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
@@ -9,7 +9,7 @@ import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 import type { ExchangePasswordResetTokenForUserDataRequest, ExchangePasswordResetTokenForUserDataResponse } from '@pretendonetwork/grpc/account/v2/exchange_password_reset_token_for_user_data_rpc';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-import type { HydratedPasswordResetTokenDocument } from '@/models/password_reset_token';
+import type { HydratedPasswordResetTokenDocument } from '@/models/password-reset-token';
 
 export async function exchangePasswordResetTokenForUserData(request: ExchangePasswordResetTokenForUserDataRequest): Promise<ExchangePasswordResetTokenForUserDataResponse> {
 	let pnid: HydratedPNIDDocument | null = null;
