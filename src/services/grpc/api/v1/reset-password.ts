@@ -1,10 +1,14 @@
+import crypto from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { Status, ServerError } from 'nice-grpc';
-import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
+import { PasswordResetToken } from '@/models/password_reset_token';
+import { nintendoPasswordHash } from '@/util';
 import { getPNIDByPID } from '@/database';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { ResetPasswordRequest } from '@pretendonetwork/grpc/api/reset_password_rpc';
 import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
-import type { Token } from '@/types/common/token';
 
 // * This sucks
 const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
@@ -21,19 +25,32 @@ export async function resetPassword(request: ResetPasswordRequest): Promise<Empt
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Missing token');
 	}
 
-	let unpackedToken: Token;
+	let pnid: HydratedPNIDDocument | null = null;
 	try {
-		const decryptedToken = await decryptToken(Buffer.from(token, 'base64'));
-		unpackedToken = unpackToken(decryptedToken);
+		const passwordResetToken = await PasswordResetToken.findOne({
+			token: crypto.createHash('sha256').update(token).digest('hex')
+		});
+
+		if (!passwordResetToken) {
+			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
+		}
+
+		if (passwordResetToken.info.system_type !== SystemType.PasswordReset) {
+			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
+		}
+
+		if (passwordResetToken.info.token_type !== TokenType.PasswordReset) {
+			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
+		}
+
+		if (passwordResetToken.info.expires < new Date()) {
+			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
+		}
+
+		pnid = await getPNIDByPID(passwordResetToken.pid);
 	} catch {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
 	}
-
-	if (unpackedToken.expire_time < Date.now()) {
-		throw new ServerError(Status.INVALID_ARGUMENT, 'Token expired');
-	}
-
-	const pnid = await getPNIDByPID(unpackedToken.pid);
 
 	if (!pnid) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token. No user found');

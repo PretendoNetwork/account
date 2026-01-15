@@ -6,10 +6,11 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { nintendoPasswordHash, sendConfirmationEmail, generateToken } from '@/util';
+import { nintendoPasswordHash, sendConfirmationEmail } from '@/util';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
+import { OAuthToken } from '@/models/oauth_token';
 import { config, disabledFeatures } from '@/config-manager';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
@@ -231,39 +232,41 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 
 	await sendConfirmationEmail(pnid);
 
-	const accessTokenOptions = {
-		system_type: SystemType.API,
-		token_type: TokenType.OAuthAccess,
+	const accessToken = crypto.randomBytes(16).toString('hex');
+	const refreshToken = crypto.randomBytes(20).toString('hex');
+
+	await OAuthToken.create({
+		token: crypto.createHash('sha256').update(accessToken).digest('hex'),
+		client_id: 'a2efa818a34fa16b8afbc8a74eba3eda', // TODO - This is the Wii U config, change this?
+		client_secret: 'c91cdb5658bd4954ade78533a339cf9a', // TODO - This is the Wii U config, change this?
 		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
+		info: {
+			system_type: SystemType.API,
+			token_type: TokenType.OAuthAccess,
+			title_id: BigInt(0),
+			issued: new Date(),
+			expires: new Date(Date.now() + (3600 * 1000))
+		}
+	});
 
-	const refreshTokenOptions = {
-		system_type: SystemType.API,
-		token_type: TokenType.OAuthRefresh,
+	await OAuthToken.create({
+		token: crypto.createHash('sha256').update(refreshToken).digest('hex'),
+		client_id: 'a2efa818a34fa16b8afbc8a74eba3eda', // TODO - This is the Wii U config, change this?
+		client_secret: 'c91cdb5658bd4954ade78533a339cf9a', // TODO - This is the Wii U config, change this?
 		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
-	};
-
-	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
-
-	if (!accessTokenBuffer) {
-		throw new ServerError(Status.INTERNAL, 'Failed to generate access token');
-	}
-
-	if (!refreshTokenBuffer) {
-		throw new ServerError(Status.INTERNAL, 'Failed to generate refresh token');
-	}
+		info: {
+			system_type: SystemType.API,
+			token_type: TokenType.OAuthRefresh,
+			title_id: BigInt(0),
+			issued: new Date(),
+			expires: new Date(Date.now() + 12 * 3600 * 1000)
+		}
+	});
 
 	return {
-		accessToken: accessTokenBuffer.toString('hex'),
+		accessToken: accessToken,
 		tokenType: 'Bearer',
 		expiresIn: 3600,
-		refreshToken: refreshTokenBuffer.toString('hex')
+		refreshToken: refreshToken
 	};
 }
