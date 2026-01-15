@@ -34,7 +34,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	const fcdcertHash = crypto.createHash('sha256').update(fcdcert).digest('base64');
 
 	let pid = 0; // * Real PIDs are always positive and non-zero
-	let pidHmac = '';
+	let uidhmac = '';
 	let password = '';
 
 	if (requestParams.userid) {
@@ -42,7 +42,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	}
 
 	if (requestParams.uidhmac) {
-		pidHmac = nintendoBase64Decode(requestParams.uidhmac).toString();
+		uidhmac = nintendoBase64Decode(requestParams.uidhmac).toString();
 	}
 
 	if (requestParams.passwd) {
@@ -100,6 +100,11 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		// TODO - 102 is a DEVICE ban. Is there an error for ACCOUNT bans?
 		if (!nexAccount || nexAccount.access_level < 0) {
 			response.status(200).send(nascError('102').toString());
+			return;
+		}
+
+		if (!uidhmac || nexAccount.uidhmac !== uidhmac) {
+			response.status(200).send(nascError('122').toString());
 			return;
 		}
 	}
@@ -160,7 +165,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	}
 
 	if (titleID === '0004013000003202') {
-		if (password && !pid && !pidHmac) {
+		if (password && !pid && !uidhmac) {
 			// * Register new user
 
 			const session = await databaseConnection().startSession();
@@ -174,6 +179,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 				});
 
 				await nexAccount.generatePID();
+				nexAccount.generateUIDHMAC();
 
 				await nexAccount.save({ session });
 
