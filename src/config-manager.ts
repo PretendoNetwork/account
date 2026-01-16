@@ -13,7 +13,8 @@ export const disabledFeatures = {
 	email: false,
 	captcha: false,
 	s3: false,
-	datastore: false
+	datastore: false,
+	serverProvisioning: false
 };
 
 const hexadecimalStringRegex = /^[0-9a-f]+$/i;
@@ -40,6 +41,9 @@ export const config: Config = {
 	mongoose: {
 		connection_string: process.env.PN_ACT_CONFIG_MONGO_CONNECTION_STRING || '',
 		options: mongooseConnectOptions
+	},
+	provisioning: {
+		server_config: process.env.PN_ACT_PROVISIONING_SERVER_CONFIG || ''
 	},
 	redis: {
 		client: {
@@ -280,6 +284,11 @@ if (!config.datastore.signature_secret) {
 		LOG_ERROR('Datastore signature secret key must be a 32-character hexadecimal string.');
 		configValid = false;
 	}
+}
+
+if (!config.provisioning.server_config) {
+	LOG_WARN('A server provisioning config file as not been set. Disabling feature, no server data will be provisioned. To enable feature set the PN_ACT_PROVISIONING_SERVER_CONFIG environment variable');
+	disabledFeatures.serverProvisioning = true;
 }
 
 if (!configValid) {

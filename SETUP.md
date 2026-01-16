@@ -96,3 +96,4 @@ Configurations are loaded through environment variables. `.env` files are suppor
 | `PN_ACT_CONFIG_GRPC_MIIVERSE_HOST`            | Used to remove Miiverse user data during account deletion                                                       | No       |
 | `PN_ACT_CONFIG_GRPC_MIIVERSE_PORT`            | Used to remove Miiverse user data during account deletion                                                       | No       |
 | `PN_ACT_CONFIG_GRPC_MIIVERSE_KEY_API`         | Used to remove Miiverse user data during account deletion                                                       | No       |
+| `PN_ACT_PROVISIONING_SERVER_CONFIG`           | Specify a path to a JSON file containing a list of servers to provision automatically to the DB                 | Yes      |

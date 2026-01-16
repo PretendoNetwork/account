@@ -16,6 +16,7 @@ import api from '@/services/api';
 import localcdn from '@/services/local-cdn';
 import assets from '@/services/assets';
 import { config, disabledFeatures } from '@/config-manager';
+import { startProvisioner } from './provisioning';
 
 process.title = 'Pretendo - Account';
 process.on('uncaughtException', (err, origin) => {
@@ -112,6 +113,8 @@ async function main(): Promise<void> {
 	LOG_SUCCESS('Cache enabled');
 	await startGRPCServer();
 	LOG_SUCCESS(`gRPC server started on port ${config.grpc.port}`);
+
+	startProvisioner();
 
 	app.listen(config.http.port, () => {
 		LOG_SUCCESS(`HTTP server started on port ${config.http.port}`);

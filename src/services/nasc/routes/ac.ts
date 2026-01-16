@@ -54,7 +54,8 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	if (action === 'LOGIN' && server.port <= 0 && server.ip !== '0.0.0.0') {
+	const connectInfo = await server.getServerConnectInfo();
+	if (action === 'LOGIN' && connectInfo.port <= 0 && connectInfo.ip !== '0.0.0.0') {
 		// * Addresses of 0.0.0.0:0 are allowed
 		// * They are expected for titles with no NEX server
 		response.status(200).send(nascError('110').toString());
@@ -90,8 +91,9 @@ async function processLoginRequest(server: HydratedServerDocument, pid: number, 
 		}
 	});
 
+	const connectInfo = await server.getServerConnectInfo();
 	return new URLSearchParams({
-		locator: nintendoBase64Encode(`${server.ip}:${server.port}`),
+		locator: nintendoBase64Encode(`${connectInfo.ip}:${connectInfo.port}`),
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('001'),
 		token: token,
