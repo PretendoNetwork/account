@@ -110,6 +110,11 @@ export async function exchangePasswordResetTokenForUserData(request: ExchangePas
 			titleId: passwordResetToken.info.title_id,
 			issueTime: passwordResetToken.info.issued,
 			expireTime: passwordResetToken.info.expires
+		},
+		basicUserInfo: {
+			// TODO - ban: {}
+			accessBetaServers: pnid.access_level === 1 || pnid.access_level === 2 || pnid.access_level === 3, // TODO - Remove with a better permission check later
+			accessDeveloperServers: pnid.access_level === 3 // TODO - Remove with a better permission check later
 		}
 	};
 }

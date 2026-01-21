@@ -24,7 +24,7 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
 		}
 
-		// TODO - Add checks for the client ID/title ID and matching system/token types here
+		// TODO - Add checks for the client IDs and matching system/token types here
 
 		if (serviceToken.info.expires < new Date()) {
 			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
@@ -116,6 +116,11 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 				titleId: serviceToken.info.title_id,
 				issueTime: serviceToken.info.issued,
 				expireTime: serviceToken.info.expires
+			},
+			basicUserInfo: {
+				// TODO - ban: {}
+				accessBetaServers: pnid.access_level === 1 || pnid.access_level === 2 || pnid.access_level === 3, // TODO - Remove with a better permission check later
+				accessDeveloperServers: pnid.access_level === 3 // TODO - Remove with a better permission check later
 			}
 		};
 	} else {
@@ -137,6 +142,11 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 				titleId: serviceToken.info.title_id,
 				issueTime: serviceToken.info.issued,
 				expireTime: serviceToken.info.expires
+			},
+			basicUserInfo: {
+				// TODO - ban: {}
+				accessBetaServers: nexAccount.access_level === 1 || nexAccount.access_level === 2 || nexAccount.access_level === 3, // TODO - Remove with a better permission check later
+				accessDeveloperServers: nexAccount.access_level === 3 // TODO - Remove with a better permission check later
 			}
 		};
 	}
