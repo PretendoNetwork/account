@@ -298,7 +298,9 @@ PNIDSchema.method('scrub', async function scrub() {
 
 	this.deleted = true;
 	this.marked_for_deletion = false;
-	this.access_level = 0;
+	if (this.access_level > 0) {
+		this.access_level = 0;
+	}
 	this.server_access_level = 'prod';
 	this.creation_date = '';
 	this.birthdate = '';
