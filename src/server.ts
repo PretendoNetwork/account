@@ -5,7 +5,7 @@ import xmlparser from '@/middleware/xml-parser';
 import { connect as connectCache } from '@/cache';
 import { checkMarkedDeletions, connect as connectDatabase } from '@/database';
 import { startGRPCServer } from '@/services/grpc/server';
-import { fullUrl, getValueFromHeaders } from '@/util';
+import { fullUrl, getValueFromHeaders, setupScheduledTasks } from '@/util';
 import { LOG_INFO, LOG_SUCCESS, LOG_WARN } from '@/logger';
 import conntest from '@/services/conntest';
 import cbvc from '@/services/cbvc';
@@ -117,6 +117,8 @@ async function main(): Promise<void> {
 	startProvisioner();
 
 	await checkMarkedDeletions();
+
+	setupScheduledTasks();
 
 	app.listen(config.http.port, () => {
 		LOG_SUCCESS(`HTTP server started on port ${config.http.port}`);
