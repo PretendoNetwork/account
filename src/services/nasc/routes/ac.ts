@@ -1,9 +1,12 @@
+import crypto from 'node:crypto';
 import express from 'express';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
-import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, generateToken } from '@/util';
+import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, createServiceToken } from '@/util';
 import { getServerByTitleID } from '@/database';
-import type { NASCRequestParams } from '@/types/services/nasc/request-params';
+import { IndependentServiceToken } from '@/models/independent-service-token';
+import { NEXToken } from '@/models/nex-token';
+import type { NASCACRequestParams, NASCLoginACRequestParams, NASCServiceTokenACRequestParams } from '@/types/services/nasc/ac-request-params';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
 
 const router = express.Router();
@@ -14,7 +17,7 @@ const router = express.Router();
  * Description: Gets a NEX server address and token
  */
 router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
-	const requestParams: NASCRequestParams = request.body;
+	const requestParams: NASCACRequestParams = request.body;
 	const action = nintendoBase64Decode(requestParams.action).toString();
 	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
 	const gameServerID = nintendoBase64Decode(requestParams.gameid).toString();
@@ -61,60 +64,72 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 	switch (action) {
 		case 'LOGIN':
-			responseData = await processLoginRequest(server, nexAccount.pid, titleID);
+			responseData = await processLoginRequest(server, nexAccount.pid, requestParams as NASCLoginACRequestParams); // TODO - Remove this "as" with field checking
 			break;
 		case 'SVCLOC':
-			responseData = await processServiceTokenRequest(server, nexAccount.pid, titleID);
+			responseData = await processServiceTokenRequest(server, nexAccount.pid, requestParams as NASCServiceTokenACRequestParams); // TODO - Remove this "as" with field checking
 			break;
 	}
 
 	response.status(200).send(responseData.toString());
 });
 
-async function processLoginRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
-	const tokenOptions = {
-		system_type: SystemType.CTR,
-		token_type: TokenType.NEX,
+async function processLoginRequest(server: HydratedServerDocument, pid: number, requestParams: NASCLoginACRequestParams): Promise<URLSearchParams> {
+	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
+	const token = nintendoBase64Encode(crypto.randomBytes(112));
+
+	await NEXToken.create({
+		token: crypto.createHash('sha256').update(token).digest('hex'),
+		game_server_id: server.game_server_id,
 		pid: pid,
-		access_level: 0,
-		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
-
-	// TODO - Handle null tokens
-
-	const nexTokenBuffer = await generateToken(server.aes_key, tokenOptions);
-	const nexToken = nintendoBase64Encode(nexTokenBuffer || '');
+		info: {
+			system_type: SystemType.CTR,
+			token_type: TokenType.NEX,
+			title_id: BigInt(parseInt(titleID, 16)),
+			issued: new Date(),
+			expires: new Date(Date.now() + (3600 * 1000))
+		}
+	});
 
 	const connectInfo = await server.getServerConnectInfo();
 	return new URLSearchParams({
 		locator: nintendoBase64Encode(`${connectInfo.ip}:${connectInfo.port}`),
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('001'),
-		token: nexToken,
+		token: token,
 		datetime: nintendoBase64Encode(nascDateTime())
 	});
 }
 
-async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, titleID: string): Promise<URLSearchParams> {
-	const tokenOptions = {
-		system_type: SystemType.CTR,
-		token_type: TokenType.IndependentService,
+async function processServiceTokenRequest(server: HydratedServerDocument, pid: number, requestParams: NASCServiceTokenACRequestParams): Promise<URLSearchParams> {
+	const titleID = nintendoBase64Decode(requestParams.titleid).toString();
+	const serviceTokenOptions = {
 		pid: pid,
-		access_level: 0,
-		title_id: BigInt(parseInt(titleID, 16)),
-		expire_time: BigInt(Date.now()) // TODO - Hack. Independent services expire their own tokens, so we give them the ISSUED time, not an EXPIRE time
+		title_id: titleID,
+		issued: new Date(),
+		expires: new Date(Date.now() + 24 * 3600 * 1000)
 	};
 
-	// TODO - Handle null tokens
+	const token = nintendoBase64Encode(createServiceToken(server, serviceTokenOptions));
 
-	const serviceTokenBuffer = await generateToken(server.aes_key, tokenOptions);
-	const serviceToken = nintendoBase64Encode(serviceTokenBuffer || '');
+	await IndependentServiceToken.create({
+		token: crypto.createHash('sha256').update(token).digest('hex'),
+		client_id: nintendoBase64Decode(requestParams.keyhash).toString(),
+		title_id: serviceTokenOptions.title_id,
+		pid: serviceTokenOptions.pid,
+		info: {
+			system_type: SystemType.CTR,
+			token_type: TokenType.IndependentService,
+			title_id: BigInt(parseInt(titleID, 16)),
+			issued: serviceTokenOptions.issued,
+			expires: serviceTokenOptions.expires
+		}
+	});
 
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('0'),
 		returncd: nintendoBase64Encode('007'),
-		servicetoken: serviceToken,
+		servicetoken: token,
 		statusdata: nintendoBase64Encode('Y'),
 		svchost: nintendoBase64Encode('n/a'),
 		datetime: nintendoBase64Encode(nascDateTime())

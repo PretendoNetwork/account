@@ -1,8 +1,12 @@
+import crypto from 'node:crypto';
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { PNID } from '@/models/pnid';
-import { decryptToken, unpackToken, nintendoPasswordHash } from '@/util';
-import type { Token } from '@/types/common/token';
+import { PasswordResetToken } from '@/models/password-reset-token';
+import { nintendoPasswordHash } from '@/util';
+import { SystemType } from '@/types/common/system-types';
+import { TokenType } from '@/types/common/token-types';
+import { getPNIDByPID } from '@/database';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
 
@@ -27,10 +31,53 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		return;
 	}
 
-	let unpackedToken: Token;
+	let pnid: HydratedPNIDDocument | null = null;
 	try {
-		const decryptedToken = await decryptToken(Buffer.from(token, 'hex'));
-		unpackedToken = unpackToken(decryptedToken);
+		const passwordResetToken = await PasswordResetToken.findOne({
+			token: crypto.createHash('sha256').update(token).digest('hex')
+		});
+
+		if (!passwordResetToken) {
+			response.status(400).json({
+				app: 'api',
+				status: 400,
+				error: 'Invalid token'
+			});
+
+			return;
+		}
+
+		if (passwordResetToken.info.system_type !== SystemType.PasswordReset) {
+			response.status(400).json({
+				app: 'api',
+				status: 400,
+				error: 'Invalid token'
+			});
+
+			return;
+		}
+
+		if (passwordResetToken.info.token_type !== TokenType.PasswordReset) {
+			response.status(400).json({
+				app: 'api',
+				status: 400,
+				error: 'Invalid token'
+			});
+
+			return;
+		}
+
+		if (passwordResetToken.info.expires < new Date()) {
+			response.status(400).json({
+				app: 'api',
+				status: 400,
+				error: 'Token expired'
+			});
+
+			return;
+		}
+
+		pnid = await getPNIDByPID(passwordResetToken.pid);
 	} catch {
 		response.status(400).json({
 			app: 'api',
@@ -40,18 +87,6 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 		return;
 	}
-
-	if (unpackedToken.expire_time < Date.now()) {
-		response.status(400).json({
-			app: 'api',
-			status: 400,
-			error: 'Token expired'
-		});
-
-		return;
-	}
-
-	const pnid = await PNID.findOne({ pid: unpackedToken.pid });
 
 	if (!pnid) {
 		response.status(400).json({
