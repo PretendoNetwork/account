@@ -53,7 +53,7 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
-	if (pnid.deleted) {
+	if (pnid.deleted || pnid.marked_for_deletion) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {

@@ -4,10 +4,13 @@ import { S3 } from '@aws-sdk/client-s3';
 import fs from 'fs-extra';
 import bufferCrc32 from 'buffer-crc32';
 import { crc32 } from 'crc';
+import { CronJob } from 'cron';
+import { checkMarkedDeletions } from '@/database';
 import { sendMail, CreateEmail } from '@/mailer';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
+import { LOG_ERROR } from '@/logger';
 import type { ParsedQs } from 'qs';
 import type mongoose from 'mongoose';
 import type express from 'express';
@@ -391,4 +394,25 @@ export function getAgeFromDate(dateString: string): number {
 	}
 
 	return age;
+}
+
+export async function setupScheduledTasks(): Promise<void> {
+	scheduledTask('0 2 * * *', 'check-account-deletions', checkMarkedDeletions);
+}
+
+function scheduledTask(schedule: string, name: string, fn: () => void | Promise<void>): void {
+	CronJob.from({
+		cronTime: schedule,
+		onTick: async () => {
+			try {
+				const result = fn();
+				await result;
+			} catch (err) {
+				LOG_ERROR(`Error in schedule ${name}: ${err}`);
+			}
+		},
+		start: true
+	});
+
+	LOG_ERROR(`Added schedule ${name} for ${schedule}`);
 }

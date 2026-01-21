@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import xmlbuilder from 'xmlbuilder';
 import xmlparser from '@/middleware/xml-parser';
 import { connect as connectCache } from '@/cache';
-import { connect as connectDatabase } from '@/database';
+import { checkMarkedDeletions, connect as connectDatabase } from '@/database';
 import { startGRPCServer } from '@/services/grpc/server';
 import { fullUrl, getValueFromHeaders } from '@/util';
 import { LOG_INFO, LOG_SUCCESS, LOG_WARN } from '@/logger';
@@ -115,6 +115,8 @@ async function main(): Promise<void> {
 	LOG_SUCCESS(`gRPC server started on port ${config.grpc.port}`);
 
 	startProvisioner();
+
+	await checkMarkedDeletions();
 
 	app.listen(config.http.port, () => {
 		LOG_SUCCESS(`HTTP server started on port ${config.http.port}`);
