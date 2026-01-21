@@ -230,7 +230,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 });
 
-PNIDSchema.method('markForDeletion', async function markForDeletion() {
+PNIDSchema.method('markForDeletion', function markForDeletion() {
 	this.marked_for_deletion = true;
 	this.hard_delete_time = new Date(Date.now() + (7 * 24 * 3600 * 1000)); // * 7 day grace period
 });
