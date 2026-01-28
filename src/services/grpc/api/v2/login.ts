@@ -52,7 +52,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 		}
 	}
 
-	if (pnid.deleted) {
+	if (pnid.deleted || pnid.marked_for_deletion) {
 		throw new ServerError(Status.UNAUTHENTICATED, 'Account has been deleted');
 	}
 

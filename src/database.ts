@@ -339,3 +339,17 @@ export async function removePNIDConnectionDiscord(pnid: HydratedPNIDDocument): P
 		status: 200
 	};
 }
+
+export async function checkMarkedDeletions(): Promise<void> {
+	const pnids = await PNID.find({
+		marked_for_deletion: true,
+		deleted: false,
+		hard_delete_time: {
+			$lte: new Date()
+		}
+	});
+
+	for (const pnid of pnids) {
+		await pnid.scrub();
+	}
+}

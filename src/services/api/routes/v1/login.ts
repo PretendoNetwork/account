@@ -102,7 +102,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		}
 	}
 
-	if (pnid.deleted) {
+	if (pnid.deleted || pnid.marked_for_deletion) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,

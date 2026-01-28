@@ -33,6 +33,11 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		type: Boolean,
 		default: false
 	},
+	marked_for_deletion: {
+		type: Boolean,
+		default: false
+	},
+	hard_delete_time: Date,
 	permissions: {
 		type: BigInt,
 		default: 0n
@@ -225,6 +230,11 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 });
 
+PNIDSchema.method('markForDeletion', function markForDeletion() {
+	this.marked_for_deletion = true;
+	this.hard_delete_time = new Date(Date.now() + (7 * 24 * 3600 * 1000)); // * 7 day grace period
+});
+
 PNIDSchema.method('scrub', async function scrub() {
 	// * Remove all personal info from a PNID
 	// * Username and PID remain so thye do not get assigned again
@@ -287,7 +297,10 @@ PNIDSchema.method('scrub', async function scrub() {
 	});
 
 	this.deleted = true;
-	this.access_level = 0;
+	this.marked_for_deletion = false;
+	if (this.access_level > 0) {
+		this.access_level = 0;
+	}
 	this.server_access_level = 'prod';
 	this.creation_date = '';
 	this.birthdate = '';

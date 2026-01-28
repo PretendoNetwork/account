@@ -4,6 +4,8 @@ import type { PNIDPermissionFlag } from '@/types/common/permission-flags';
 
 export interface IPNID {
 	deleted: boolean;
+	marked_for_deletion: boolean;
+	hard_delete_time: Date;
 	permissions: bigint;
 	access_level: number;
 	server_access_level: string;
@@ -81,6 +83,7 @@ export interface IPNIDMethods {
 	generateEmailValidationToken(): Promise<void>;
 	updateMii(mii: { name: string; primary: string; data: string }): Promise<void>;
 	generateMiiImages(): Promise<void>;
+	markForDeletion(): void;
 	scrub(): Promise<void>;
 	hasPermission(flag: PNIDPermissionFlag): boolean;
 	addPermission(flag: PNIDPermissionFlag): void;

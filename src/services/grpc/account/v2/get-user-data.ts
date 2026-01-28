@@ -28,7 +28,7 @@ export async function getUserData(request: GetUserDataRequest): Promise<GetUserD
 	});
 
 	return {
-		deleted: pnid.deleted,
+		deleted: pnid.deleted || pnid.marked_for_deletion,
 		pid: pnid.pid,
 		username: pnid.username,
 		accessLevel: pnid.access_level,
