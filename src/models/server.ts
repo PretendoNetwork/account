@@ -98,19 +98,24 @@ ServerSchema.method('getServerConnectInfo', async function (): Promise<IServerCo
 	// * and just Hope For The Best:tm:
 	let target = randomIP;
 
-	// * Check the random IP and start the race at the same time, preferring
-	// * the result of the random IP should it succeed. Worst case scenario
-	// * this takes 2 seconds to complete
-	const [randomResult, raceResult] = await Promise.allSettled([
-		healthCheck({ host: randomIP, port: this.health_check_port! }),
-		Promise.race(healthCheckTargets.map(target => healthCheck(target)))
-	]);
+	// * If the server only has 1 IP, healthCheckTargets will be empty and Promise.race
+	// * will never resolve. In those cases, just skip this step entirely since we'd
+	// * have to use that singular IP regardless
+	if (healthCheckTargets.length !== 0) {
+		// * Check the random IP and start the race at the same time, preferring
+		// * the result of the random IP should it succeed. Worst case scenario
+		// * this takes 2 seconds to complete
+		const [randomResult, raceResult] = await Promise.allSettled([
+			healthCheck({ host: randomIP, port: this.health_check_port! }),
+			Promise.race(healthCheckTargets.map(target => healthCheck(target)))
+		]);
 
-	if (randomResult.status === 'rejected') {
-		if (raceResult.status === 'fulfilled') {
-			target = raceResult.value;
-		} else {
-			LOG_WARN(`Server ${this.service_name} failed to find healthy NEX server. Using the randomly selected IP ${target}`);
+		if (randomResult.status === 'rejected') {
+			if (raceResult.status === 'fulfilled') {
+				target = raceResult.value;
+			} else {
+				LOG_WARN(`Server ${this.service_name} failed to find healthy NEX server. Using the randomly selected IP ${target}`);
+			}
 		}
 	}
 
