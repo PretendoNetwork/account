@@ -1,5 +1,7 @@
+import crypto from 'node:crypto';
 import { Schema, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
+import { config } from '@/config-manager';
 import type { INEXAccount, INEXAccountMethods, NEXAccountModel } from '@/types/mongoose/nex-account';
 
 const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMethods>({
@@ -25,7 +27,8 @@ const NEXAccountSchema = new Schema<INEXAccount, NEXAccountModel, INEXAccountMet
 		type: String,
 		default: 'prod' // * everyone is in production by default
 	},
-	friend_code: String
+	friend_code: String,
+	uidhmac: String
 });
 
 NEXAccountSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
@@ -72,6 +75,14 @@ NEXAccountSchema.method('generatePassword', function generatePassword(): void {
 	}
 
 	this.password = output.join('');
+});
+
+NEXAccountSchema.method('generateUIDHMAC', function generateUIDHMAC(): void {
+	const CHAR_SET = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}';
+	const hmac = crypto.createHmac('sha256', config.uidhmac_key).update(this.pid.toString());
+	const hash = hmac.digest();
+
+	this.uidhmac = Array.from(hash.subarray(0, 8), byte => CHAR_SET[byte % CHAR_SET.length]).join('');
 });
 
 export const NEXAccount = model<INEXAccount, NEXAccountModel>('NEXAccount', NEXAccountSchema);
