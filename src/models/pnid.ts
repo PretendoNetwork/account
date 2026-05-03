@@ -202,7 +202,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	const mii = new Mii(Buffer.from(miiData, 'base64'));
 	const miiStudioUrl = mii.studioUrl({
 		type: 'face',
-		width: 128,
+		width: 96,
 		instanceCount: 1
 	});
 	const miiStudioNormalFaceImageData = await got(miiStudioUrl).buffer();
@@ -214,25 +214,32 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/standard.tga`, tga, 'public-read');
 	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
 
-	const expressions = ['frustrated', 'smile_open_mouth', 'wink_left', 'sorrow', 'surprise_open_mouth'];
-	for (const expression of expressions) {
+	const expressions: { expression: string; filename: string }[] = [
+		{ expression: 'frustrated', filename: 'frustrated_face' },
+		{ expression: 'smile_open_mouth', filename: 'happy_face' },
+		{ expression: 'wink_left', filename: 'like_face' },
+		{ expression: 'sorrow', filename: 'puzzled_face' },
+		{ expression: 'surprise_open_mouth', filename: 'surprised_face' }
+	];
+	for (const { expression, filename } of expressions) {
 		const miiStudioExpressionUrl = mii.studioUrl({
 			type: 'face',
 			expression: expression,
-			width: 128,
+			width: 96,
 			instanceCount: 1
 		});
 		const miiStudioExpressionImageData = await got(miiStudioExpressionUrl).buffer();
-		await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/${expression}.png`, miiStudioExpressionImageData, 'public-read');
+		await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/${filename}.png`, miiStudioExpressionImageData, 'public-read');
 	}
 
 	const miiStudioBodyUrl = mii.studioUrl({
 		type: 'all_body',
 		width: 270,
+		height: 360,
 		instanceCount: 1
 	});
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
-	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
+	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/whole_body.png`, miiStudioBodyImageData, 'public-read');
 });
 
 PNIDSchema.method('markForDeletion', function markForDeletion() {
