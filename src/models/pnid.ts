@@ -214,7 +214,7 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/standard.tga`, tga, 'public-read');
 	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/normal_face.png`, miiStudioNormalFaceImageData, 'public-read');
 
-	const expressions: { expression: string; filename: string }[] = [
+	const expressions = [
 		{ expression: 'frustrated', filename: 'frustrated_face' },
 		{ expression: 'smile_open_mouth', filename: 'happy_face' },
 		{ expression: 'wink_left', filename: 'like_face' },
