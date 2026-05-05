@@ -6,7 +6,6 @@ type MiiStudioURLOptions = {
 	type?: string;
 	expression?: string;
 	width?: number;
-	height?: number;
 	bgColor?: string;
 	clothesColor?: string;
 	cameraXRotate?: number;

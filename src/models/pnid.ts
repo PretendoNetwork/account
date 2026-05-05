@@ -235,7 +235,6 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	const miiStudioBodyUrl = mii.studioUrl({
 		type: 'all_body',
 		width: 270,
-		height: 360,
 		instanceCount: 1
 	});
 	const miiStudioBodyImageData = await got(miiStudioBodyUrl).buffer();
