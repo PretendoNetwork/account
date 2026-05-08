@@ -89,6 +89,25 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 		}
 	}
 
+	if (age < 13) {
+		// * Wii U firmware 5.5.6 changed NNID setup to block setup of new accounts if the users age is
+		// * under 13, telling parents that they MUST call Nintendo to create the account, and we trusted
+		// * that users would be on these firmwares. Lower firmwares won't have this though, and will use
+		// * the old "COPPA approval" system
+		// *
+		// * Just block it all the time though, we don't want to deal with this headache
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0114',
+					message: 'COPPA approval is not complete'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const userExists = await doesPNIDExist(person.user_id);
 
 	if (userExists) {

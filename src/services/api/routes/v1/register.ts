@@ -118,6 +118,22 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		}
 	}
 
+	if (age < 13) {
+		// * Wii U firmware 5.5.6 changed NNID setup to block setup of new accounts if the users age is
+		// * under 13, telling parents that they MUST call Nintendo to create the account, and we trusted
+		// * that users would be on these firmwares. Lower firmwares won't have this though, and will use
+		// * the old "COPPA approval" system
+		// *
+		// * Just block it all the time though, we don't want to deal with this headache
+		response.status(400).json({
+			app: 'api',
+			status: 400,
+			error: 'Must be 13 or older to use these services.'
+		});
+
+		return;
+	}
+
 	if (!email || email === '') {
 		response.status(400).json({
 			app: 'api',
