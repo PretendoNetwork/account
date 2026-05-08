@@ -21,7 +21,7 @@ export async function deleteAccount(request: DeleteAccountRequest): Promise<Dele
 		if (request.bypassGracePeriod) {
 			await pnid.scrub();
 		} else {
-			pnid.markForDeletion();
+			await pnid.markForDeletion();
 		}
 
 		await pnid.save();

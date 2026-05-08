@@ -281,14 +281,21 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 }
 
 export async function sendPNIDDeletedEmail(emailAddress: string, username: string): Promise<void> {
+	const deletionDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-US', {
+		timeZone: 'UTC',
+		weekday: 'long',
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric'
+	});
 	const email = new CreateEmail()
 		.addHeader('Dear {{pnid}},', { pnid: username })
-		.addParagraph('your PNID has successfully been deleted.')
-		.addParagraph('If you had a tier subscription, a separate cancellation email will be sent. If you do not receive this cancellation email, or you are still being charged for your subscription, please contact <b>@jonbarrow</b> on our [Discord server](https://discord.pretendo.network/).');
+		.addParagraph('your PNID has been scheduled for deletion.')
+		.addParagraph(`Your account and related data will be permanently deleted in 7 days (${deletionDate}). Note that this will not free the username associated with the account for use in future accounts. In case of accidental deletion, you may restore your account prior to the deletion date. To restore your account, send an email to \`support@pretendo.network\` from the email address used to register the deleted account, with the subject "Requesting account restore", making sure to include the username of the account being restored. Account restoration requests MUST be sent prior to the account deletion date, ideally more than 24 hours prior, or else account data may already be unrecoverable. For any additional support, please create a support thread on our [forum](https://forum.pretendo.network/). If you have an active tier subscription, or had one in the past, your Stripe account and all data/invoices/subscriptions/etc. will be deleted on the date of account deletion, and cannot be restored. If you have an active subscription which would normally renew on a day prior to the account deletion date, the subscription will be cancelled on the day it would normally rewnew and no new charges will be created. If your account is restored with an active subscription, a new subscription may need to be created after restoration due to the automatic cancelling. If you are still being charged for your subscription within the grace period, please contact <b>@jonbarrow</b> on our [Discord server](https://discord.pretendo.network/) prior to the account deletion date.`);
 
 	const options = {
 		to: emailAddress,
-		subject: '[Pretendo Network] PNID Deleted',
+		subject: '[Pretendo Network] PNID Deletion',
 		email
 	};
 
