@@ -350,6 +350,10 @@ export async function checkMarkedDeletions(): Promise<void> {
 	});
 
 	for (const pnid of pnids) {
-		await pnid.scrub();
+		try {
+			await pnid.scrub();
+		} catch (error) {
+			LOG_ERROR(`Failed to scrub PNID ${pnid.pid}: ${error}`);
+		}
 	}
 }
