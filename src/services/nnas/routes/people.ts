@@ -581,7 +581,6 @@ router.post('/@me/deletion', async (request: express.Request, response: express.
 	const email = pnid.email.address;
 
 	await pnid.markForDeletion();
-	await pnid.save();
 
 	try {
 		await sendPNIDDeletedEmail(email, pnid.username);
