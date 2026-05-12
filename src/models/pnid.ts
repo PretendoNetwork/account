@@ -264,6 +264,8 @@ PNIDSchema.method('markForDeletion', async function markForDeletion() {
 			LOG_ERROR(`ERROR UPDATING SUBSCRIPTION FOR USER ${this.username} (${subscriptionID}). ${error}`);
 		}
 	}
+
+	await this.save();
 });
 
 PNIDSchema.method('scrub', async function scrub() {
@@ -362,6 +364,8 @@ PNIDSchema.method('scrub', async function scrub() {
 	this.connections.stripe.tier_level = 0;
 	this.connections.stripe.tier_name = '';
 	this.connections.stripe.latest_webhook_timestamp = 0;
+
+	await this.save();
 });
 
 PNIDSchema.method('hasPermission', function hasPermission(flag: PNIDPermissionFlag): boolean {
