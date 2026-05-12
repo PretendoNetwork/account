@@ -235,9 +235,35 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 });
 
-PNIDSchema.method('markForDeletion', function markForDeletion() {
+PNIDSchema.method('markForDeletion', async function markForDeletion() {
 	this.marked_for_deletion = true;
 	this.hard_delete_time = new Date(Date.now() + (7 * 24 * 3600 * 1000)); // * 7 day grace period
+
+	if (this.connections?.stripe?.subscription_id) {
+		const subscriptionID = this.connections.stripe.subscription_id;
+
+		try {
+			if (stripe) {
+				// * If a user has an active subscription when they mark themselves for deletion, then they
+				// * may get charged again in those 7 days while not having access to their account. To prevent
+				// * that, just update the subscription to cancel at the end of the period. That way the charge
+				// * doesn't happen, and the user likely won't be restoring their account anyway. If they do
+				// * restore the account and do want their subscription back then they can create a new one
+				// * after this one expires which is effectively the same as the old subscription renewing.
+				// * Pausing collection is another option however it requires much more effort on our end to
+				// * properly resume the paused charges and recitify any missed ones to prevent invoices
+				// * from being skipped. This method is just way easier for us to deal with right now, at the
+				// * expense of making the user do a tad more work on their end
+				await stripe.subscriptions.update(subscriptionID, {
+					cancel_at_period_end: true
+				});
+			} else {
+				LOG_WARN(`UPDATING SUBSCRIPTION FOR USER ${this.username}. HAS STRIPE DATA UDER ID ${this.connections.stripe.customer_id}, BUT STRIPE CLIENT NOT ENABLED.`);
+			}
+		} catch (error) {
+			LOG_ERROR(`ERROR UPDATING SUBSCRIPTION FOR USER ${this.username} (${subscriptionID}). ${error}`);
+		}
+	}
 });
 
 PNIDSchema.method('scrub', async function scrub() {
