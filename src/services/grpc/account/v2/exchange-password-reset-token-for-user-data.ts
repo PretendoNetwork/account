@@ -104,7 +104,7 @@ export async function exchangePasswordResetTokenForUserData(request: ExchangePas
 		},
 		tokenInfo: {
 			systemType: passwordResetToken.info.system_type as any, // TODO - Stop the any usage
-			tokenType: passwordResetToken.info.system_type as any, // TODO - Stop the any usage
+			tokenType: passwordResetToken.info.token_type as any, // TODO - Stop the any usage
 			pid: BigInt(pnid.pid),
 			accessLevel: pnid.access_level,
 			titleId: passwordResetToken.info.title_id,

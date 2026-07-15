@@ -108,7 +108,7 @@ export async function exchangeOAuthTokenForUserData(request: ExchangeOAuthTokenF
 		},
 		tokenInfo: {
 			systemType: oAuthToken.info.system_type as any, // TODO - Stop the any usage
-			tokenType: oAuthToken.info.system_type as any, // TODO - Stop the any usage
+			tokenType: oAuthToken.info.token_type as any, // TODO - Stop the any usage
 			pid: BigInt(pnid.pid),
 			accessLevel: pnid.access_level,
 			titleId: oAuthToken.info.title_id,

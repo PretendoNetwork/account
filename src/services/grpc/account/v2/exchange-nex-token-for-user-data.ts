@@ -48,7 +48,7 @@ export async function exchangeNEXTokenForUserData(request: ExchangeNEXTokenForUs
 			},
 			tokenInfo: {
 				systemType: nexToken.info.system_type as any, // TODO - Stop the any usage
-				tokenType: nexToken.info.system_type as any, // TODO - Stop the any usage
+				tokenType: nexToken.info.token_type as any, // TODO - Stop the any usage
 				pid: BigInt(nexAccount.pid),
 				accessLevel: nexAccount.access_level,
 				titleId: nexToken.info.title_id,
@@ -73,7 +73,7 @@ export async function exchangeNEXTokenForUserData(request: ExchangeNEXTokenForUs
 			},
 			tokenInfo: {
 				systemType: nexToken.info.system_type as any, // TODO - Stop the any usage
-				tokenType: nexToken.info.system_type as any, // TODO - Stop the any usage
+				tokenType: nexToken.info.token_type as any, // TODO - Stop the any usage
 				pid: BigInt(nexAccount.pid),
 				accessLevel: nexAccount.access_level,
 				titleId: nexToken.info.title_id,

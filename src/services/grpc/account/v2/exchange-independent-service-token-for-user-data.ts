@@ -110,7 +110,7 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 			},
 			tokenInfo: {
 				systemType: serviceToken.info.system_type as any, // TODO - Stop the any usage
-				tokenType: serviceToken.info.system_type as any, // TODO - Stop the any usage
+				tokenType: serviceToken.info.token_type as any, // TODO - Stop the any usage
 				pid: BigInt(pnid.pid),
 				accessLevel: pnid.access_level,
 				titleId: serviceToken.info.title_id,
@@ -136,7 +136,7 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 			},
 			tokenInfo: {
 				systemType: serviceToken.info.system_type as any, // TODO - Stop the any usage
-				tokenType: serviceToken.info.system_type as any, // TODO - Stop the any usage
+				tokenType: serviceToken.info.token_type as any, // TODO - Stop the any usage
 				pid: BigInt(nexAccount.pid),
 				accessLevel: nexAccount.access_level,
 				titleId: serviceToken.info.title_id,
