@@ -40,7 +40,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		});
 
 		if (!nexAccount) {
-			response.json({
+			response.status(400).json({
 				app: 'api',
 				status: 400,
 				error: 'Invalid NEX account'
