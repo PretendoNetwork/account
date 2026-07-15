@@ -11,7 +11,7 @@ export async function updateUserData(_request: UpdateUserDataRequest, context: C
 	// TODO - STUBBED, DO SOMETHING HERE
 
 	return {
-		deleted: pnid.deleted,
+		deleted: pnid.deleted || pnid.marked_for_deletion,
 		creationDate: pnid.creation_date,
 		updatedDate: pnid.updated,
 		pid: pnid.pid,

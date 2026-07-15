@@ -33,6 +33,11 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		type: Boolean,
 		default: false
 	},
+	marked_for_deletion: {
+		type: Boolean,
+		default: false
+	},
+	hard_delete_time: Date,
 	permissions: {
 		type: BigInt,
 		default: 0n
@@ -124,6 +129,11 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		}
 	}
 }, { id: false });
+
+PNIDSchema.index({ pid: 1 });
+PNIDSchema.index({ usernameLower: 1 });
+// Used for the admin panel querying
+PNIDSchema.index({ 'pid': 1, 'username': 1, 'connections.discord.id': 1 });
 
 PNIDSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 
@@ -225,6 +235,39 @@ PNIDSchema.method('generateMiiImages', async function generateMiiImages(): Promi
 	await uploadCDNAsset(config.s3.bucket, `${userMiiKey}/body.png`, miiStudioBodyImageData, 'public-read');
 });
 
+PNIDSchema.method('markForDeletion', async function markForDeletion() {
+	this.marked_for_deletion = true;
+	this.hard_delete_time = new Date(Date.now() + (7 * 24 * 3600 * 1000)); // * 7 day grace period
+
+	if (this.connections?.stripe?.subscription_id) {
+		const subscriptionID = this.connections.stripe.subscription_id;
+
+		try {
+			if (stripe) {
+				// * If a user has an active subscription when they mark themselves for deletion, then they
+				// * may get charged again in those 7 days while not having access to their account. To prevent
+				// * that, just update the subscription to cancel at the end of the period. That way the charge
+				// * doesn't happen, and the user likely won't be restoring their account anyway. If they do
+				// * restore the account and do want their subscription back then they can create a new one
+				// * after this one expires which is effectively the same as the old subscription renewing.
+				// * Pausing collection is another option however it requires much more effort on our end to
+				// * properly resume the paused charges and recitify any missed ones to prevent invoices
+				// * from being skipped. This method is just way easier for us to deal with right now, at the
+				// * expense of making the user do a tad more work on their end
+				await stripe.subscriptions.update(subscriptionID, {
+					cancel_at_period_end: true
+				});
+			} else {
+				LOG_WARN(`UPDATING SUBSCRIPTION FOR USER ${this.username}. HAS STRIPE DATA UDER ID ${this.connections.stripe.customer_id}, BUT STRIPE CLIENT NOT ENABLED.`);
+			}
+		} catch (error) {
+			LOG_ERROR(`ERROR UPDATING SUBSCRIPTION FOR USER ${this.username} (${subscriptionID}). ${error}`);
+		}
+	}
+
+	await this.save();
+});
+
 PNIDSchema.method('scrub', async function scrub() {
 	// * Remove all personal info from a PNID
 	// * Username and PID remain so thye do not get assigned again
@@ -287,7 +330,10 @@ PNIDSchema.method('scrub', async function scrub() {
 	});
 
 	this.deleted = true;
-	this.access_level = 0;
+	this.marked_for_deletion = false;
+	if (this.access_level > 0) {
+		this.access_level = 0;
+	}
 	this.server_access_level = 'prod';
 	this.creation_date = '';
 	this.birthdate = '';
@@ -318,6 +364,8 @@ PNIDSchema.method('scrub', async function scrub() {
 	this.connections.stripe.tier_level = 0;
 	this.connections.stripe.tier_name = '';
 	this.connections.stripe.latest_webhook_timestamp = 0;
+
+	await this.save();
 });
 
 PNIDSchema.method('hasPermission', function hasPermission(flag: PNIDPermissionFlag): boolean {

@@ -3,8 +3,9 @@ import { getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import type { UpdatePNIDPermissionsRequest } from '@pretendonetwork/grpc/account/v2/update_pnid_permissions_rpc';
 import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
+import type { UpdatePNIDPermissionsRequest, UpdatePNIDPermissionsResponse } from '@pretendonetwork/grpc/account/v2/update_pnid_permissions_rpc';
 
-export async function updatePNIDPermissions(request: UpdatePNIDPermissionsRequest): Promise<Empty> {
+export async function updatePNIDPermissions(request: UpdatePNIDPermissionsRequest): Promise<UpdatePNIDPermissionsResponse> {
 	const pnid = await getPNIDByPID(request.pid);
 
 	if (!pnid) {

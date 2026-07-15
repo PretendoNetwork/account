@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 import { z } from 'zod';
 import mongoose from 'mongoose';
-import { config, disabledFeatures } from './config-manager';
-import { LOG_INFO, LOG_WARN } from './logger';
-import { Server } from './models/server';
+import { config, disabledFeatures } from '@/config-manager';
+import { LOG_INFO, LOG_WARN } from '@/logger';
+import { Server } from '@/models/server';
 
 // Provisioning has a couple edgecases:
 // - It will only update existing entries, will not add new one

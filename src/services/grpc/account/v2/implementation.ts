@@ -1,3 +1,4 @@
+import { ServerError, Status } from 'nice-grpc';
 import { getUserData } from '@/services/grpc/account/v2/get-user-data';
 import { getNEXPassword } from '@/services/grpc/account/v2/get-nex-password';
 import { getNEXData } from '@/services/grpc/account/v2/get-nex-data';

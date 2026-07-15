@@ -128,7 +128,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		}
 	}
 
-	if (pnid.deleted) {
+	if (pnid.deleted || pnid.marked_for_deletion) {
 		// * 0112 is the "account deleted" error, but unsure if this unlinks the PNID from the user?
 		// * 0143 is the "The link to this Nintendo Network ID has been temporarliy removed" error,
 		// * maybe that is a better error to use here?

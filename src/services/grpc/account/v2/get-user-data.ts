@@ -19,7 +19,8 @@ export async function getUserData(request: GetUserDataRequest): Promise<GetUserD
 		linked_pids: pnid.pid
 	})).map((device) => {
 		return {
-			model: device.get('model'), // * ".model" gives the Mongoose model
+			deviceId: device.device_id,
+			model: device.get('model'), // ".model" gives the Mongoose model...
 			serial: device.serial,
 			linkedPids: device.linked_pids,
 			accessLevel: device.access_level,
@@ -29,7 +30,7 @@ export async function getUserData(request: GetUserDataRequest): Promise<GetUserD
 	});
 
 	return {
-		deleted: pnid.deleted,
+		deleted: pnid.deleted || pnid.marked_for_deletion,
 		pid: pnid.pid,
 		username: pnid.username,
 		accessLevel: pnid.access_level,
