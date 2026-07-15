@@ -39,5 +39,7 @@ const OAuthTokenSchema = new Schema<IOAuthToken, OAuthTokenModel, IOAuthTokenMet
 });
 
 OAuthTokenSchema.index({ 'info.expires': 1 }, { expireAfterSeconds: 0 });
+OAuthTokenSchema.index({ token: 1 });
+OAuthTokenSchema.index({ pid: 1 });
 
 export const OAuthToken = model<IOAuthToken, OAuthTokenModel>('OAuthToken', OAuthTokenSchema);
