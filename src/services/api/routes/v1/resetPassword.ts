@@ -173,6 +173,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 
 	pnid.password = passwordHash;
 
+	await pnid.removeAllTokens();
 	await pnid.save();
 
 	response.json({

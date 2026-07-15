@@ -85,6 +85,7 @@ export interface IPNIDMethods {
 	generateMiiImages(): Promise<void>;
 	markForDeletion(): void;
 	scrub(): Promise<void>;
+	removeAllTokens(): Promise<void>;
 	hasPermission(flag: PNIDPermissionFlag): boolean;
 	addPermission(flag: PNIDPermissionFlag): void;
 	clearPermission(flag: PNIDPermissionFlag): void;

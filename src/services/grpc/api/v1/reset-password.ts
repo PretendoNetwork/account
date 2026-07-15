@@ -89,6 +89,7 @@ export async function resetPassword(request: ResetPasswordRequest): Promise<Empt
 
 	pnid.password = passwordHash;
 
+	await pnid.removeAllTokens();
 	await pnid.save();
 
 	return {};
