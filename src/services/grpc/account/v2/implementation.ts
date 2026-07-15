@@ -1,4 +1,3 @@
-import { ServerError, Status } from 'nice-grpc';
 import { getUserData } from '@/services/grpc/account/v2/get-user-data';
 import { getNEXPassword } from '@/services/grpc/account/v2/get-nex-password';
 import { getNEXData } from '@/services/grpc/account/v2/get-nex-data';
@@ -23,6 +22,7 @@ import { updateServer } from '@/services/grpc/account/v2/update-server';
 import { deleteServer } from '@/services/grpc/account/v2/delete-server';
 import { listPNIDs } from '@/services/grpc/account/v2/list-pnids';
 import { getPNID } from '@/services/grpc/account/v2/get-pnid';
+import { getPNIDs } from '@/services/grpc/account/v2/get-pnids';
 import { updatePNID } from '@/services/grpc/account/v2/update-pnid';
 import { deletePNID } from '@/services/grpc/account/v2/delete-pnid';
 import { listAuditLogs } from '@/services/grpc/account/v2/list-audit-logs';
@@ -62,6 +62,7 @@ export const accountServiceImplementationV2: AccountServiceImplementation = {
 	deleteServer,
 	listPNIDs,
 	getPNID,
+	getPNIDs,
 	updatePNID,
 	deletePNID,
 	listAuditLogs,

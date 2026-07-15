@@ -6,9 +6,9 @@ import { nintendoPasswordHash } from '@/util';
 import { getPNIDByPID } from '@/database';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
-import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { ResetPasswordRequest } from '@pretendonetwork/grpc/api/reset_password_rpc';
 import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
+import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 // * This sucks
 const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;

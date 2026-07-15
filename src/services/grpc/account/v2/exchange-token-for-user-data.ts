@@ -2,9 +2,6 @@ import { Status, ServerError } from 'nice-grpc';
 import { getPNIDByAPIAccessToken } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
-import { Device } from '@/models/device';
-import type { GetUserDataResponse } from '@pretendonetwork/grpc/account/v2/get_user_data_rpc';
-import type { ExchangeTokenForUserDataRequest } from '@pretendonetwork/grpc/account/v2/exchange_token_for_user_data_rpc';
 import type { ExchangeTokenForUserDataRequest, ExchangeTokenForUserDataResponse } from '@pretendonetwork/grpc/account/v2/exchange_token_for_user_data_rpc';
 
 export async function exchangeTokenForUserData(request: ExchangeTokenForUserDataRequest): Promise<ExchangeTokenForUserDataResponse> {
@@ -17,19 +14,6 @@ export async function exchangeTokenForUserData(request: ExchangeTokenForUserData
 	if (!pnid) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token');
 	}
-
-	const devices = (await Device.find({
-		linked_pids: pnid.pid
-	})).map((device) => {
-		return {
-			model: device.get('model'), // * ".model" gives the Mongoose model
-			serial: device.serial,
-			linkedPids: device.linked_pids,
-			accessLevel: device.access_level,
-			serverAccessLevel: device.server_access_level,
-			deviceId: device.device_id
-		};
-	});
 
 	return {
 		deleted: pnid.deleted || pnid.marked_for_deletion,
