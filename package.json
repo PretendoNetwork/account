@@ -4,8 +4,8 @@
   "description": "",
   "main": "./dist/server.js",
   "scripts": {
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "lint": "eslint ./src",
+    "lint:fix": "eslint --fix ./src",
     "download-geoip-db": "node ./scripts/download-ip2location-databases.js",
     "build": "npm run lint && npm run clean && npx tsc && npx tsc-alias && npm run copy-static && npm run download-geoip-db",
     "clean": "rimraf ./dist",
@@ -90,5 +90,8 @@
     "globals": "^15.14.0",
     "ndarray": "^1.0.19",
     "typescript": "^4.9.5"
+  },
+  "overrides": {
+    "@bufbuild/protobuf": "2.2.2"
   }
 }

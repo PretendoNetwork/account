@@ -650,6 +650,8 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid.password = passwordHash;
+
+		await pnid.removeAllTokens();
 	}
 
 	pnid.gender = gender;

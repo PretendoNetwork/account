@@ -12,6 +12,10 @@ import { DeviceSchema } from '@/models/device';
 import { uploadCDNAsset } from '@/util';
 import { LOG_ERROR, LOG_WARN } from '@/logger';
 import { config } from '@/config-manager';
+import { IndependentServiceToken } from '@/models/independent-service-token';
+import { NEXToken } from '@/models/nex-token';
+import { OAuthToken } from '@/models/oauth-token';
+import { PasswordResetToken } from '@/models/password-reset-token';
 import type { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 import type { PNIDPermissionFlag } from '@/types/common/permission-flags';
 
@@ -366,6 +370,15 @@ PNIDSchema.method('scrub', async function scrub() {
 	this.connections.stripe.latest_webhook_timestamp = 0;
 
 	await this.save();
+});
+
+PNIDSchema.method('removeAllTokens', async function removeAllTokens() {
+	await Promise.all([
+		IndependentServiceToken.deleteMany({ pid: this.pid }),
+		NEXToken.deleteMany({ pid: this.pid }),
+		OAuthToken.deleteMany({ pid: this.pid }),
+		PasswordResetToken.deleteMany({ pid: this.pid })
+	]);
 });
 
 PNIDSchema.method('hasPermission', function hasPermission(flag: PNIDPermissionFlag): boolean {
