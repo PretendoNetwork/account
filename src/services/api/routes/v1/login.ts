@@ -7,6 +7,7 @@ import { OAuthToken } from '@/models/oauth-token';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { LOG_ERROR } from '@/logger';
+import { loginRatelimit } from '@/middleware/ratelimit';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
@@ -17,7 +18,7 @@ const router = express.Router();
  * Description: Generates an access token for an API user
  * TODO: Replace this with a more robust OAuth2 implementation
  */
-router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/', loginRatelimit, async (request: express.Request, response: express.Response): Promise<void> => {
 	const grantType = request.body?.grant_type;
 	const username = request.body?.username;
 	const password = request.body?.password;
