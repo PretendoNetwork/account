@@ -9,6 +9,7 @@ import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { Device } from '@/models/device';
 import { OAuthToken } from '@/models/oauth-token';
+import { loginRatelimit } from '@/middleware/ratelimit';
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
  * Description: Generates an access token for a user
  */
-router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatusVerificationMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/access_token/generate', loginRatelimit, deviceCertificateMiddleware, consoleStatusVerificationMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	const grantType = request.body.grant_type;
 	const username = request.body.user_id;
 	const password = request.body.password;

@@ -4,7 +4,7 @@ import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
-import ratelimit from '@/middleware/ratelimit';
+import { deviceRatelimit } from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
 import { getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
 import IP2LocationManager from '@/ip2location';
@@ -49,7 +49,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
  * Replacement for: https://account.nintendo.net/v1/api/people
  * Description: Registers a new NNID
  */
-router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	if (!request.certificate || !request.certificate.valid) {
 		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({

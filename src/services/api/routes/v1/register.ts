@@ -15,6 +15,7 @@ import { PNID } from '@/models/pnid';
 import { OAuthToken } from '@/models/oauth-token';
 import { NEXAccount } from '@/models/nex-account';
 import { config, disabledFeatures } from '@/config-manager';
+import { webRegisterRatelimit } from '@/middleware/ratelimit';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -38,7 +39,7 @@ const DEFAULT_MII_DATA = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZg
  * Implementation of: https://api.pretendo.cc/v1/register
  * Description: Creates a new user PNID
  */
-router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/', webRegisterRatelimit, async (request: express.Request, response: express.Response): Promise<void> => {
 	const clientIP = request.body.ip?.trim(); // * This has to be forwarded since this request comes from the websites server
 	const birthday = request.body.birthday?.trim();
 	const email = request.body.email?.trim();

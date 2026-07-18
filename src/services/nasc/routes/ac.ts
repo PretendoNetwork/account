@@ -6,6 +6,7 @@ import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, cr
 import { getServerByTitleID } from '@/database';
 import { IndependentServiceToken } from '@/models/independent-service-token';
 import { NEXToken } from '@/models/nex-token';
+import { nascRatelimit } from '@/middleware/ratelimit';
 import type { NASCACRequestParams, NASCLoginACRequestParams, NASCServiceTokenACRequestParams } from '@/types/services/nasc/ac-request-params';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
 
@@ -16,7 +17,7 @@ const router = express.Router();
  * Replacement for: https://nasc.nintendowifi.net/ac
  * Description: Gets a NEX server address and token
  */
-router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/', nascRatelimit, async (request: express.Request, response: express.Response): Promise<void> => {
 	const requestParams: NASCACRequestParams = request.body;
 	const action = nintendoBase64Decode(requestParams.action).toString();
 	const titleID = nintendoBase64Decode(requestParams.titleid).toString();

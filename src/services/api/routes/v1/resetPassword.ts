@@ -6,6 +6,7 @@ import { nintendoPasswordHash } from '@/util';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { getPNIDByPID } from '@/database';
+import { passwordResetRatelimit } from '@/middleware/ratelimit';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
@@ -16,7 +17,7 @@ const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
 const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
 const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
 
-router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/', passwordResetRatelimit, async (request: express.Request, response: express.Response): Promise<void> => {
 	const password = request.body.password?.trim();
 	const passwordConfirm = request.body.password_confirm?.trim();
 	const token = request.body.token?.trim();
