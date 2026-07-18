@@ -3,7 +3,7 @@ import ratelimit from 'express-rate-limit';
 import { getValueFromHeaders } from '@/util';
 import type express from 'express';
 
-export default ratelimit({
+export const deviceRatelimit = ratelimit({
 	windowMs: 60 * 1000,
 	max: 1,
 	keyGenerator: (request: express.Request): string => {
