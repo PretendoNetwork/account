@@ -2,7 +2,8 @@ import type { Model, HydratedDocument } from 'mongoose';
 
 export interface IServer {
 	client_id: string;
-	ip: string;
+	ip?: string;
+	ip_list?: string[];
 	port: number;
 	service_name: string;
 	service_type: string;
@@ -12,9 +13,17 @@ export interface IServer {
 	maintenance_mode: boolean;
 	device: number;
 	aes_key: string;
+	health_check_port?: number;
 }
 
-export interface IServerMethods {}
+export interface IServerConnectInfo {
+	ip: string;
+	port: number;
+}
+
+export interface IServerMethods {
+	getServerConnectInfo(): Promise<IServerConnectInfo>;
+}
 
 interface IServerQueryHelpers {}
 

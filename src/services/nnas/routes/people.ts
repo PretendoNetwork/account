@@ -4,7 +4,7 @@ import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
-import ratelimit from '@/middleware/ratelimit';
+import { deviceRatelimit } from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
 import { getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
 import IP2LocationManager from '@/ip2location';
@@ -49,7 +49,7 @@ router.get('/:username', async (request: express.Request, response: express.Resp
  * Replacement for: https://account.nintendo.net/v1/api/people
  * Description: Registers a new NNID
  */
-router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	if (!request.certificate || !request.certificate.valid) {
 		// TODO - Change this to a different error
 		response.status(400).send(xmlbuilder.create({
@@ -87,6 +87,25 @@ router.post('/', ratelimit, deviceCertificateMiddleware, async (request: express
 				return;
 			}
 		}
+	}
+
+	if (age < 13) {
+		// * Wii U firmware 5.5.6 changed NNID setup to block setup of new accounts if the users age is
+		// * under 13, telling parents that they MUST call Nintendo to create the account, and we trusted
+		// * that users would be on these firmwares. Lower firmwares won't have this though, and will use
+		// * the old "COPPA approval" system
+		// *
+		// * Just block it all the time though, we don't want to deal with this headache
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: '0114',
+					message: 'COPPA approval is not complete'
+				}
+			}
+		}).end());
+
+		return;
 	}
 
 	const userExists = await doesPNIDExist(person.user_id);
@@ -561,8 +580,7 @@ router.post('/@me/deletion', async (request: express.Request, response: express.
 
 	const email = pnid.email.address;
 
-	await pnid.scrub();
-	await pnid.save();
+	await pnid.markForDeletion();
 
 	try {
 		await sendPNIDDeletedEmail(email, pnid.username);
@@ -632,6 +650,8 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 		const passwordHash = await bcrypt.hash(primaryPasswordHash, 10);
 
 		pnid.password = passwordHash;
+
+		await pnid.removeAllTokens();
 	}
 
 	pnid.gender = gender;

@@ -13,6 +13,9 @@ export interface Config {
 		connection_string: string;
 		options: mongoose.ConnectOptions;
 	};
+	provisioning: {
+		server_config: string;
+	};
 	redis: {
 		client: {
 			url: string;

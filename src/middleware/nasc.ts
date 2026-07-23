@@ -6,10 +6,10 @@ import { connection as databaseConnection } from '@/database';
 import NintendoCertificate from '@/nintendo-certificate';
 import { LOG_ERROR } from '@/logger';
 import type express from 'express';
-import type { NASCRequestParams } from '@/types/services/nasc/request-params';
+import type { NASCACRequestParams } from '@/types/services/nasc/ac-request-params';
 
 async function NASCMiddleware(request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> {
-	const requestParams: NASCRequestParams = request.body;
+	const requestParams: NASCACRequestParams = request.body;
 
 	if (!requestParams.action ||
 		!requestParams.fcdcert ||
@@ -37,7 +37,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	let uidhmac = '';
 	let password = '';
 
-	if (requestParams.userid) {
+	if ('userid' in requestParams) {
 		pid = Number(nintendoBase64Decode(requestParams.userid).toString());
 	}
 
@@ -45,7 +45,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		uidhmac = nintendoBase64Decode(requestParams.uidhmac).toString();
 	}
 
-	if (requestParams.passwd) {
+	if ('passwd' in requestParams) {
 		password = nintendoBase64Decode(requestParams.passwd).toString();
 	}
 
@@ -238,31 +238,27 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 	return next();
 }
 
-// * https://www.adminsub.net/mac-address-finder/nintendo
+// * https://standards-oui.ieee.org
 // * Saves us from doing an OUI lookup each time
 const NINTENDO_VENDER_OUIS = [
-	'ECC40D', 'E84ECE', 'E0F6B5', 'E0E751', 'E00C7F', 'DC68EB',
-	'D86BF7', 'D4F057', 'CCFB65', 'CC9E00', 'B8AE6E', 'B88AEC',
-	'B87826', 'A4C0E1', 'A45C27', 'A438CC', '9CE635', '98E8FA',
-	'98B6E9', '98415C', '9458CB', '8CCDE8', '8C56C5', '7CBB8A',
-	'78A2A0', '7048F7', '64B5C6', '606BFF', '5C521E', '58BDA3',
-	'582F40', '48A5E7', '40F407', '40D28A', '34AF2C', '342FBD',
-	'2C10C1', '182A7B', '0403D6', '002709', '002659', '0025A0',
-	'0024F3', '002444', '00241E', '0023CC', '002331', '0022D7',
-	'0022AA', '00224C', '0021BD', '002147', '001FC5', '001F32',
-	'001EA9', '001E35', '001DBC', '001CBE', '001BEA', '001B7A',
-	'001AE9', '0019FD', '00191D', '0017AB', '001656', '0009BF',
-	'ECC40D', 'E84ECE', 'E0F6B5', 'E0E751', 'E00C7F', 'DC68EB',
-	'D86BF7', 'D4F057', 'CCFB65', 'CC9E00', 'B8AE6E', 'B88AEC',
-	'B87826', 'A4C0E1', 'A45C27', 'A438CC', '9CE635', '98E8FA',
-	'98B6E9', '98415C', '9458CB', '8CCDE8', '8C56C5', '7CBB8A',
-	'78A2A0', '7048F7', '64B5C6', '606BFF', '5C521E', '58BDA3',
-	'582F40', '48A5E7', '40F407', '40D28A', '34AF2C', '342FBD',
-	'2C10C1', '182A7B', '0403D6', '002709', '002659', '0025A0',
-	'0024F3', '002444', '00241E', '0023CC', '002331', '0022D7',
-	'0022AA', '00224C', '0021BD', '002147', '001FC5', '001F32',
-	'001EA9', '001E35', '001DBC', '001CBE', '001BEA', '001B7A',
-	'001AE9', '0019FD', '00191D', '0017AB', '001656', '0009BF'
+	'601AC7', 'BC9EBB', 'CC5B31', '1C4586', 'E8A0CD', '702C09',
+	'7048F7', '98E8FA', 'ECC40D', '606BFF', '64B5C6', '40D28A',
+	'A45C27', '8C56C5', '002659', '00241E', '002444', '98E255',
+	'E0EFBF', '948E6D', '38C6CE', 'C89143', 'DCCD18', '28CF51',
+	'58B03E', '200BCF', '748469', '70F088', '9458CB', '582F40',
+	'B88AEC', 'A438CC', '40F407', 'A4C0E1', '0022D7', '001CBE',
+	'001B7A', '001AE9', '0009BF', '904528', 'ACFAE4', 'BC89A6',
+	'201C3A', '7820A5', 'E0F6B5', '342FBD', '98415C', 'D4F057',
+	'5C521E', '98B6E9', 'CCFB65', 'B8AE6E', '182A7B', '2C10C1',
+	'002331', '001E35', '001BEA', '0017AB', '001656', 'BC744B',
+	'3CA9AB', 'C84805', 'C0A4CF', '3089EC', '483177', '50236D',
+	'D05509', 'E8DA20', '7CBB8A', '34AF2C', '78A2A0', 'E84ECE',
+	'002709', '0025A0', '0024F3', '0023CC', '001F32', '001EA9',
+	'001DBC', '0019FD', '00191D', 'A4C1E8', 'D86B83', '4044F7',
+	'B86870', 'BCCE25', '80D2E5', '5C0CE6', '74F9CA', '48A5E7',
+	'B87826', 'DC68EB', '0403D6', '9CE635', '8CCDE8', '58BDA3',
+	'E00C7F', 'CC9E00', 'D86BF7', 'E0E751', '0022AA', '00224C',
+	'0021BD', '002147', '001FC5', '48F1EB', '78818C', '4C306A'
 ];
 
 // TODO - Make something better
