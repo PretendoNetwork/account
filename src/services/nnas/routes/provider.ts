@@ -234,7 +234,7 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 			token_type: TokenType.NEX,
 			title_id: BigInt(parseInt(titleID, 16)),
 			issued: new Date(),
-			expires: new Date(Date.now() + (3600 * 1000))
+			expires: new Date(Date.now() + (24 * 3600 * 1000))
 		}
 	});
 
