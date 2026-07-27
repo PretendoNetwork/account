@@ -41,7 +41,7 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		pid = Number(nintendoBase64Decode(requestParams.userid).toString());
 	}
 
-	if (requestParams.uidhmac) {
+	if ('uidhmac' in requestParams) {
 		uidhmac = nintendoBase64Decode(requestParams.uidhmac).toString();
 	}
 
