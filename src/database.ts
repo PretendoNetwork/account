@@ -304,55 +304,6 @@ export async function getServerByClientID(clientID: string, accessMode: string):
 	return null;
 }
 
-export async function addPNIDConnection(pnid: HydratedPNIDDocument, data: ConnectionData, type: string): Promise<ConnectionResponse | undefined> {
-	if (type === 'discord') {
-		return await addPNIDConnectionDiscord(pnid, data);
-	}
-}
-
-export async function addPNIDConnectionDiscord(pnid: HydratedPNIDDocument, data: DiscordConnectionData): Promise<ConnectionResponse> {
-	const valid = discordConnectionSchema.validate(data);
-
-	if (valid.error) {
-		return {
-			app: 'api',
-			status: 400,
-			error: 'Invalid or missing connection data'
-		};
-	}
-
-	await PNID.updateOne({ pid: pnid.pid }, {
-		$set: {
-			'connections.discord.id': data.id
-		}
-	});
-
-	return {
-		app: 'api',
-		status: 200
-	};
-}
-
-export async function removePNIDConnection(pnid: HydratedPNIDDocument, type: string): Promise<ConnectionResponse | undefined> {
-	// * Add more connections later?
-	if (type === 'discord') {
-		return await removePNIDConnectionDiscord(pnid);
-	}
-}
-
-export async function removePNIDConnectionDiscord(pnid: HydratedPNIDDocument): Promise<ConnectionResponse> {
-	await PNID.updateOne({ pid: pnid.pid }, {
-		$set: {
-			'connections.discord.id': ''
-		}
-	});
-
-	return {
-		app: 'api',
-		status: 200
-	};
-}
-
 export async function checkMarkedDeletions(): Promise<void> {
 	const pnids = await PNID.find({
 		marked_for_deletion: true,
