@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import joi from 'joi';
 import { nintendoPasswordHash } from '@/util';
 import { OAuthToken } from '@/models/oauth-token';
 import { PNID } from '@/models/pnid';
