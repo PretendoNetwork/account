@@ -14,17 +14,9 @@ import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
 import type { PNIDProfile } from '@/types/services/nnas/pnid-profile';
-import type { ConnectionData } from '@/types/services/api/connection-data';
-import type { ConnectionResponse } from '@/types/services/api/connection-response';
-import type { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
 
 const connection_string = config.mongoose.connection_string;
 const options = config.mongoose.options;
-
-// TODO - Extend this later with more settings
-const discordConnectionSchema = joi.object({
-	id: joi.string()
-});
 
 const accessModeOrder: Record<string, string[]> = {
 	prod: ['prod'],
