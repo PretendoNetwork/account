@@ -4,8 +4,8 @@
   "description": "",
   "main": "./dist/server.js",
   "scripts": {
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "lint": "eslint ./src",
+    "lint:fix": "eslint --fix ./src",
     "download-geoip-db": "node ./scripts/download-ip2location-databases.js",
     "build": "npm run lint && npm run clean && npx tsc && npx tsc-alias && npm run copy-static && npm run download-geoip-db",
     "clean": "rimraf ./dist",
@@ -28,12 +28,13 @@
     "@aws-sdk/client-s3": "^3.657.0",
     "@aws-sdk/client-ses": "^3.515.0",
     "@inquirer/prompts": "^7.2.0",
-    "@pretendonetwork/grpc": "^2.2.3",
+    "@pretendonetwork/grpc": "^2.5.4",
     "bcrypt": "^5.0.0",
     "buffer-crc32": "^0.2.13",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
     "crc": "^4.3.2",
+    "cron": "^4.4.0",
     "dicer": "^0.2.5",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.10",
@@ -47,7 +48,6 @@
     "image-pixels": "^1.1.1",
     "ip2location-nodejs": "^9.6.3",
     "is-valid-hostname": "^1.0.2",
-    "joi": "^17.8.3",
     "mii-js": "github:PretendoNetwork/mii-js#f1741e1f82771dd7c753fd408230373d33caa184",
     "moment": "^2.29.4",
     "mongoose": "^7.0.0",
@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@hcaptcha/types": "^1.0.3",
-    "@pretendonetwork/eslint-config": "^0.0.8",
+    "@pretendonetwork/eslint-config": "^0.1.4",
     "@types/bcrypt": "^5.0.0",
     "@types/buffer-crc32": "^0.2.2",
     "@types/cors": "^2.8.13",
@@ -89,5 +89,8 @@
     "globals": "^15.14.0",
     "ndarray": "^1.0.19",
     "typescript": "^4.9.5"
+  },
+  "overrides": {
+    "@bufbuild/protobuf": "2.2.2"
   }
 }

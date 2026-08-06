@@ -1,7 +1,7 @@
 import { Status, ServerError } from 'nice-grpc';
 import { getPNIDByPID } from '@/database';
 import { sendPNIDDeletedEmail } from '@/util';
-import { LOG_ERROR } from '@/logger';
+import { LOG_ERROR, LOG_INFO } from '@/logger';
 import type { DeleteAccountRequest, DeleteAccountResponse } from '@pretendonetwork/grpc/account/v2/delete_account_rpc';
 
 export async function deleteAccount(request: DeleteAccountRequest): Promise<DeleteAccountResponse> {
@@ -15,17 +15,27 @@ export async function deleteAccount(request: DeleteAccountRequest): Promise<Dele
 	}
 
 	try {
+		LOG_INFO(`Deleting PNID ${pnid.pid} (bypass grace period=${request.bypassGracePeriod})`);
 		const email = pnid.email.address;
 
-		await pnid.scrub();
-		await pnid.save();
+		if (request.bypassGracePeriod) {
+			await pnid.scrub();
+		} else {
+			await pnid.markForDeletion();
+		}
 
 		await sendPNIDDeletedEmail(email, pnid.username);
+
+		if (request.bypassGracePeriod) {
+			LOG_INFO(`PNID ${pnid.pid} deleted immediately (bypassed grace period)`);
+		} else {
+			LOG_INFO(`PNID ${pnid.pid} marked for deletion (will be deleted after grace period)`);
+		}
 	} catch (error) {
-		LOG_ERROR(`Deleting PNID ${error}`);
+		LOG_ERROR(`Error deleting PNID ${pnid.pid}: ${error}`);
 	}
 
 	return {
-		hasDeleted: pnid.deleted
+		hasDeleted: pnid.deleted || pnid.marked_for_deletion
 	};
 }

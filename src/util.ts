@@ -2,21 +2,23 @@ import crypto from 'node:crypto';
 import path from 'node:path';
 import { S3 } from '@aws-sdk/client-s3';
 import fs from 'fs-extra';
-import bufferCrc32 from 'buffer-crc32';
-import { crc32 } from 'crc';
+import { CronJob } from 'cron';
+import { checkMarkedDeletions } from '@/database';
 import { sendMail, CreateEmail } from '@/mailer';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
+import { PasswordResetToken } from '@/models/password-reset-token';
+import { LOG_ERROR } from '@/logger';
+import type { IncomingHttpHeaders } from 'node:http';
 import type { ParsedQs } from 'qs';
 import type mongoose from 'mongoose';
 import type express from 'express';
 import type { ObjectCannedACL } from '@aws-sdk/client-s3';
-import type { IncomingHttpHeaders } from 'node:http';
-import type { TokenOptions } from '@/types/common/token-options';
-import type { Token } from '@/types/common/token';
 import type { IPNID, IPNIDMethods } from '@/types/mongoose/pnid';
 import type { SafeQs } from '@/types/common/safe-qs';
+import type { HydratedServerDocument } from '@/types/mongoose/server';
+import type { ServiceTokenOptions } from '@/types/common/service-token-options';
 
 let s3: S3;
 
@@ -56,98 +58,22 @@ export function nintendoBase64Encode(decoded: string | Buffer): string {
 	return encoded.replaceAll('+', '.').replaceAll('/', '-').replaceAll('=', '*');
 }
 
-export function generateToken(key: string, options: TokenOptions): Buffer | null {
-	let dataBuffer = Buffer.alloc(1 + 1 + 4 + 8);
+export function createServiceToken(server: HydratedServerDocument, options: ServiceTokenOptions): Buffer {
+	const dataBuffer = Buffer.alloc(28);
 
-	dataBuffer.writeUInt8(options.system_type, 0x0);
-	dataBuffer.writeUInt8(options.token_type, 0x1);
-	dataBuffer.writeUInt32LE(options.pid, 0x2);
-	dataBuffer.writeBigUInt64LE(options.expire_time, 0x6);
+	dataBuffer.writeUInt32BE(options.pid, 0);
+	dataBuffer.writeBigUInt64BE(BigInt(parseInt(options.title_id, 16)), 4);
+	dataBuffer.writeBigUInt64BE(BigInt(options.issued.getTime()), 12);
+	dataBuffer.writeBigUInt64BE(BigInt(options.expires.getTime()), 20);
 
-	if ((options.token_type !== TokenType.OAuthAccess && options.token_type !== TokenType.OAuthRefresh) || options.system_type === SystemType.API) {
-		// * Access and refresh tokens have smaller bodies due to size constraints
-		// * The API does not have this restraint, however
-		if (options.title_id === undefined || options.access_level === undefined) {
-			return null;
-		}
+	// * Not using AES anymore but fuck it, it's here already
+	// TODO - rename the AES field
+	const hmac = crypto.createHmac('sha256', server.aes_key).update(dataBuffer).digest();
 
-		dataBuffer = Buffer.concat([
-			dataBuffer,
-			Buffer.alloc(8 + 1)
-		]);
-
-		dataBuffer.writeBigUInt64LE(options.title_id, 0xE);
-		dataBuffer.writeInt8(options.access_level, 0x16);
-	}
-
-	const iv = Buffer.alloc(16);
-	const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
-
-	const encrypted = Buffer.concat([
-		cipher.update(dataBuffer),
-		cipher.final()
+	return Buffer.concat([
+		dataBuffer,
+		hmac
 	]);
-
-	let final = encrypted;
-
-	if ((options.token_type !== TokenType.OAuthAccess && options.token_type !== TokenType.OAuthRefresh) || options.system_type === SystemType.API) {
-		// * Access and refresh tokens don't get a checksum due to size constraints
-		const checksum = bufferCrc32(dataBuffer);
-
-		final = Buffer.concat([
-			checksum,
-			final
-		]);
-	}
-
-	return final;
-}
-
-export function decryptToken(token: Buffer, key?: string): Buffer {
-	let encryptedBody: Buffer;
-	let expectedChecksum = 0;
-
-	if (token.length === 16) {
-		// * Token is an access/refresh token, no checksum
-		encryptedBody = token;
-	} else {
-		expectedChecksum = token.readUint32BE();
-		encryptedBody = token.subarray(4);
-	}
-
-	if (!key) {
-		key = config.aes_key;
-	}
-
-	const iv = Buffer.alloc(16);
-	const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
-
-	const decrypted = Buffer.concat([
-		decipher.update(encryptedBody),
-		decipher.final()
-	]);
-
-	if (expectedChecksum && (expectedChecksum !== crc32(decrypted))) {
-		throw new Error('Checksum did not match. Failed decrypt. Are you using the right key?');
-	}
-
-	return decrypted;
-}
-
-export function unpackToken(token: Buffer): Token {
-	const unpacked: Token = {
-		system_type: token.readUInt8(0x0),
-		token_type: token.readUInt8(0x1),
-		pid: token.readUInt32LE(0x2),
-		expire_time: token.readBigUInt64LE(0x6)
-	};
-
-	if (unpacked.token_type !== TokenType.OAuthAccess && unpacked.token_type !== TokenType.OAuthRefresh) {
-		unpacked.title_id = token.readBigUInt64LE(0xE);
-		unpacked.access_level = token.readInt8(0x16);
-	}
-
-	return unpacked;
 }
 
 export function fullUrl(request: express.Request): string {
@@ -248,25 +174,25 @@ export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.Hyd
 }
 
 export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
-	const tokenOptions = {
-		system_type: SystemType.PasswordReset,
-		token_type: TokenType.PasswordReset,
+	const token = crypto.randomBytes(36).toString('hex');
+
+	await PasswordResetToken.create({
+		token: crypto.createHash('sha256').update(token).digest('hex'),
 		pid: pnid.pid,
-		access_level: pnid.access_level,
-		title_id: BigInt(0),
-		expire_time: BigInt(Date.now() + (24 * 60 * 60 * 1000)) // * Only valid for 24 hours
-	};
-
-	const tokenBuffer = await generateToken(config.aes_key, tokenOptions);
-	const passwordResetToken = tokenBuffer ? tokenBuffer.toString('hex') : '';
-
-	// TODO - Handle null token
+		info: {
+			system_type: SystemType.PasswordReset,
+			token_type: TokenType.PasswordReset,
+			title_id: BigInt(0),
+			issued: new Date(),
+			expires: new Date(Date.now() + (24 * 60 * 60 * 1000))
+		}
+	});
 
 	const email = new CreateEmail()
 		.addHeader('Dear {{pnid}},', { pnid: pnid.username })
 		.addParagraph('a password reset has been requested from this account.')
 		.addParagraph('If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.')
-		.addButton('Reset password', `${config.website_base}/account/reset-password?token=${encodeURIComponent(passwordResetToken)}`);
+		.addButton('Reset password', `${config.website_base}/account/reset-password?token=${encodeURIComponent(token)}`);
 
 	const mailerOptions = {
 		to: pnid.email.address,
@@ -278,14 +204,24 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 }
 
 export async function sendPNIDDeletedEmail(emailAddress: string, username: string): Promise<void> {
+	const deletionDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-US', {
+		timeZone: 'UTC',
+		weekday: 'long',
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric'
+	});
 	const email = new CreateEmail()
-		.addHeader('Dear {{pnid}},', { pnid: username })
-		.addParagraph('your PNID has successfully been deleted.')
-		.addParagraph('If you had a tier subscription, a separate cancellation email will be sent. If you do not receive this cancellation email, or you are still being charged for your subscription, please contact <b>@jonbarrow</b> on our [Discord server](https://discord.pretendo.network/).');
+		.addHeader('Dear {{pnid}}.', { pnid: username })
+		.addParagraph('Your PNID has been scheduled for deletion.')
+		.addParagraph(`Your account and related data will be permanently deleted in 7 days (${deletionDate}). Note that this will not free the username associated with the account for use in future accounts.`)
+		.addParagraph('You may restore your account at any time before the deletion date. To do so, email [restore-account@pretendo.network](mailto:restore-account@pretendo.network?subject=Requesting%20account%20restore&body=Please%20restore%20my%20account) from the email address used to register, with the subject "Requesting account restore" and your PNID username in the body. Requests must be submitted more than 24 hours before the deletion date, as after this point your data may be unrecoverable. For additional help, visit our [Forum](https://forum.pretendo.network/) or [Discord server](https://discord.pretendo.network/).')
+		.addParagraph('If you have or have had an active tier subscription, your associated Stripe data (including payment info and invoices) will be permanently deleted on the deletion date and cannot be restored.')
+		.addParagraph('No new charges will be made during the grace period, even if a renewal would normally occur. If your account is restored with an active subscription, you may need to resubscribe. If you notice unexpected charges during the grace period, please contact us via our [Forum](https://forum.pretendo.network/) or [Discord server](https://discord.pretendo.network/) before the deletion date.');
 
 	const options = {
 		to: emailAddress,
-		subject: '[Pretendo Network] PNID Deleted',
+		subject: '[Pretendo Network] PNID Deletion',
 		email
 	};
 
@@ -391,4 +327,25 @@ export function getAgeFromDate(dateString: string): number {
 	}
 
 	return age;
+}
+
+export async function setupScheduledTasks(): Promise<void> {
+	scheduledTask('0 2 * * *', 'check-account-deletions', checkMarkedDeletions);
+}
+
+function scheduledTask(schedule: string, name: string, fn: () => void | Promise<void>): void {
+	CronJob.from({
+		cronTime: schedule,
+		onTick: async () => {
+			try {
+				const result = fn();
+				await result;
+			} catch (err) {
+				LOG_ERROR(`Error in schedule ${name}: ${err}`);
+			}
+		},
+		start: true
+	});
+
+	LOG_ERROR(`Added schedule ${name} for ${schedule}`);
 }

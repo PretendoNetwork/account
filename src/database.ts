@@ -1,7 +1,8 @@
+import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import joi from 'joi';
-import { nintendoPasswordHash, decryptToken, unpackToken } from '@/util';
+import { nintendoPasswordHash } from '@/util';
+import { OAuthToken } from '@/models/oauth-token';
 import { PNID } from '@/models/pnid';
 import { Server } from '@/models/server';
 import { LOG_ERROR } from '@/logger';
@@ -12,17 +13,9 @@ import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
 import type { PNIDProfile } from '@/types/services/nnas/pnid-profile';
-import type { ConnectionData } from '@/types/services/api/connection-data';
-import type { ConnectionResponse } from '@/types/services/api/connection-response';
-import type { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
 
 const connection_string = config.mongoose.connection_string;
 const options = config.mongoose.options;
-
-// TODO - Extend this later with more settings
-const discordConnectionSchema = joi.object({
-	id: joi.string()
-});
 
 const accessModeOrder: Record<string, string[]> = {
 	prod: ['prod'],
@@ -110,24 +103,35 @@ async function getPNIDByOAuthToken(token: string, expectedSystemType: SystemType
 	verifyConnected();
 
 	try {
-		const decryptedToken = decryptToken(Buffer.from(token, 'hex'));
-		const unpackedToken = unpackToken(decryptedToken);
+		const oauthToken = await OAuthToken.findOne({
+			token: crypto.createHash('sha256').update(token).digest('hex')
+		});
 
-		if (unpackedToken.system_type !== expectedSystemType) {
-			return null;
-		}
-		if (unpackedToken.token_type !== expectedTokenType) {
+		if (!oauthToken) {
 			return null;
 		}
 
-		const pnid = await getPNIDByPID(unpackedToken.pid);
+		if (oauthToken.info.system_type !== expectedSystemType) {
+			return null;
+		}
+
+		if (oauthToken.info.token_type !== expectedTokenType) {
+			return null;
+		}
+
+		const pnid = await getPNIDByPID(oauthToken.pid);
 
 		if (pnid) {
-			const expireTime = Math.floor((Number(unpackedToken.expire_time) / 1000));
+			const expireTime = Math.floor((Number(oauthToken.info.expires) / 1000));
 
 			if (Math.floor(Date.now() / 1000) > expireTime) {
 				return null;
 			}
+		}
+
+		// * Refresh tokens are single use
+		if (expectedTokenType === TokenType.OAuthRefresh) {
+			await oauthToken.deleteOne();
 		}
 
 		return pnid;
@@ -291,51 +295,20 @@ export async function getServerByClientID(clientID: string, accessMode: string):
 	return null;
 }
 
-export async function addPNIDConnection(pnid: HydratedPNIDDocument, data: ConnectionData, type: string): Promise<ConnectionResponse | undefined> {
-	if (type === 'discord') {
-		return await addPNIDConnectionDiscord(pnid, data);
-	}
-}
-
-export async function addPNIDConnectionDiscord(pnid: HydratedPNIDDocument, data: DiscordConnectionData): Promise<ConnectionResponse> {
-	const valid = discordConnectionSchema.validate(data);
-
-	if (valid.error) {
-		return {
-			app: 'api',
-			status: 400,
-			error: 'Invalid or missing connection data'
-		};
-	}
-
-	await PNID.updateOne({ pid: pnid.pid }, {
-		$set: {
-			'connections.discord.id': data.id
+export async function checkMarkedDeletions(): Promise<void> {
+	const pnids = await PNID.find({
+		marked_for_deletion: true,
+		deleted: false,
+		hard_delete_time: {
+			$lte: new Date()
 		}
 	});
 
-	return {
-		app: 'api',
-		status: 200
-	};
-}
-
-export async function removePNIDConnection(pnid: HydratedPNIDDocument, type: string): Promise<ConnectionResponse | undefined> {
-	// * Add more connections later?
-	if (type === 'discord') {
-		return await removePNIDConnectionDiscord(pnid);
-	}
-}
-
-export async function removePNIDConnectionDiscord(pnid: HydratedPNIDDocument): Promise<ConnectionResponse> {
-	await PNID.updateOne({ pid: pnid.pid }, {
-		$set: {
-			'connections.discord.id': ''
+	for (const pnid of pnids) {
+		try {
+			await pnid.scrub();
+		} catch (error) {
+			LOG_ERROR(`Failed to scrub PNID ${pnid.pid}: ${error}`);
 		}
-	});
-
-	return {
-		app: 'api',
-		status: 200
-	};
+	}
 }

@@ -17,8 +17,7 @@ export async function deleteAccount(request: DeleteAccountRequest): Promise<Dele
 	try {
 		const email = pnid.email.address;
 
-		await pnid.scrub();
-		await pnid.save();
+		await pnid.markForDeletion();
 
 		await sendPNIDDeletedEmail(email, pnid.username);
 	} catch (error) {
@@ -26,6 +25,6 @@ export async function deleteAccount(request: DeleteAccountRequest): Promise<Dele
 	}
 
 	return {
-		hasDeleted: pnid.deleted
+		hasDeleted: pnid.deleted || pnid.marked_for_deletion
 	};
 }

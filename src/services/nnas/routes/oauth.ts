@@ -1,14 +1,15 @@
+import crypto from 'node:crypto';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
 import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
-import { generateToken } from '@/util';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
-import { config } from '@/config-manager';
 import { Device } from '@/models/device';
+import { OAuthToken } from '@/models/oauth-token';
+import { loginRatelimit } from '@/middleware/ratelimit';
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const router = express.Router();
  * Replacement for: https://account.nintendo.net/v1/api/oauth20/access_token/generate
  * Description: Generates an access token for a user
  */
-router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatusVerificationMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/access_token/generate', loginRatelimit, deviceCertificateMiddleware, consoleStatusVerificationMiddleware, async (request: express.Request, response: express.Response): Promise<void> => {
 	const grantType = request.body.grant_type;
 	const username = request.body.user_id;
 	const password = request.body.password;
@@ -128,7 +129,7 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		}
 	}
 
-	if (pnid.deleted) {
+	if (pnid.deleted || pnid.marked_for_deletion) {
 		// * 0112 is the "account deleted" error, but unsure if this unlinks the PNID from the user?
 		// * 0143 is the "The link to this Nintendo Network ID has been temporarliy removed" error,
 		// * maybe that is a better error to use here?
@@ -167,25 +168,39 @@ router.post('/access_token/generate', deviceCertificateMiddleware, consoleStatus
 		return;
 	}
 
-	const accessTokenOptions = {
-		system_type: SystemType.WUP,
-		token_type: TokenType.OAuthAccess,
+	const clientID = request.header('x-nintendo-client-id');
+	const clientSecret = request.header('x-nintendo-client-secret');
+
+	const accessToken = crypto.randomBytes(16).toString('hex');
+	const newRefreshToken = crypto.randomBytes(20).toString('hex');
+
+	await OAuthToken.create({
+		token: crypto.createHash('sha256').update(accessToken).digest('hex'),
+		client_id: clientID,
+		client_secret: clientSecret,
 		pid: pnid.pid,
-		expire_time: BigInt(Date.now() + (3600 * 1000))
-	};
+		info: {
+			system_type: SystemType.WUP,
+			token_type: TokenType.OAuthAccess,
+			title_id: BigInt(0), // TODO - Add this?
+			issued: new Date(),
+			expires: new Date(Date.now() + (3600 * 1000))
+		}
+	});
 
-	const refreshTokenOptions = {
-		system_type: SystemType.WUP,
-		token_type: TokenType.OAuthRefresh,
+	await OAuthToken.create({
+		token: crypto.createHash('sha256').update(newRefreshToken).digest('hex'),
+		client_id: clientID,
+		client_secret: clientSecret,
 		pid: pnid.pid,
-		expire_time: BigInt(Date.now() + 12 * 3600 * 1000)
-	};
-
-	const accessTokenBuffer = await generateToken(config.aes_key, accessTokenOptions);
-	const refreshTokenBuffer = await generateToken(config.aes_key, refreshTokenOptions);
-
-	const accessToken = accessTokenBuffer ? accessTokenBuffer.toString('hex') : '';
-	const newRefreshToken = refreshTokenBuffer ? refreshTokenBuffer.toString('hex') : '';
+		info: {
+			system_type: SystemType.WUP,
+			token_type: TokenType.OAuthRefresh,
+			title_id: BigInt(0), // TODO - Add this?
+			issued: new Date(),
+			expires: new Date(Date.now() + 12 * 3600 * 1000)
+		}
+	});
 
 	// TODO - Handle null tokens
 

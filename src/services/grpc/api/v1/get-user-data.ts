@@ -9,7 +9,7 @@ export async function getUserData(_request: Empty, context: CallContext & Authen
 	const pnid = context.pnid!;
 
 	return {
-		deleted: pnid.deleted,
+		deleted: pnid.deleted || pnid.marked_for_deletion,
 		creationDate: pnid.creation_date,
 		updatedDate: pnid.updated,
 		pid: pnid.pid,
