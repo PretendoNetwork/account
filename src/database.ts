@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import joi from 'joi';
 import { nintendoPasswordHash } from '@/util';
 import { OAuthToken } from '@/models/oauth-token';
 import { PNID } from '@/models/pnid';
@@ -14,17 +13,9 @@ import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
 import type { PNIDProfile } from '@/types/services/nnas/pnid-profile';
-import type { ConnectionData } from '@/types/services/api/connection-data';
-import type { ConnectionResponse } from '@/types/services/api/connection-response';
-import type { DiscordConnectionData } from '@/types/services/api/discord-connection-data';
 
 const connection_string = config.mongoose.connection_string;
 const options = config.mongoose.options;
-
-// TODO - Extend this later with more settings
-const discordConnectionSchema = joi.object({
-	id: joi.string()
-});
 
 const accessModeOrder: Record<string, string[]> = {
 	prod: ['prod'],
@@ -302,55 +293,6 @@ export async function getServerByClientID(clientID: string, accessMode: string):
 	}
 
 	return null;
-}
-
-export async function addPNIDConnection(pnid: HydratedPNIDDocument, data: ConnectionData, type: string): Promise<ConnectionResponse | undefined> {
-	if (type === 'discord') {
-		return await addPNIDConnectionDiscord(pnid, data);
-	}
-}
-
-export async function addPNIDConnectionDiscord(pnid: HydratedPNIDDocument, data: DiscordConnectionData): Promise<ConnectionResponse> {
-	const valid = discordConnectionSchema.validate(data);
-
-	if (valid.error) {
-		return {
-			app: 'api',
-			status: 400,
-			error: 'Invalid or missing connection data'
-		};
-	}
-
-	await PNID.updateOne({ pid: pnid.pid }, {
-		$set: {
-			'connections.discord.id': data.id
-		}
-	});
-
-	return {
-		app: 'api',
-		status: 200
-	};
-}
-
-export async function removePNIDConnection(pnid: HydratedPNIDDocument, type: string): Promise<ConnectionResponse | undefined> {
-	// * Add more connections later?
-	if (type === 'discord') {
-		return await removePNIDConnectionDiscord(pnid);
-	}
-}
-
-export async function removePNIDConnectionDiscord(pnid: HydratedPNIDDocument): Promise<ConnectionResponse> {
-	await PNID.updateOne({ pid: pnid.pid }, {
-		$set: {
-			'connections.discord.id': ''
-		}
-	});
-
-	return {
-		app: 'api',
-		status: 200
-	};
 }
 
 export async function checkMarkedDeletions(): Promise<void> {
