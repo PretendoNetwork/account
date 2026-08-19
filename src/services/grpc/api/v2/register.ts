@@ -259,7 +259,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 			token_type: TokenType.OAuthRefresh,
 			title_id: BigInt(0),
 			issued: new Date(),
-			expires: new Date(Date.now() + 12 * 3600 * 1000)
+			expires: new Date(Date.now() + 7 * 24 * 3600 * 1000)
 		}
 	});
 
