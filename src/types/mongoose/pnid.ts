@@ -32,8 +32,6 @@ export interface IPNID {
 	timezone: {
 		name: string;
 		offset: number;
-		marketing: boolean;
-		off_device: boolean;
 	};
 	mii: {
 		name: string;
