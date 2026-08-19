@@ -24,6 +24,7 @@ export async function getUserData(_request: Empty, context: CallContext & Authen
 		birthday: pnid.birthdate,
 		gender: pnid.gender,
 		country: pnid.country,
+		region: pnid.region,
 		timezone: pnid.timezone.name,
 		language: pnid.language,
 		emailAddress: pnid.email.address,
