@@ -84,7 +84,7 @@ export async function login(request: LoginRequest): Promise<DeepPartial<LoginRes
 			token_type: TokenType.OAuthRefresh,
 			title_id: BigInt(0),
 			issued: new Date(),
-			expires: new Date(Date.now() + 12 * 3600 * 1000)
+			expires: new Date(Date.now() + 7 * 24 * 3600 * 1000)
 		}
 	});
 
