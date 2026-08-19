@@ -32,50 +32,64 @@ export async function updateUserData(
 	// const marketingFlag = request.marketingFlag;
 
 	if (serverAccessLevel) {
-		if (['prod', 'test', 'dev'].includes(serverAccessLevel)) {
-			if (pnid.access_level > 0 && pnid.access_level < 4) {
-				if (
-					(serverAccessLevel === 'test' && pnid.access_level < 1) ||
-					(serverAccessLevel === 'dev' && pnid.access_level < 3)
-				) {
-					throw new ServerError(
-						Status.INVALID_ARGUMENT,
-						`Do not have permission to enter this environment`
-					);
-				}
-
-				pnid.server_access_level = serverAccessLevel;
-			} else {
-				throw new ServerError(Status.PERMISSION_DENIED, `Banned.`);
-			}
-		} else {
+		if (!['prod', 'test', 'dev'].includes(serverAccessLevel)) {
 			throw new ServerError(
 				Status.INVALID_ARGUMENT,
 				`Must be one of: prod, test, dev`
 			);
 		}
+
+		if (serverAccessLevel === 'prod') {
+			if (pnid.access_level < 0) {
+				throw new ServerError(Status.PERMISSION_DENIED, `Banned`);
+			}
+
+			pnid.server_access_level = serverAccessLevel;
+		}
+
+		if (serverAccessLevel === 'test') {
+			if (pnid.access_level < 1) {
+				throw new ServerError(
+					Status.INVALID_ARGUMENT,
+					`Do not have permission to enter this environment`
+				);
+			}
+
+			pnid.server_access_level = serverAccessLevel;
+		}
+
+		if (serverAccessLevel === 'dev') {
+			if (pnid.access_level < 3) {
+				throw new ServerError(
+					Status.INVALID_ARGUMENT,
+					`Do not have permission to enter this environment`
+				);
+			}
+
+			pnid.server_access_level = serverAccessLevel;
+		}
 	}
 
 	if (birthday) {
-		if (isValidBirthday(birthday)) {
-			pnid.birthdate = birthday;
-		} else {
+		if (!isValidBirthday(birthday)) {
 			throw new ServerError(
 				Status.INVALID_ARGUMENT,
 				`Must be a valid date formatted as: YYYY-MM-DD`
 			);
 		}
+
+		pnid.birthdate = birthday;
 	}
 
 	if (gender) {
-		if (['M', 'F'].includes(gender)) {
-			pnid.gender = gender;
-		} else {
+		if (!['M', 'F'].includes(gender)) {
 			throw new ServerError(
 				Status.INVALID_ARGUMENT,
 				`Must be one of: F, M`
 			);
 		}
+
+		pnid.gender = gender;
 	}
 
 	if (country || region) {
@@ -105,16 +119,22 @@ export async function updateUserData(
 					Status.INVALID_ARGUMENT,
 					`Invalid region`
 				);
-			} else {
-				pnid.country = countryObj.iso_code;
-				pnid.region = region;
 			}
+
+			pnid.country = countryObj.iso_code;
+			pnid.region = region;
 		} else if (pnid.country !== countryObj?.iso_code) {
+			const unspecifiedRegion = countryObj.regions.find(
+				r => r.name === 'Unspecified'
+			);
+
+			if (!unspecifiedRegion) {
+				throw new ServerError(Status.INVALID_ARGUMENT, `A default region does not exist for the selected country: please set one explicitly`);
+			}
+
 			// if editing the country with no explicit region, set it to Unspecified
 			pnid.country = countryObj.iso_code;
-			pnid.region = countryObj.regions.find(
-				r => r.name === 'Unspecified'
-			)!.id;
+			pnid.region = unspecifiedRegion.id;
 		}
 	}
 
@@ -125,17 +145,18 @@ export async function updateUserData(
 		const newTimezone = pnidCountryTimezones.ja.find(
 			t => t.area === timezone
 		);
-		if (newTimezone) {
-			pnid.timezone.name = newTimezone.area;
-			pnid.timezone.offset = Number(newTimezone.utc_offset);
-		} else {
+
+		if (!newTimezone) {
 			throw new ServerError(Status.INVALID_ARGUMENT, `Invalid timezone`);
 		}
+
+		pnid.timezone.name = newTimezone.area;
+		pnid.timezone.offset = Number(newTimezone.utc_offset);
 	}
 
 	if (mii) {
 		try {
-			const parsedMii: Mii = new Mii(Buffer.from(mii, 'base64'));
+			const parsedMii = new Mii(Buffer.from(mii, 'base64'));
 
 			parsedMii.validate();
 
