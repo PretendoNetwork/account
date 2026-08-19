@@ -32,15 +32,16 @@ router.get('/verify', async (request: express.Request, response: express.Respons
 		return;
 	}
 
-	const validatedDate = moment().format('YYYY-MM-DDTHH:MM:SS');
+	if (!pnid.email.validated) {
+		const validatedDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 
-	pnid.email.reachable = true;
-	pnid.email.validated = true;
-	pnid.email.validated_date = validatedDate;
+		pnid.email.reachable = true;
+		pnid.email.validated = true;
+		pnid.email.validated_date = validatedDate;
 
-	await pnid.save();
-
-	await sendEmailConfirmedEmail(pnid);
+		await pnid.save();
+		await sendEmailConfirmedEmail(pnid);
+	}
 
 	response.status(200).send('Email validated. You may close this window');
 });
