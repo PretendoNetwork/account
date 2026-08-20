@@ -3,7 +3,7 @@ import Mii from 'mii-js';
 import { isValidBirthday } from '@/util';
 import { config } from '@/config-manager';
 import timezones from '@/services/nnas/timezones.json';
-import regionsList from '@/services/nnas/regions.json';
+import regions from '@/services/nnas/regions.json';
 import type { CallContext } from 'nice-grpc';
 import type {
 	UpdateUserDataRequest,
@@ -23,7 +23,6 @@ export async function updateUserData(
 	const mii = request?.mii?.trim();
 	const birthday = request.birthday?.trim();
 	const gender = request.gender?.trim();
-	const country = request.country?.trim();
 	const region = request.region;
 	const timezone = request.timezone?.trim();
 
@@ -92,50 +91,19 @@ export async function updateUserData(
 		pnid.gender = gender;
 	}
 
-	if (country || region) {
-		let countryId = 0;
+	if (region) {
+		const countryObj = regions.find(c => c.id === ((region >>> 24) & 0xFF));
+		const regionObj = countryObj?.regions.find(r => r.id === region);
 
-		// if we have a region but no country, we extract the country id from it
-		if (region && !country) {
-			const regionHex = region.toString(16).padStart(8, '0');
-			countryId = parseInt(regionHex.slice(0, 2), 16);
-		}
-
-		const countryObj = regionsList.find((c) => {
-			return c.iso_code === country || c.id === countryId;
-		});
-
-		if (!countryObj?.iso_code) {
-			throw new ServerError(Status.INVALID_ARGUMENT, `Invalid country`);
-		}
-
-		if (region) {
-			const regionObj = countryObj.regions.find((r) => {
-				return r.id === region;
-			});
-
-			if (!regionObj) {
-				throw new ServerError(
-					Status.INVALID_ARGUMENT,
-					`Invalid region`
-				);
-			}
-
-			pnid.country = countryObj.iso_code;
-			pnid.region = region;
-		} else if (pnid.country !== countryObj?.iso_code) {
-			const unspecifiedRegion = countryObj.regions.find(
-				r => r.name === 'Unspecified'
+		if (!countryObj || !regionObj) {
+			throw new ServerError(
+				Status.INVALID_ARGUMENT,
+				`Invalid region`
 			);
-
-			if (!unspecifiedRegion) {
-				throw new ServerError(Status.INVALID_ARGUMENT, `A default region does not exist for the selected country: please set one explicitly`);
-			}
-
-			// if editing the country with no explicit region, set it to Unspecified
-			pnid.country = countryObj.iso_code;
-			pnid.region = unspecifiedRegion.id;
 		}
+
+		pnid.country = countryObj.iso_code;
+		pnid.region = regionObj.id;
 	}
 
 	if (timezone) {
