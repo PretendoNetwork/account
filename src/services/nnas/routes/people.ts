@@ -351,6 +351,21 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 	// * 	return;
 	// * }
 
+	// TODO - Check against the list of valid languages
+	if (!person.language) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'language',
+					code: '0002',
+					message: 'language format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid: HydratedPNIDDocument;
 	let nexAccount: HydratedNEXAccountDocument;
