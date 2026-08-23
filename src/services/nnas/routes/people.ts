@@ -411,6 +411,20 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
+	if (!person.gender || !(['M', 'F'].includes(person.gender))) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'gender',
+					code: '0002',
+					message: 'gender format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid: HydratedPNIDDocument;
 	let nexAccount: HydratedNEXAccountDocument;
