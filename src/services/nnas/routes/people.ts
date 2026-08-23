@@ -6,7 +6,7 @@ import moment from 'moment';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import { deviceRatelimit } from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
-import { getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import { isValidBirthday, getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -15,6 +15,17 @@ import timezones from '@/services/nnas/timezones.json';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { Person } from '@/types/services/nnas/person';
+
+const PNID_VALID_CHARACTERS_REGEX = /^[\w\-.]*$/;
+const PNID_PUNCTUATION_START_REGEX = /^[_\-.]/;
+const PNID_PUNCTUATION_END_REGEX = /[_\-.]$/;
+const PNID_PUNCTUATION_DUPLICATE_REGEX = /[_\-.]{2,}/;
+
+// * This sucks
+const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
+const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
+const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
+const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
 
 const router = express.Router();
 
@@ -75,6 +86,20 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 					cause: 'Bad Request',
 					code: '1600',
 					message: 'Unable to process request'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.birth_date || !isValidBirthday(person.birth_date)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'birthDate',
+					code: '0002',
+					message: 'birthDate format is invalid'
 				}
 			}
 		}).end());
