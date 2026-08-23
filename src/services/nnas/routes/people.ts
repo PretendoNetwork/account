@@ -322,6 +322,35 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
+	// TODO - Check against the list of valid countries
+	if (!person.country) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'country',
+					code: '0002',
+					message: 'country format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// TODO - I think region locking is a stupid idea here, but in case we ever want it here it is
+	// * if (person.country does not match console country header/etc.) {
+	// * 	response.status(400).send(xmlbuilder.create({
+	// * 		errors: {
+	// * 			error: {
+	// * 				code: '0107',
+	// * 				message: 'Account country and device country do not match'
+	// * 			}
+	// * 		}
+	// * 	}).end());
+	// *
+	// * 	return;
+	// * }
+
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid: HydratedPNIDDocument;
 	let nexAccount: HydratedNEXAccountDocument;
