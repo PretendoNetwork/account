@@ -29,6 +29,24 @@ const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
 const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
 const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
 
+// * This SEEMS to be derived from the known languages in the timezone list,
+// * which lines up with the typical set of languages we see Nintendo use
+// * https://nintendo.wiki/wiki/Online/Nintendo_Network/IDBE#Languages
+const ALLOWED_ACCOUNT_LANGUAGES = [
+	'ja',
+	'en',
+	'fr',
+	'de',
+	'it',
+	'es',
+	// * Likely simplified Chinese, but we haven't seen this in practice
+	// * Likely Korean, but we haven't seen this in practice
+	'nl',
+	'pt',
+	'ru'
+	// * Likely traditional Chinese, but we haven't seen this in practice
+];
+
 const router = express.Router();
 
 /**
@@ -353,8 +371,7 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 	// * 	return;
 	// * }
 
-	// TODO - Check against the list of valid languages
-	if (!person.language) {
+	if (!person.language || !ALLOWED_ACCOUNT_LANGUAGES.includes(person.language)) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
