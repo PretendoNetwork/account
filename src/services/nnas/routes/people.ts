@@ -251,6 +251,77 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 	// * 	return;
 	// * }
 
+	// TODO - Centralize this somewhere, all the same error
+	if (!person.password) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'password',
+					code: '0002',
+					message: 'password format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (person.password.length < 6 || person.password.length > 16) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'password',
+					code: '0002',
+					message: 'password format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!PASSWORD_WORD_OR_NUMBER_REGEX.test(person.password) && !PASSWORD_WORD_OR_PUNCTUATION_REGEX.test(person.password) && !PASSWORD_NUMBER_OR_PUNCTUATION_REGEX.test(person.password)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'password',
+					code: '0002',
+					message: 'password format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (PASSWORD_REPEATED_CHARACTER_REGEX.test(person.password)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'password',
+					code: '0002',
+					message: 'password format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (person.password.toLowerCase() === person.user_id.toLowerCase()) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'password',
+					code: '1107',
+					message: 'Password cannot be the same as User ID'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid: HydratedPNIDDocument;
 	let nexAccount: HydratedNEXAccountDocument;
