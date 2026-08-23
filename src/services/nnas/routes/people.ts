@@ -149,12 +149,84 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
+	// TODO - Centralize this somewhere. Currently these same checks are being done in the gRPC and API service as well
+	if (!person.user_id) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'userId',
+					code: '1104',
+					message: 'User ID format is not valid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!PNID_VALID_CHARACTERS_REGEX.test(person.user_id)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'userId',
+					code: '1104',
+					message: 'User ID format is not valid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (PNID_PUNCTUATION_START_REGEX.test(person.user_id)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'userId',
+					code: '1104',
+					message: 'User ID format is not valid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (PNID_PUNCTUATION_END_REGEX.test(person.user_id)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'userId',
+					code: '1104',
+					message: 'User ID format is not valid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (PNID_PUNCTUATION_DUPLICATE_REGEX.test(person.user_id)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'userId',
+					code: '1104',
+					message: 'User ID format is not valid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const userExists = await doesPNIDExist(person.user_id);
 
 	if (userExists) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
+					cause: 'userId',
 					code: '0100',
 					message: 'Account ID already exists'
 				}
@@ -163,6 +235,21 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 
 		return;
 	}
+
+	// TODO - Check username for blacklisted words. See https://github.com/PretendoNetwork/ngword
+	// * if (usernameIsBad) {
+	// * 	response.status(400).send(xmlbuilder.create({
+	// * 		errors: {
+	// * 			error: {
+	// * 				cause: 'userId',
+	// * 				code: '0101',
+	// * 				message: 'Account ID is not acceptable'
+	// * 			}
+	// * 		}
+	// * 	}).end());
+	// *
+	// * 	return;
+	// * }
 
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid: HydratedPNIDDocument;
