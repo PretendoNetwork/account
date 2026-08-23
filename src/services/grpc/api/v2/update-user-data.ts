@@ -34,13 +34,13 @@ export async function updateUserData(
 		if (!['prod', 'test', 'dev'].includes(serverAccessLevel)) {
 			throw new ServerError(
 				Status.INVALID_ARGUMENT,
-				`Must be one of: prod, test, dev`
+				'Must be one of: prod, test, dev'
 			);
 		}
 
 		if (serverAccessLevel === 'prod') {
 			if (pnid.access_level < 0) {
-				throw new ServerError(Status.PERMISSION_DENIED, `Banned`);
+				throw new ServerError(Status.PERMISSION_DENIED, 'Banned');
 			}
 
 			pnid.server_access_level = serverAccessLevel;
@@ -50,7 +50,7 @@ export async function updateUserData(
 			if (pnid.access_level < 1) {
 				throw new ServerError(
 					Status.INVALID_ARGUMENT,
-					`Do not have permission to enter this environment`
+					'Do not have permission to enter this environment'
 				);
 			}
 
@@ -61,7 +61,7 @@ export async function updateUserData(
 			if (pnid.access_level < 3) {
 				throw new ServerError(
 					Status.INVALID_ARGUMENT,
-					`Do not have permission to enter this environment`
+					'Do not have permission to enter this environment'
 				);
 			}
 
@@ -73,7 +73,7 @@ export async function updateUserData(
 		if (!isValidBirthday(birthday)) {
 			throw new ServerError(
 				Status.INVALID_ARGUMENT,
-				`Must be a valid date formatted as: YYYY-MM-DD`
+				'Must be a valid date formatted as: YYYY-MM-DD'
 			);
 		}
 
@@ -84,7 +84,7 @@ export async function updateUserData(
 		if (!['M', 'F'].includes(gender)) {
 			throw new ServerError(
 				Status.INVALID_ARGUMENT,
-				`Must be one of: F, M`
+				'Must be one of: F, M'
 			);
 		}
 
@@ -98,7 +98,7 @@ export async function updateUserData(
 		if (!countryObj || !regionObj) {
 			throw new ServerError(
 				Status.INVALID_ARGUMENT,
-				`Invalid region`
+				'Invalid region'
 			);
 		}
 
@@ -115,7 +115,7 @@ export async function updateUserData(
 		);
 
 		if (!newTimezone) {
-			throw new ServerError(Status.INVALID_ARGUMENT, `Invalid timezone`);
+			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid timezone');
 		}
 
 		pnid.timezone.name = newTimezone.area;
@@ -134,7 +134,7 @@ export async function updateUserData(
 				data: parsedMii.encode().toString('base64')
 			});
 		} catch {
-			throw new ServerError(Status.INVALID_ARGUMENT, `Invalid mii data`);
+			throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid mii data');
 		}
 	}
 
