@@ -65,7 +65,23 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
+	// TODO - Eventually replace this with Zod probably. Just doing the old fashioned way for now
 	const person: Person = request.body.person;
+
+	if (!person) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const age = getAgeFromDate(person.birth_date);
 
 	if (age < 18) {
