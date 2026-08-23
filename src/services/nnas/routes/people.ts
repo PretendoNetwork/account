@@ -468,6 +468,20 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
+	if (!person.marketing_flag || !(['Y', 'N'].includes(person.marketing_flag))) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'marketingFlag',
+					code: '0002',
+					message: 'marketingFlag format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid: HydratedPNIDDocument;
 	let nexAccount: HydratedNEXAccountDocument;
