@@ -6,7 +6,7 @@ import moment from 'moment';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import { deviceRatelimit } from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
-import { isValidBirthday, getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import { isValidBirthday, getAgeFromDate, isObject, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -380,7 +380,36 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
-	// TODO - Do we want to check if it's valid here? That kinda already gets handled below
+	// TODO - Do we want to check if the timezone valid here? That kinda already gets handled below
+
+	if (!person.email || !isObject(person.email)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'email',
+					code: '0103',
+					message: 'Email format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// TODO - I could not care less about doing proper email validation ngl. I'm not touching that nightmare right now
+	if (!person.email.address || !person.email.address.includes('@')) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'address',
+					code: '0103',
+					message: 'Email format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
 
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid: HydratedPNIDDocument;

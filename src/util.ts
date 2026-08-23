@@ -333,6 +333,10 @@ export async function setupScheduledTasks(): Promise<void> {
 	scheduledTask('0 2 * * *', 'check-account-deletions', checkMarkedDeletions);
 }
 
+export function isObject(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function scheduledTask(schedule: string, name: string, fn: () => void | Promise<void>): void {
 	CronJob.from({
 		cronTime: schedule,
