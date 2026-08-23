@@ -366,6 +366,22 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
+	if (!person.tz_name) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'timezone',
+					code: '0002',
+					message: 'language format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// TODO - Do we want to check if it's valid here? That kinda already gets handled below
+
 	const creationDate = moment().format('YYYY-MM-DDTHH:MM:SS');
 	let pnid: HydratedPNIDDocument;
 	let nexAccount: HydratedNEXAccountDocument;
