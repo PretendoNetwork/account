@@ -3,6 +3,7 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
+import Mii from 'mii-js';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import { deviceRatelimit } from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
@@ -475,6 +476,60 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 					cause: 'marketingFlag',
 					code: '0002',
 					message: 'marketingFlag format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// * This is what the official server does, I don't have a proper error code here so I'm just emulating.
+	// * I know this isn't what our server would actually do
+	if (!person.mii || !isObject(person.mii)) {
+		response.status(500).send('HV000028: Unexpected exception during isValid call.').end();
+
+		return;
+	}
+
+	// TODO - I don't actually know the rules of Mii names outside of the character limit? Figure that out and add them here
+	if (!person.mii.name || person.mii.name.length > 10) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'miiName',
+					code: '0002',
+					message: 'miiName format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.mii.data) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'data',
+					code: '0002',
+					message: 'data format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	try {
+		// * This runs the decode and validate functions internally, so we just need to catch the potential error
+		new Mii(person.mii.data);
+	} catch {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'data',
+					code: '0002',
+					message: 'data format is invalid'
 				}
 			}
 		}).end());
