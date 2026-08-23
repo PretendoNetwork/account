@@ -6,7 +6,20 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { nintendoPasswordHash, sendConfirmationEmail } from '@/util';
+import {
+	checkNNIDUsernameMinLength,
+	checkNNIDUsernameMaxLength,
+	checkNNIDUsernameValidCharacters,
+	checkNNIDUsernamePunctuationStart,
+	checkNNIDUsernamePunctuationEnd,
+	checkNNIDUsernameDuplicate,
+	checkNNIDPasswordMinLength,
+	checkNNIDPasswordMaxLength,
+	checkNNIDPasswordAtLeast2CharacterGroups,
+	checkNNIDPasswordRepeatCharacters,
+	nintendoPasswordHash,
+	sendConfirmationEmail
+} from '@/util';
 import { LOG_ERROR } from '@/logger';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -18,17 +31,6 @@ import type { LoginResponse } from '@pretendonetwork/grpc/api/login_rpc';
 import type { RegisterRequest, DeepPartial } from '@pretendonetwork/grpc/api/register_rpc';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
-
-const PNID_VALID_CHARACTERS_REGEX = /^[\w\-.]*$/;
-const PNID_PUNCTUATION_START_REGEX = /^[_\-.]/;
-const PNID_PUNCTUATION_END_REGEX = /[_\-.]$/;
-const PNID_PUNCTUATION_DUPLICATE_REGEX = /[_\-.]{2,}/;
-
-// * This sucks
-const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
-const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
-const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
-const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
 
 const DEFAULT_MII_DATA = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9', 'base64');
 
@@ -65,27 +67,27 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Must enter a username');
 	}
 
-	if (username.length < 6) {
+	if (!checkNNIDUsernameMinLength(username)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Username is too short');
 	}
 
-	if (username.length > 16) {
+	if (!checkNNIDUsernameMaxLength(username)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Username is too long');
 	}
 
-	if (!PNID_VALID_CHARACTERS_REGEX.test(username)) {
+	if (!checkNNIDUsernameValidCharacters(username)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Username contains invalid characters');
 	}
 
-	if (PNID_PUNCTUATION_START_REGEX.test(username)) {
+	if (!checkNNIDUsernamePunctuationStart(username)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Username cannot begin with punctuation characters');
 	}
 
-	if (PNID_PUNCTUATION_END_REGEX.test(username)) {
+	if (!checkNNIDUsernamePunctuationEnd(username)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Username cannot end with punctuation characters');
 	}
 
-	if (PNID_PUNCTUATION_DUPLICATE_REGEX.test(username)) {
+	if (!checkNNIDUsernameDuplicate(username)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Two or more punctuation characters cannot be used in a row');
 	}
 
@@ -109,7 +111,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Must enter a password');
 	}
 
-	if (password.length < 6 || password.length > 16) {
+	if (!checkNNIDPasswordMinLength(password) || !checkNNIDPasswordMaxLength(password)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Password must be between 6 and 16 characters long');
 	}
 
@@ -117,11 +119,11 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Password cannot be the same as username');
 	}
 
-	if (!PASSWORD_WORD_OR_NUMBER_REGEX.test(password) && !PASSWORD_WORD_OR_PUNCTUATION_REGEX.test(password) && !PASSWORD_NUMBER_OR_PUNCTUATION_REGEX.test(password)) {
+	if (!checkNNIDPasswordAtLeast2CharacterGroups(password)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Password must have combination of letters, numbers, and/or punctuation characters');
 	}
 
-	if (PASSWORD_REPEATED_CHARACTER_REGEX.test(password)) {
+	if (!checkNNIDPasswordRepeatCharacters(password)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Password may not have 3 repeating characters');
 	}
 

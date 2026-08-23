@@ -7,7 +7,7 @@ import Mii from 'mii-js';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import { deviceRatelimit } from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
-import { isValidBirthday, getAgeFromDate, isObject, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import { isValidBirthday, getAgeFromDate, checkNNIDUsernameValid, checkNNIDPasswordValid, isObject, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -17,17 +17,6 @@ import regions from '@/services/nnas/regions.json';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { Person } from '@/types/services/nnas/person';
-
-const PNID_VALID_CHARACTERS_REGEX = /^[\w\-.]*$/;
-const PNID_PUNCTUATION_START_REGEX = /^[_\-.]/;
-const PNID_PUNCTUATION_END_REGEX = /[_\-.]$/;
-const PNID_PUNCTUATION_DUPLICATE_REGEX = /[_\-.]{2,}/;
-
-// * This sucks
-const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
-const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
-const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
-const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
 
 // * Taken from https://github.com/cemu-project/Cemu/blob/5ead58008dd984f614e2cb38bd9cb69bd77fd1bb/src/Cemu/ncrypto/ncrypto.cpp#L825
 // * which Cemu uses to build it's AuthInfo struct, which is what is used to populate the X-Nintendo-Country header.
@@ -311,64 +300,7 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
-	// TODO - Centralize this somewhere. Currently these same checks are being done in the gRPC and API service as well
-	if (!person.user_id) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
-					cause: 'userId',
-					code: '1104',
-					message: 'User ID format is not valid'
-				}
-			}
-		}).end());
-
-		return;
-	}
-
-	if (!PNID_VALID_CHARACTERS_REGEX.test(person.user_id)) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
-					cause: 'userId',
-					code: '1104',
-					message: 'User ID format is not valid'
-				}
-			}
-		}).end());
-
-		return;
-	}
-
-	if (PNID_PUNCTUATION_START_REGEX.test(person.user_id)) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
-					cause: 'userId',
-					code: '1104',
-					message: 'User ID format is not valid'
-				}
-			}
-		}).end());
-
-		return;
-	}
-
-	if (PNID_PUNCTUATION_END_REGEX.test(person.user_id)) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
-					cause: 'userId',
-					code: '1104',
-					message: 'User ID format is not valid'
-				}
-			}
-		}).end());
-
-		return;
-	}
-
-	if (PNID_PUNCTUATION_DUPLICATE_REGEX.test(person.user_id)) {
+	if (!person.user_id || !checkNNIDUsernameValid(person.user_id)) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
@@ -413,50 +345,7 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 	// * 	return;
 	// * }
 
-	// TODO - Centralize this somewhere, all the same error
-	if (!person.password) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
-					cause: 'password',
-					code: '0002',
-					message: 'password format is invalid'
-				}
-			}
-		}).end());
-
-		return;
-	}
-
-	if (person.password.length < 6 || person.password.length > 16) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
-					cause: 'password',
-					code: '0002',
-					message: 'password format is invalid'
-				}
-			}
-		}).end());
-
-		return;
-	}
-
-	if (!PASSWORD_WORD_OR_NUMBER_REGEX.test(person.password) && !PASSWORD_WORD_OR_PUNCTUATION_REGEX.test(person.password) && !PASSWORD_NUMBER_OR_PUNCTUATION_REGEX.test(person.password)) {
-		response.status(400).send(xmlbuilder.create({
-			errors: {
-				error: {
-					cause: 'password',
-					code: '0002',
-					message: 'password format is invalid'
-				}
-			}
-		}).end());
-
-		return;
-	}
-
-	if (PASSWORD_REPEATED_CHARACTER_REGEX.test(person.password)) {
+	if (!person.password || !checkNNIDPasswordValid(person.password)) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
