@@ -12,6 +12,7 @@ import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
 import timezones from '@/services/nnas/timezones.json';
+import regions from '@/services/nnas/regions.json';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { Person } from '@/types/services/nnas/person';
@@ -418,6 +419,48 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 					cause: 'gender',
 					code: '0002',
 					message: 'gender format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.region) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'region',
+					code: '0002',
+					message: 'region format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// * Not bothering with a NaN check here because the loop catches that, NaN will never match
+	const targetRegion = Number(person.region);
+	let validRegion = false;
+
+	countryLoop: for (const country of regions) {
+		for (const region of country.regions) {
+			if (region.id === targetRegion) {
+				validRegion = true;
+
+				break countryLoop;
+			}
+		}
+	}
+
+	if (!validRegion) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'region',
+					code: '0002',
+					message: 'region format is invalid'
 				}
 			}
 		}).end());
