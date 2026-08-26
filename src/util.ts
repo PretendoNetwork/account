@@ -299,6 +299,20 @@ export function isValidBirthday(dateString: string): boolean {
 	const month = parseInt(parts[1], 10);
 	const day = parseInt(parts[2], 10);
 
+	const today = new Date();
+	const currentYear = today.getFullYear();
+	const currentMonth = today.getMonth() + 1;
+	const currentDay = today.getDate();
+
+	// Check that date isn't in the future
+	if (currentYear < year && currentMonth < month && currentDay < day) {
+		return false;
+	}
+
+	if (year < 1900) {
+		return false;
+	}
+
 	const date = new Date(year, month - 1, day);
 
 	return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
