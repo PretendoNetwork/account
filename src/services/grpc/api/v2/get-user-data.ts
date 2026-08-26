@@ -28,6 +28,7 @@ export async function getUserData(_request: Empty, context: CallContext & Authen
 		timezone: pnid.timezone.name,
 		language: pnid.language,
 		emailAddress: pnid.email.address,
+		emailValidated: pnid.email.validated,
 		connections: {
 			discord: {
 				id: pnid.connections.discord.id

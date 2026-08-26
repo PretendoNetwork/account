@@ -160,6 +160,7 @@ export async function updateUserData(
 		timezone: pnid.timezone.name,
 		language: pnid.language,
 		emailAddress: pnid.email.address,
+		emailValidated: pnid.email.validated,
 		connections: {
 			discord: {
 				id: pnid.connections.discord.id

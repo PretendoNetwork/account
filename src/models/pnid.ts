@@ -16,6 +16,7 @@ import { IndependentServiceToken } from '@/models/independent-service-token';
 import { NEXToken } from '@/models/nex-token';
 import { OAuthToken } from '@/models/oauth-token';
 import { PasswordResetToken } from '@/models/password-reset-token';
+import { EmailUpdateEventSchema } from '@/models/email-update-event';
 import type { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 import type { PNIDPermissionFlag } from '@/types/common/permission-flags';
 
@@ -82,7 +83,8 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		reachable: Boolean,
 		validated: Boolean,
 		validated_date: String,
-		id: Number
+		id: Number,
+		history: [EmailUpdateEventSchema]
 	},
 	region: Number,
 	timezone: {
