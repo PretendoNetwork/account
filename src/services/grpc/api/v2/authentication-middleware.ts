@@ -10,7 +10,8 @@ const TOKEN_REQUIRED_PATHS = [
 	'/api.v2.ApiService/ResetPassword', // * This paths token is not an authentication token, it is a password reset token
 	'/api.v2.ApiService/SetDiscordConnectionData',
 	'/api.v2.ApiService/SetStripeConnectionData',
-	'/api.v2.ApiService/RemoveConnection'
+	'/api.v2.ApiService/RemoveConnection',
+	'/api.v2.ApiService/UpdateEmail'
 ];
 
 export type AuthenticationCallContextExt = {

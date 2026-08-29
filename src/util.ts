@@ -129,8 +129,8 @@ export function nascError(errorCode: string): URLSearchParams {
 export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const email = new CreateEmail()
 		.addHeader('Hello {{pnid}}!', { pnid: pnid.username })
-		.addParagraph('Your <b>Pretendo Network ID</b> activation is almost complete. Please click the link below to confirm your e-mail address and complete the activation process.')
-		.addButton('Confirm email address', `https://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token}`)
+		.addParagraph('Please click the link below to confirm your e-mail address.')
+		.addButton('Confirm email address', `${config.website_base}/account/verify-email?token=${pnid.identification.email_token}`)
 		.addParagraph('You may also enter the following 6-digit code on your console:')
 		.addButton(pnid.identification.email_code, '', false)
 		.addParagraph('We hope you have fun using our services!');
@@ -145,18 +145,36 @@ export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNI
 }
 
 export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
-	const email = new CreateEmail()
+	const noticeEmail = new CreateEmail()
 		.addHeader('Dear {{pnid}}!', { pnid: pnid.username })
 		.addParagraph('Your email address has been confirmed.')
 		.addParagraph('We hope you have fun on Pretendo Network!');
 
-	const options = {
+	const noticeOptions = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Email address confirmed',
-		email
+		email: noticeEmail
 	};
 
-	await sendMail(options);
+	await sendMail(noticeOptions);
+
+	if (pnid.email.history.length > 0) {
+		// we can just grab the latest email update event, since it's guaranteed to be the relevant one (or the tokens wouldn't be valid)
+		const emailUpdateEvent = pnid.email.history[0];
+
+		const warningEmail = new CreateEmail()
+			.addHeader('Dear {{pnid}},', { pnid: pnid.username })
+			.addParagraph('your email address has been changed.')
+			.addParagraph('If this wasn\'t you, contact [support@pretendo.network](mailto:support@pretendo.network).');
+
+		const warningOptions = {
+			to: emailUpdateEvent.old,
+			subject: '[Pretendo Network] Email address changed',
+			email: warningEmail
+		};
+
+		await sendMail(warningOptions);
+	}
 }
 
 export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
@@ -191,7 +209,7 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 	const email = new CreateEmail()
 		.addHeader('Dear {{pnid}},', { pnid: pnid.username })
 		.addParagraph('a password reset has been requested from this account.')
-		.addParagraph('If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.')
+		.addParagraph('If you did not request the password reset, please ignore this email. Otherwise, please click the link below to reset your password.')
 		.addButton('Reset password', `${config.website_base}/account/reset-password?token=${encodeURIComponent(token)}`);
 
 	const mailerOptions = {

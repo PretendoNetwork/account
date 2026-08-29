@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import imagePixels from 'image-pixels';
 import TGA from 'tga';
@@ -16,8 +16,10 @@ import { IndependentServiceToken } from '@/models/independent-service-token';
 import { NEXToken } from '@/models/nex-token';
 import { OAuthToken } from '@/models/oauth-token';
 import { PasswordResetToken } from '@/models/password-reset-token';
+import { EmailUpdateEventSchema } from '@/models/email-update-event';
 import type { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 import type { PNIDPermissionFlag } from '@/types/common/permission-flags';
+import type { IEmailUpdateEvent } from '@/types/mongoose/email-update-event';
 
 let stripe: Stripe;
 
@@ -82,7 +84,8 @@ const PNIDSchema = new Schema<IPNID, PNIDModel, IPNIDMethods>({
 		reachable: Boolean,
 		validated: Boolean,
 		validated_date: String,
-		id: Number
+		id: Number,
+		history: [EmailUpdateEventSchema]
 	},
 	region: Number,
 	timezone: {
@@ -350,6 +353,7 @@ PNIDSchema.method('scrub', async function scrub() {
 	this.email.reachable = false;
 	this.email.validated = false;
 	this.email.validated_date = '';
+	this.email.history = new Types.DocumentArray<IEmailUpdateEvent>([]);
 	this.email.id = 0;
 	this.region = 0;
 	this.timezone.name = '';

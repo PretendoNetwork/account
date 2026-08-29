@@ -735,6 +735,8 @@ router.put('/@me/emails/@primary', async (request: express.Request, response: ex
 		return;
 	}
 
+	pnid.email.history.unshift({ old: pnid.email.address, new: email.address.toLowerCase(), on: new Date() });
+
 	// TODO - Better email check
 	pnid.email.address = email.address.toLowerCase();
 	pnid.email.reachable = false;

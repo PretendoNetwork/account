@@ -10,7 +10,7 @@ import type {
 	DeepPartial
 } from '@pretendonetwork/grpc/api/v2/update_user_data_rpc';
 import type { GetUserDataResponse } from '@pretendonetwork/grpc/api/v2/get_user_data_rpc';
-import type { AuthenticationCallContextExt } from '@/services/grpc/api/v1/authentication-middleware';
+import type { AuthenticationCallContextExt } from '@/services/grpc/api/v2/authentication-middleware';
 
 export async function updateUserData(
 	request: UpdateUserDataRequest,
@@ -160,6 +160,7 @@ export async function updateUserData(
 		timezone: pnid.timezone.name,
 		language: pnid.language,
 		emailAddress: pnid.email.address,
+		emailValidated: pnid.email.validated,
 		connections: {
 			discord: {
 				id: pnid.connections.discord.id
