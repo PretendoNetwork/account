@@ -19,7 +19,7 @@ import { PasswordResetToken } from '@/models/password-reset-token';
 import { EmailUpdateEventSchema } from '@/models/email-update-event';
 import type { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 import type { PNIDPermissionFlag } from '@/types/common/permission-flags';
-import { IEmailUpdateEvent } from '@/types/mongoose/email-update-event';
+import type { IEmailUpdateEvent } from '@/types/mongoose/email-update-event';
 
 let stripe: Stripe;
 
