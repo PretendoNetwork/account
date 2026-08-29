@@ -352,6 +352,7 @@ PNIDSchema.method('scrub', async function scrub() {
 	this.email.reachable = false;
 	this.email.validated = false;
 	this.email.validated_date = '';
+	this.email.history.splice(0);
 	this.email.id = 0;
 	this.region = 0;
 	this.timezone.name = '';
