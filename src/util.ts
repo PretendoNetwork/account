@@ -35,6 +35,88 @@ if (!disabledFeatures.s3) {
 	});
 }
 
+const NNID_VALID_CHARACTERS_REGEX = /^[\w\-.]*$/;
+const NNID_PUNCTUATION_START_REGEX = /^[_\-.]/;
+const NNID_PUNCTUATION_END_REGEX = /[_\-.]$/;
+const NNID_PUNCTUATION_DUPLICATE_REGEX = /[_\-.]{2,}/;
+
+// * This sucks
+const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
+const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
+const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
+const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
+
+// * Checks if the input NNID username passes all validation rules
+export function checkNNIDUsernameValid(username: string): boolean {
+	return checkNNIDUsernameLength(username) && checkNNIDUsernameValidCharacters(username) && checkNNIDUsernamePunctuationStart(username) && checkNNIDUsernamePunctuationEnd(username) && checkNNIDUsernameDuplicate(username);
+}
+
+// * Ensures the NNID username meets the expected size requirements
+export function checkNNIDUsernameLength(username: string): boolean {
+	return checkNNIDUsernameMinLength(username) && checkNNIDUsernameMaxLength(username);
+}
+
+// * Ensures the NNID username is at least 6 characters long
+export function checkNNIDUsernameMinLength(username: string): boolean {
+	return username.length >= 6;
+}
+
+// * Ensures the NNID username is at most 16 characters long
+export function checkNNIDUsernameMaxLength(username: string): boolean {
+	return username.length <= 16;
+}
+
+// * Ensures the NNID username only contains valid characters
+export function checkNNIDUsernameValidCharacters(username: string): boolean {
+	return NNID_VALID_CHARACTERS_REGEX.test(username);
+}
+
+// * Ensures the NNID username does not start with a punctuation character
+export function checkNNIDUsernamePunctuationStart(username: string): boolean {
+	return !NNID_PUNCTUATION_START_REGEX.test(username);
+}
+
+// * Ensures the NNID username does not end with a punctuation character
+export function checkNNIDUsernamePunctuationEnd(username: string): boolean {
+	return !NNID_PUNCTUATION_END_REGEX.test(username);
+}
+
+// * Ensures the NNID username does not use a punctuation character more than twice in a row
+export function checkNNIDUsernameDuplicate(username: string): boolean {
+	return !NNID_PUNCTUATION_DUPLICATE_REGEX.test(username);
+}
+
+// * Checks if the input NNID password passes all validation rules
+export function checkNNIDPasswordValid(password: string): boolean {
+	return checkNNIDPasswordLength(password) && checkNNIDPasswordAtLeast2CharacterGroups(password) && checkNNIDPasswordRepeatCharacters(password);
+}
+
+// * Ensures the NNID password meets the expected size requirements
+export function checkNNIDPasswordLength(password: string): boolean {
+	return checkNNIDPasswordMinLength(password) && checkNNIDPasswordMaxLength(password);
+}
+
+// * Ensures the NNID password is at least 6 characters long
+export function checkNNIDPasswordMinLength(password: string): boolean {
+	return password.length >= 6;
+}
+
+// * Ensures the NNID password is at most 16 characters long
+export function checkNNIDPasswordMaxLength(password: string): boolean {
+	return password.length <= 16;
+}
+
+// * Ensures the NNID password has a mix of letters, numbers, and/or punctuation characters.
+// * Passwords must contain letters from at least 2 of the 3 groups (letters, numbers, and punctuation)
+export function checkNNIDPasswordAtLeast2CharacterGroups(password: string): boolean {
+	return PASSWORD_WORD_OR_NUMBER_REGEX.test(password) || PASSWORD_WORD_OR_PUNCTUATION_REGEX.test(password) || PASSWORD_NUMBER_OR_PUNCTUATION_REGEX.test(password);
+}
+
+// * Ensures the NNID password does not have 3 or more repeating characters
+export function checkNNIDPasswordRepeatCharacters(password: string): boolean {
+	return PASSWORD_REPEATED_CHARACTER_REGEX.test(password);
+}
+
 export function nintendoPasswordHash(password: string, pid: number): string {
 	const pidBuffer = Buffer.alloc(4);
 	pidBuffer.writeUInt32LE(pid);
@@ -363,6 +445,10 @@ export function getAgeFromDate(dateString: string): number {
 
 export async function setupScheduledTasks(): Promise<void> {
 	scheduledTask('0 2 * * *', 'check-account-deletions', checkMarkedDeletions);
+}
+
+export function isObject(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function scheduledTask(schedule: string, name: string, fn: () => void | Promise<void>): void {

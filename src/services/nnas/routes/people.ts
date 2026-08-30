@@ -3,18 +3,180 @@ import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
 import moment from 'moment';
+import Mii from 'mii-js';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import { deviceRatelimit } from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
-import { getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import { isValidBirthday, getAgeFromDate, checkNNIDUsernameValid, checkNNIDPasswordValid, isObject, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
 import { LOG_ERROR } from '@/logger';
 import timezones from '@/services/nnas/timezones.json';
+import regions from '@/services/nnas/regions.json';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { Person } from '@/types/services/nnas/person';
+
+// * Taken from https://github.com/cemu-project/Cemu/blob/5ead58008dd984f614e2cb38bd9cb69bd77fd1bb/src/Cemu/ncrypto/ncrypto.cpp#L825
+// * which Cemu uses to build it's AuthInfo struct, which is what is used to populate the X-Nintendo-Country header.
+// * This header uses the same values as the "country" field in the NNID account data. Assumed to be correct
+const ALLOWED_ACCOUNT_COUNTRIES = [
+	'JP',
+	'AI',
+	'AG',
+	'AR',
+	'AW',
+	'BS',
+	'BB',
+	'BZ',
+	'BO',
+	'BR',
+	'VG',
+	'CA',
+	'KY',
+	'CL',
+	'CO',
+	'CR',
+	'DM',
+	'DO',
+	'EC',
+	'SV',
+	'GF',
+	'GD',
+	'GP',
+	'GT',
+	'GY',
+	'HT',
+	'HN',
+	'JM',
+	'MQ',
+	'MX',
+	'MS',
+	'AN',
+	'NI',
+	'PA',
+	'PY',
+	'PE',
+	'KN',
+	'LC',
+	'VC',
+	'SR',
+	'TT',
+	'TC',
+	'US',
+	'UY',
+	'VI',
+	'VE',
+	'AL',
+	'AU',
+	'AT',
+	'BE',
+	'BA',
+	'BW',
+	'BG',
+	'HR',
+	'CY',
+	'CZ',
+	'DK',
+	'EE',
+	'FI',
+	'FR',
+	'DE',
+	'GR',
+	'HU',
+	'IS',
+	'IE',
+	'IT',
+	'LV',
+	'LS',
+	'LI',
+	'LT',
+	'LU',
+	'MK',
+	'MT',
+	'ME',
+	'MZ',
+	'NA',
+	'NL',
+	'NZ',
+	'NO',
+	'PL',
+	'PT',
+	'RO',
+	'RU',
+	'RS',
+	'SK',
+	'SI',
+	'ZA',
+	'ES',
+	'SZ',
+	'SE',
+	'CH',
+	'TR',
+	'GB',
+	'ZM',
+	'ZW',
+	'AZ',
+	'MR',
+	'ML',
+	'NE',
+	'TD',
+	'SD',
+	'ER',
+	'DJ',
+	'SO',
+	'AD',
+	'GI',
+	'GG',
+	'IM',
+	'JE',
+	'MC',
+	'TW',
+	'KR',
+	'HK',
+	'MO',
+	'ID',
+	'SG',
+	'TH',
+	'PH',
+	'MY',
+	'CN',
+	'AE',
+	'EG',
+	'OM',
+	'QA',
+	'KW',
+	'SA',
+	'SY',
+	'BH',
+	'JO',
+	'SM',
+	'VA',
+	'BM',
+	'IN',
+	'NG',
+	'AO',
+	'GH'
+];
+
+// * This SEEMS to be derived from the known languages in the timezone list,
+// * which lines up with the typical set of languages we see Nintendo use
+// * https://nintendo.wiki/wiki/Online/Nintendo_Network/IDBE#Languages
+const ALLOWED_ACCOUNT_LANGUAGES = [
+	'ja',
+	'en',
+	'fr',
+	'de',
+	'it',
+	'es',
+	// * Likely simplified Chinese, but we haven't seen this in practice
+	// * Likely Korean, but we haven't seen this in practice
+	'nl',
+	'pt',
+	'ru'
+	// * Likely traditional Chinese, but we haven't seen this in practice
+];
 
 const router = express.Router();
 
@@ -65,7 +227,37 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
+	// TODO - Eventually replace this with Zod probably. Just doing the old fashioned way for now
 	const person: Person = request.body.person;
+
+	if (!person) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'Bad Request',
+					code: '1600',
+					message: 'Unable to process request'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.birth_date || !isValidBirthday(person.birth_date)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'birthDate',
+					code: '0002',
+					message: 'birthDate format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const age = getAgeFromDate(person.birth_date);
 
 	if (age < 18) {
@@ -108,14 +300,283 @@ router.post('/', deviceRatelimit, deviceCertificateMiddleware, async (request: e
 		return;
 	}
 
+	if (!person.user_id || !checkNNIDUsernameValid(person.user_id)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'userId',
+					code: '1104',
+					message: 'User ID format is not valid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
 	const userExists = await doesPNIDExist(person.user_id);
 
 	if (userExists) {
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
+					cause: 'userId',
 					code: '0100',
 					message: 'Account ID already exists'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// TODO - Check username for blacklisted words. See https://github.com/PretendoNetwork/ngword
+	// * if (usernameIsBad) {
+	// * 	response.status(400).send(xmlbuilder.create({
+	// * 		errors: {
+	// * 			error: {
+	// * 				cause: 'userId',
+	// * 				code: '0101',
+	// * 				message: 'Account ID is not acceptable'
+	// * 			}
+	// * 		}
+	// * 	}).end());
+	// *
+	// * 	return;
+	// * }
+
+	if (!person.password || !checkNNIDPasswordValid(person.password)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'password',
+					code: '0002',
+					message: 'password format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (person.password.toLowerCase() === person.user_id.toLowerCase()) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'password',
+					code: '1107',
+					message: 'Password cannot be the same as User ID'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.country || !ALLOWED_ACCOUNT_COUNTRIES.includes(person.country)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'country',
+					code: '0002',
+					message: 'country format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// TODO - I think region locking is a stupid idea here, but in case we ever want it here it is
+	// * if (person.country does not match console country header/etc.) {
+	// * 	response.status(400).send(xmlbuilder.create({
+	// * 		errors: {
+	// * 			error: {
+	// * 				code: '0107',
+	// * 				message: 'Account country and device country do not match'
+	// * 			}
+	// * 		}
+	// * 	}).end());
+	// *
+	// * 	return;
+	// * }
+
+	if (!person.language || !ALLOWED_ACCOUNT_LANGUAGES.includes(person.language)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'language',
+					code: '0002',
+					message: 'language format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.tz_name) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'timezone',
+					code: '0002',
+					message: 'language format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// TODO - Do we want to check if the timezone valid here? That kinda already gets handled below
+
+	if (!person.email || !isObject(person.email)) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'email',
+					code: '0103',
+					message: 'Email format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// TODO - I could not care less about doing proper email validation ngl. I'm not touching that nightmare right now
+	if (!person.email.address || !person.email.address.includes('@')) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'address',
+					code: '0103',
+					message: 'Email format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.gender || !(['M', 'F'].includes(person.gender))) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'gender',
+					code: '0002',
+					message: 'gender format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.region) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'region',
+					code: '0002',
+					message: 'region format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// * Not bothering with a NaN check here because the loop catches that, NaN will never match
+	const targetRegion = Number(person.region);
+	let validRegion = false;
+
+	countryLoop: for (const country of regions) {
+		for (const region of country.regions) {
+			if (region.id === targetRegion) {
+				validRegion = true;
+
+				break countryLoop;
+			}
+		}
+	}
+
+	if (!validRegion) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'region',
+					code: '0002',
+					message: 'region format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.marketing_flag || !(['Y', 'N'].includes(person.marketing_flag))) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'marketingFlag',
+					code: '0002',
+					message: 'marketingFlag format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// * This is what the official server does, I don't have a proper error code here so I'm just emulating.
+	// * I know this isn't what our server would actually do
+	if (!person.mii || !isObject(person.mii)) {
+		response.status(500).send('HV000028: Unexpected exception during isValid call.').end();
+
+		return;
+	}
+
+	// TODO - I don't actually know the rules of Mii names outside of the character limit? Figure that out and add them here
+	if (!person.mii.name || person.mii.name.length > 10) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'miiName',
+					code: '0002',
+					message: 'miiName format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	if (!person.mii.data) {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'data',
+					code: '0002',
+					message: 'data format is invalid'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	try {
+		// * This runs the decode and validate functions internally, so we just need to catch the potential error
+		new Mii(person.mii.data);
+	} catch {
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					cause: 'data',
+					code: '0002',
+					message: 'data format is invalid'
 				}
 			}
 		}).end());
