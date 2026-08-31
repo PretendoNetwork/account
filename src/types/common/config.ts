@@ -75,4 +75,5 @@ export interface Config {
 		api_key: string;
 		api_username: string;
 	};
+	uidhmac_key: string;
 }
