@@ -144,6 +144,9 @@ PNIDSchema.index({ 'pid': 1, 'username': 1, 'connections.discord.id': 1 });
 
 PNIDSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
 
+// * Used by metrics
+PNIDSchema.index({ deleted: 1 });
+
 /*
 	According to http://pf2m.com/tools/rank.php Nintendo PID's start at 1,800,000,000 and count down with each account
 	This means the max PID is 1799999999 and hard-limits the number of potential accounts to 1,800,000,000
