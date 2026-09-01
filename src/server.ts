@@ -19,6 +19,7 @@ import assets from '@/services/assets';
 import healthz from '@/services/healthz';
 import { config, disabledFeatures } from '@/config-manager';
 import { startProvisioner } from '@/provisioning';
+import { listenMetrics, registerMetrics } from '@/metrics';
 
 process.title = 'Pretendo - Account';
 process.on('uncaughtException', (err, origin) => {
@@ -30,6 +31,9 @@ process.on('SIGTERM', () => {
 });
 
 const app = express();
+
+// * Metrics has to happen first so we can measure the other middleware
+const metricsApp = registerMetrics(app);
 
 // * START APPLICATION
 app.set('view engine', 'ejs');
@@ -124,6 +128,7 @@ async function main(): Promise<void> {
 	app.listen(config.http.port, () => {
 		LOG_SUCCESS(`HTTP server started on port ${config.http.port}`);
 	});
+	listenMetrics(metricsApp);
 }
 
 main().catch(console.error);

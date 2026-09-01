@@ -38,6 +38,10 @@ export const config: Config = {
 	http: {
 		port: Number(process.env.PN_ACT_CONFIG_HTTP_PORT || '')
 	},
+	metrics: {
+		enabled: process.env.PN_ACT_CONFIG_METRICS_ENABLED === 'true',
+		port: Number(process.env.PN_ACT_CONFIG_METRICS_PORT || '')
+	},
 	mongoose: {
 		connection_string: process.env.PN_ACT_CONFIG_MONGO_CONNECTION_STRING || '',
 		options: mongooseConnectOptions
