@@ -9,7 +9,7 @@ import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
 import { PasswordResetToken } from '@/models/password-reset-token';
-import { LOG_ERROR } from '@/logger';
+import { LOG_ERROR, LOG_SUCCESS } from '@/logger';
 import type { IncomingHttpHeaders } from 'node:http';
 import type { ParsedQs } from 'qs';
 import type mongoose from 'mongoose';
@@ -78,7 +78,7 @@ export function createServiceToken(server: HydratedServerDocument, options: Serv
 
 export function fullUrl(request: express.Request): string {
 	const protocol = request.protocol;
-	const host = request.host;
+	const host = request.hostname;
 	const opath = request.originalUrl;
 
 	return `${protocol}://${host}${opath}`;
@@ -379,5 +379,5 @@ function scheduledTask(schedule: string, name: string, fn: () => void | Promise<
 		start: true
 	});
 
-	LOG_ERROR(`Added schedule ${name} for ${schedule}`);
+	LOG_SUCCESS(`Added schedule ${name} for ${schedule}`);
 }
