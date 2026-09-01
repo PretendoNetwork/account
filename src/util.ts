@@ -9,7 +9,7 @@ import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
 import { PasswordResetToken } from '@/models/password-reset-token';
-import { LOG_ERROR } from '@/logger';
+import { LOG_ERROR, LOG_SUCCESS } from '@/logger';
 import type { IncomingHttpHeaders } from 'node:http';
 import type { ParsedQs } from 'qs';
 import type mongoose from 'mongoose';
@@ -379,5 +379,5 @@ function scheduledTask(schedule: string, name: string, fn: () => void | Promise<
 		start: true
 	});
 
-	LOG_ERROR(`Added schedule ${name} for ${schedule}`);
+	LOG_SUCCESS(`Added schedule ${name} for ${schedule}`);
 }
