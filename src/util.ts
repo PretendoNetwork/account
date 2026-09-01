@@ -78,7 +78,7 @@ export function createServiceToken(server: HydratedServerDocument, options: Serv
 
 export function fullUrl(request: express.Request): string {
 	const protocol = request.protocol;
-	const host = request.host;
+	const host = request.hostname;
 	const opath = request.originalUrl;
 
 	return `${protocol}://${host}${opath}`;
