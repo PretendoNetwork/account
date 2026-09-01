@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import xmlbuilder from 'xmlbuilder';
 import xmlparser from '@/middleware/xml-parser';
 import { connect as connectCache } from '@/cache';
-import { checkMarkedDeletions, connect as connectDatabase } from '@/database';
+import { connect as connectDatabase } from '@/database';
 import { startGRPCServer } from '@/services/grpc/server';
 import { fullUrl, getValueFromHeaders, setupScheduledTasks } from '@/util';
 import { LOG_INFO, LOG_SUCCESS, LOG_WARN } from '@/logger';
@@ -15,6 +15,7 @@ import datastore from '@/services/datastore';
 import api from '@/services/api';
 import localcdn from '@/services/local-cdn';
 import assets from '@/services/assets';
+import healthz from '@/services/healthz';
 import { config, disabledFeatures } from '@/config-manager';
 import { startProvisioner } from '@/provisioning';
 
@@ -51,6 +52,7 @@ app.use(nasc);
 app.use(api);
 app.use(localcdn);
 app.use(assets);
+app.use(healthz);
 
 if (!disabledFeatures.datastore) {
 	app.use(datastore);
