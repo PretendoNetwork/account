@@ -1,3 +1,4 @@
+import { format } from 'node:util';
 import express from 'express';
 import morgan from 'morgan';
 import xmlbuilder from 'xmlbuilder';
@@ -96,7 +97,7 @@ app.use((error: any, request: express.Request, response: express.Response, _next
 		deviceID = 'Unknown';
 	}
 
-	LOG_WARN(`HTTP ${status} at ${url} from ${deviceID}: ${error.message}`);
+	LOG_WARN(`HTTP ${status} at ${url} from ${deviceID}: ${format(error)}`);
 
 	response.status(status).json({
 		app: 'api',
