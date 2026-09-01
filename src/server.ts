@@ -116,8 +116,6 @@ async function main(): Promise<void> {
 
 	startProvisioner();
 
-	await checkMarkedDeletions();
-
 	setupScheduledTasks();
 
 	app.listen(config.http.port, () => {
