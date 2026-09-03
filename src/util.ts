@@ -177,6 +177,21 @@ export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IP
 	}
 }
 
+export async function sendPasswordResetNoticeEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
+	const noticeEmail = new CreateEmail()
+		.addHeader('Dear {{pnid}},', { pnid: pnid.username })
+		.addParagraph('your password has been changed.')
+		.addParagraph('If this wasn\'t you, contact [support@pretendo.network](mailto:support@pretendo.network).');
+
+	const noticeOptions = {
+		to: pnid.email.address,
+		subject: '[Pretendo Network] Password changed',
+		email: noticeEmail
+	};
+
+	await sendMail(noticeOptions);
+}
+
 export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const email = new CreateEmail()
 		.addHeader('Dear {{pnid}},', { pnid: pnid.username })
