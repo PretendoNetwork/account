@@ -21,7 +21,7 @@ export async function updatePassword(request: UpdatePasswordRequest,
 	const newPassword = request.newPassword.trim();
 	const newPasswordConfirm = request.newPasswordConfirm.trim();
 
-	const hashedOldPassword = nintendoPasswordHash(oldPassword!, pnid.pid); // * We know password will never be null here
+	const hashedOldPassword = nintendoPasswordHash(oldPassword, pnid.pid);
 
 	if (!bcrypt.compareSync(hashedOldPassword, pnid.password)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Password is incorrect');
