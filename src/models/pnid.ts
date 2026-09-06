@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import imagePixels from 'image-pixels';
 import TGA from 'tga';
@@ -19,6 +19,7 @@ import { PasswordResetToken } from '@/models/password-reset-token';
 import { EmailUpdateEventSchema } from '@/models/email-update-event';
 import type { IPNID, IPNIDMethods, PNIDModel } from '@/types/mongoose/pnid';
 import type { PNIDPermissionFlag } from '@/types/common/permission-flags';
+import type { IEmailUpdateEvent } from '@/types/mongoose/email-update-event';
 
 let stripe: Stripe;
 
@@ -142,6 +143,9 @@ PNIDSchema.index({ usernameLower: 1 });
 PNIDSchema.index({ 'pid': 1, 'username': 1, 'connections.discord.id': 1 });
 
 PNIDSchema.plugin(uniqueValidator, { message: '{PATH} already in use.' });
+
+// * Used by metrics
+PNIDSchema.index({ deleted: 1 });
 
 /*
 	According to http://pf2m.com/tools/rank.php Nintendo PID's start at 1,800,000,000 and count down with each account
@@ -352,6 +356,7 @@ PNIDSchema.method('scrub', async function scrub() {
 	this.email.reachable = false;
 	this.email.validated = false;
 	this.email.validated_date = '';
+	this.email.history = new Types.DocumentArray<IEmailUpdateEvent>([]);
 	this.email.id = 0;
 	this.region = 0;
 	this.timezone.name = '';
