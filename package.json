@@ -40,6 +40,7 @@
     "ejs": "^3.1.10",
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
+    "express-prom-bundle": "^7.0.2",
     "express-rate-limit": "^6.7.0",
     "fs-extra": "^8.1.0",
     "got": "^11.8.2",

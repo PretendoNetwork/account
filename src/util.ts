@@ -9,7 +9,7 @@ import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
 import { PasswordResetToken } from '@/models/password-reset-token';
-import { LOG_ERROR } from '@/logger';
+import { LOG_ERROR, LOG_SUCCESS } from '@/logger';
 import type { IncomingHttpHeaders } from 'node:http';
 import type { ParsedQs } from 'qs';
 import type mongoose from 'mongoose';
@@ -78,7 +78,7 @@ export function createServiceToken(server: HydratedServerDocument, options: Serv
 
 export function fullUrl(request: express.Request): string {
 	const protocol = request.protocol;
-	const host = request.host;
+	const host = request.hostname;
 	const opath = request.originalUrl;
 
 	return `${protocol}://${host}${opath}`;
@@ -332,6 +332,20 @@ export function isValidBirthday(dateString: string): boolean {
 	const month = parseInt(parts[1], 10);
 	const day = parseInt(parts[2], 10);
 
+	const today = new Date();
+	const currentYear = today.getFullYear();
+	const currentMonth = today.getMonth() + 1;
+	const currentDay = today.getDate();
+
+	// Check that date isn't in the future
+	if (currentYear < year && currentMonth < month && currentDay < day) {
+		return false;
+	}
+
+	if (year < 1900) {
+		return false;
+	}
+
 	const date = new Date(year, month - 1, day);
 
 	return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
@@ -380,5 +394,5 @@ function scheduledTask(schedule: string, name: string, fn: () => void | Promise<
 		start: true
 	});
 
-	LOG_ERROR(`Added schedule ${name} for ${schedule}`);
+	LOG_SUCCESS(`Added schedule ${name} for ${schedule}`);
 }

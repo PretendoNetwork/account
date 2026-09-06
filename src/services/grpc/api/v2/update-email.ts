@@ -7,7 +7,7 @@ import type {
 	UpdateEmailRequest,
 	UpdateEmailResponse
 } from '@pretendonetwork/grpc/api/v2/update_email_rpc';
-import type { AuthenticationCallContextExt } from '@/services/grpc/api/v1/authentication-middleware';
+import type { AuthenticationCallContextExt } from '@/services/grpc/api/v2/authentication-middleware';
 
 export async function updateEmail(
 	request: UpdateEmailRequest,
