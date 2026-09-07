@@ -5,6 +5,7 @@ import { updateUserData } from '@/services/grpc/api/v2/update-user-data';
 import { updateEmail } from '@/services/grpc/api/v2/update-email';
 import { verifyEmail } from '@/services/grpc/api/v2/verify-email';
 import { forgotPassword } from '@/services/grpc/api/v2/forgot-password';
+import { updatePassword } from '@/services/grpc/api/v2/update-password';
 import { resetPassword } from '@/services/grpc/api/v2/reset-password';
 import { setDiscordConnectionData } from '@/services/grpc/api/v2/set-discord-connection-data';
 import { setStripeConnectionData } from '@/services/grpc/api/v2/set-stripe-connection-data';
@@ -18,6 +19,7 @@ export const apiServiceImplementationV2 = {
 	updateEmail,
 	verifyEmail,
 	forgotPassword,
+	updatePassword,
 	resetPassword,
 	setDiscordConnectionData,
 	setStripeConnectionData,

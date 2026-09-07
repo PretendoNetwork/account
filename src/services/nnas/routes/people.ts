@@ -6,7 +6,7 @@ import moment from 'moment';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import { deviceRatelimit } from '@/middleware/ratelimit';
 import { connection as databaseConnection, doesPNIDExist, getPNIDProfileJSONByPID } from '@/database';
-import { getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail } from '@/util';
+import { getAgeFromDate, getValueFromHeaders, nintendoPasswordHash, sendConfirmationEmail, sendPNIDDeletedEmail, sendPasswordResetNoticeEmail } from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { PNID } from '@/models/pnid';
 import { NEXAccount } from '@/models/nex-account';
@@ -652,6 +652,7 @@ router.put('/@me', async (request: express.Request, response: express.Response):
 		pnid.password = passwordHash;
 
 		await pnid.removeAllTokens();
+		await sendPasswordResetNoticeEmail(pnid);
 	}
 
 	pnid.gender = gender;
