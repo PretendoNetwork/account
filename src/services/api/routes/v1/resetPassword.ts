@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { PasswordResetToken } from '@/models/password-reset-token';
-import { nintendoPasswordHash } from '@/util';
+import { nintendoPasswordHash, sendPasswordResetNoticeEmail } from '@/util';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { getPNIDByPID } from '@/database';
@@ -176,6 +176,8 @@ router.post('/', passwordResetRatelimit, async (request: express.Request, respon
 
 	await pnid.removeAllTokens();
 	await pnid.save();
+
+	await sendPasswordResetNoticeEmail(pnid);
 
 	response.json({
 		app: 'api',

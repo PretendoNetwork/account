@@ -2,7 +2,7 @@ import { config } from '@/config-manager';
 import type { CallContext } from 'nice-grpc';
 import type { GetUserDataResponse, DeepPartial } from '@pretendonetwork/grpc/api/v2/get_user_data_rpc';
 import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
-import type { AuthenticationCallContextExt } from '@/services/grpc/api/v1/authentication-middleware';
+import type { AuthenticationCallContextExt } from '@/services/grpc/api/v2/authentication-middleware';
 
 export async function getUserData(_request: Empty, context: CallContext & AuthenticationCallContextExt): Promise<DeepPartial<GetUserDataResponse>> {
 	// * This is asserted in authentication-middleware, we know this is never null
@@ -24,9 +24,11 @@ export async function getUserData(_request: Empty, context: CallContext & Authen
 		birthday: pnid.birthdate,
 		gender: pnid.gender,
 		country: pnid.country,
+		region: pnid.region,
 		timezone: pnid.timezone.name,
 		language: pnid.language,
 		emailAddress: pnid.email.address,
+		emailValidated: pnid.email.validated,
 		connections: {
 			discord: {
 				id: pnid.connections.discord.id

@@ -2,7 +2,7 @@ import { Status, ServerError } from 'nice-grpc';
 import { PNID } from '@/models/pnid';
 import type { CallContext } from 'nice-grpc';
 import type { SetStripeConnectionDataRequest, SetStripeConnectionDataResponse } from '@pretendonetwork/grpc/api/v2/set_stripe_connection_data_rpc';
-import type { AuthenticationCallContextExt } from '@/services/grpc/api/v1/authentication-middleware';
+import type { AuthenticationCallContextExt } from '@/services/grpc/api/v2/authentication-middleware';
 
 type StripeMongoUpdateScheme = {
 	'access_level'?: number;

@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { Status, ServerError } from 'nice-grpc';
 import { PasswordResetToken } from '@/models/password-reset-token';
-import { nintendoPasswordHash } from '@/util';
+import { nintendoPasswordHash, sendPasswordResetNoticeEmail } from '@/util';
 import { getPNIDByPID } from '@/database';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
@@ -91,6 +91,8 @@ export async function resetPassword(request: ResetPasswordRequest): Promise<Empt
 
 	await pnid.removeAllTokens();
 	await pnid.save();
+
+	await sendPasswordResetNoticeEmail(pnid);
 
 	return {};
 }

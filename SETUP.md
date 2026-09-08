@@ -97,3 +97,5 @@ Configurations are loaded through environment variables. `.env` files are suppor
 | `PN_ACT_CONFIG_GRPC_MIIVERSE_PORT`            | Used to remove Miiverse user data during account deletion                                                       | No       |
 | `PN_ACT_CONFIG_GRPC_MIIVERSE_KEY_API`         | Used to remove Miiverse user data during account deletion                                                       | No       |
 | `PN_ACT_PROVISIONING_SERVER_CONFIG`           | Specify a path to a JSON file containing a list of servers to provision automatically to the DB                 | Yes      |
+| `PN_ACT_CONFIG_METRICS_ENABLED`               | Set to `true` to enable the metrics server, uses the metrics port                                               | Yes      |
+| `PN_ACT_CONFIG_METRICS_PORT`                  | The HTTP port the metrics server listens on                                                                     | Yes      |
