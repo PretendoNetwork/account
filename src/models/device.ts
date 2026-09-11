@@ -44,4 +44,6 @@ export const DeviceSchema = new Schema<IDevice, DeviceModel, IDeviceMethods>({
 	certificate_hash: String
 });
 
+DeviceSchema.index({ linked_pids: 1 });
+
 export const Device = model<IDevice, DeviceModel>('Device', DeviceSchema);

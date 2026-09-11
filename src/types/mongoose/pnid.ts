@@ -1,5 +1,6 @@
 import type { Model, Types, HydratedDocument } from 'mongoose';
 import type { IDevice } from '@/types/mongoose/device';
+import type { IEmailUpdateEvent } from '@/types/mongoose/email-update-event';
 import type { PNIDPermissionFlag } from '@/types/common/permission-flags';
 
 export interface IPNID {
@@ -27,6 +28,7 @@ export interface IPNID {
 		validated: boolean;
 		validated_date: string;
 		id: number;
+		history: Types.DocumentArray<IEmailUpdateEvent>;
 	};
 	region: number;
 	timezone: {
