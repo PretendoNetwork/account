@@ -6,7 +6,22 @@ import moment from 'moment';
 import hcaptcha from 'hcaptcha';
 import Mii from 'mii-js';
 import { doesPNIDExist, connection as databaseConnection } from '@/database';
-import { isValidBirthday, getAgeFromDate, nintendoPasswordHash, sendConfirmationEmail } from '@/util';
+import {
+	isValidBirthday,
+	getAgeFromDate,
+	checkNNIDUsernameMinLength,
+	checkNNIDUsernameMaxLength,
+	checkNNIDUsernameValidCharacters,
+	checkNNIDUsernamePunctuationStart,
+	checkNNIDUsernamePunctuationEnd,
+	checkNNIDUsernameDuplicate,
+	checkNNIDPasswordMinLength,
+	checkNNIDPasswordMaxLength,
+	checkNNIDPasswordAtLeast2CharacterGroups,
+	checkNNIDPasswordRepeatCharacters,
+	nintendoPasswordHash,
+	sendConfirmationEmail
+} from '@/util';
 import IP2LocationManager from '@/ip2location';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
@@ -20,17 +35,6 @@ import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
 const router = express.Router();
-
-const PNID_VALID_CHARACTERS_REGEX = /^[\w\-.]*$/;
-const PNID_PUNCTUATION_START_REGEX = /^[_\-.]/;
-const PNID_PUNCTUATION_END_REGEX = /[_\-.]$/;
-const PNID_PUNCTUATION_DUPLICATE_REGEX = /[_\-.]{2,}/;
-
-// * This sucks
-const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
-const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
-const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
-const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
 
 const DEFAULT_MII_DATA = Buffer.from('AwAAQOlVognnx0GC2/uogAOzuI0n2QAAAEBEAGUAZgBhAHUAbAB0AAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm9', 'base64');
 
@@ -166,7 +170,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (username.length < 6) {
+	if (!checkNNIDUsernameMinLength(username)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -176,7 +180,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (username.length > 16) {
+	if (!checkNNIDUsernameMaxLength(username)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -186,8 +190,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (!PNID_VALID_CHARACTERS_REGEX.test(username)) {
-		console.log(Buffer.from(username));
+	if (!checkNNIDUsernameValidCharacters(username)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -197,7 +200,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (PNID_PUNCTUATION_START_REGEX.test(username)) {
+	if (!checkNNIDUsernamePunctuationStart(username)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -207,7 +210,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (PNID_PUNCTUATION_END_REGEX.test(username)) {
+	if (!checkNNIDUsernamePunctuationEnd(username)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -217,7 +220,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (PNID_PUNCTUATION_DUPLICATE_REGEX.test(username)) {
+	if (!checkNNIDUsernameDuplicate(username)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -259,7 +262,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (password.length < 6) {
+	if (!checkNNIDPasswordMinLength(password)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -269,7 +272,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (password.length > 16) {
+	if (!checkNNIDPasswordMaxLength(password)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -289,7 +292,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (!PASSWORD_WORD_OR_NUMBER_REGEX.test(password) && !PASSWORD_WORD_OR_PUNCTUATION_REGEX.test(password) && !PASSWORD_NUMBER_OR_PUNCTUATION_REGEX.test(password)) {
+	if (!checkNNIDPasswordAtLeast2CharacterGroups(password)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
@@ -299,7 +302,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (PASSWORD_REPEATED_CHARACTER_REGEX.test(password)) {
+	if (!checkNNIDPasswordRepeatCharacters(password)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
