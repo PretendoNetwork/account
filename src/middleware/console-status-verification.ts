@@ -1,5 +1,8 @@
 import crypto from 'node:crypto';
 import xmlbuilder from 'xmlbuilder';
+import { BanTargetType, BanScopeType } from '@pretendonetwork/grpc/account/v2/ban_details';
+import { getActiveBan } from '@/database';
+import { NNAS_BAN_ERRORS, getNNASBanError } from '@/services/nnas/ban-errors';
 import { Device } from '@/models/device';
 import { getValueFromHeaders } from '@/util';
 import type express from 'express';
@@ -151,12 +154,35 @@ async function consoleStatusVerificationMiddleware(request: express.Request, res
 		return;
 	}
 
+	// * Legacy ban check for bans issued before the bans collection existed
 	if (device.access_level < 0) {
+		const banError = NNAS_BAN_ERRORS.device[BanScopeType.BAN_SCOPE_TYPE_ALL].permanent;
+
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
-					code: '0012',
-					message: 'Device has been banned by game server' // TODO - This is not the right error message
+					code: banError.code,
+					message: banError.message
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	const ban = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_DEVICE, [
+		device.certificate_hash,
+		device.fcdcert_hash
+	].filter(hash => !!hash));
+
+	if (ban) {
+		const banError = getNNASBanError(ban);
+
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: banError.code,
+					message: banError.message
 				}
 			}
 		}).end());

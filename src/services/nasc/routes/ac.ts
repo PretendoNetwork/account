@@ -1,9 +1,11 @@
 import crypto from 'node:crypto';
 import express from 'express';
+import { BanTargetType, BanScopeType } from '@pretendonetwork/grpc/account/v2/ban_details';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { nintendoBase64Encode, nintendoBase64Decode, nascDateTime, nascError, createServiceToken } from '@/util';
-import { getServerByTitleID } from '@/database';
+import { getActiveBan, getServerByTitleID } from '@/database';
+import { Device } from '@/models/device';
 import { IndependentServiceToken } from '@/models/independent-service-token';
 import { NEXToken } from '@/models/nex-token';
 import { nascRatelimit } from '@/middleware/ratelimit';
@@ -52,6 +54,32 @@ router.post('/', nascRatelimit, async (request: express.Request, response: expre
 
 	if (server.maintenance_mode) {
 		response.status(200).send(nascError('101').toString());
+		return;
+	}
+
+	const banScopes = [
+		{
+			type: action === 'LOGIN' ? BanScopeType.BAN_SCOPE_TYPE_NEX_SERVICE : BanScopeType.BAN_SCOPE_TYPE_INDEPENDENT_SERVICE,
+			target: action === 'LOGIN' ? server.game_server_id : server.client_id || server.game_server_id
+		}
+	];
+
+	const fcdcertHash = crypto.createHash('sha256').update(nintendoBase64Decode(requestParams.fcdcert)).digest('base64');
+	const device = await Device.findOne({
+		fcdcert_hash: fcdcertHash
+	});
+
+	const nexAccountBan = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_NEX_ACCOUNT, [
+		nexAccount.pid.toString()
+	], banScopes);
+
+	const deviceBan = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_DEVICE, [
+		fcdcertHash,
+		device?.certificate_hash
+	].filter((hash): hash is string => !!hash), banScopes);
+
+	if (nexAccountBan || deviceBan) {
+		response.status(200).send(nascError('102').toString());
 		return;
 	}
 

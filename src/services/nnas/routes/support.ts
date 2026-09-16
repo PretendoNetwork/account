@@ -2,7 +2,9 @@ import dns from 'node:dns';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import moment from 'moment';
-import { getPNIDByEmailAddress, getPNIDByPID } from '@/database';
+import { BanTargetType, BanScopeType } from '@pretendonetwork/grpc/account/v2/ban_details';
+import { getActiveBan, getPNIDByEmailAddress, getPNIDByPID } from '@/database';
+import { NNAS_BAN_ERRORS, getNNASBanError } from '@/services/nnas/ban-errors';
 import { Device } from '@/models/device';
 import { sendEmailConfirmedEmail, sendConfirmationEmail, sendForgotPasswordEmail, sendEmailConfirmedParentalControlsEmail } from '@/util';
 
@@ -36,12 +38,35 @@ async function validateDeviceIDMiddleware(request: express.Request, response: ex
 		return;
 	}
 
+	// * Legacy ban check, kept for devices banned before the bans collection existed
 	if (device.access_level < 0) {
+		const banError = NNAS_BAN_ERRORS.device[BanScopeType.BAN_SCOPE_TYPE_ALL].permanent;
+
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
-					code: '0012',
-					message: 'Device has been banned by game server' // TODO - This is not the right error message
+					code: banError.code,
+					message: banError.message
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	const ban = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_DEVICE, [
+		device.certificate_hash,
+		device.fcdcert_hash
+	].filter(hash => !!hash));
+
+	if (ban) {
+		const banError = getNNASBanError(ban);
+
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: banError.code,
+					message: banError.message
 				}
 			}
 		}).end());

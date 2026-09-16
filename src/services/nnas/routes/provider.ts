@@ -1,7 +1,9 @@
 import crypto from 'node:crypto';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
-import { getServerByClientID, getServerByGameServerID } from '@/database';
+import { BanTargetType, BanScopeType } from '@pretendonetwork/grpc/account/v2/ban_details';
+import { getActiveBan, getServerByClientID, getServerByGameServerID } from '@/database';
+import { getNNASBanError } from '@/services/nnas/ban-errors';
 import { createServiceToken, getValueFromHeaders, getValueFromQueryString } from '@/util';
 import { TokenType } from '@/types/common/token-types';
 import { IndependentServiceToken } from '@/models/independent-service-token';
@@ -86,6 +88,31 @@ router.get('/service_token/@me', async (request: express.Request, response: expr
 				error: {
 					code: '2002',
 					message: 'The requested game server is under maintenance'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	// TODO - Once https://github.com/PretendoNetwork/account/issues/202 merges this needs to be updated to let 3rd parties opt-out of respecting our bans if they want to handle it themselves
+	const ban = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_NETWORK_ACCOUNT, [
+		pnid.pid.toString()
+	], [
+		{
+			type: BanScopeType.BAN_SCOPE_TYPE_INDEPENDENT_SERVICE,
+			target: clientID
+		}
+	]);
+
+	if (ban) {
+		const banError = getNNASBanError(ban);
+
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: banError.code,
+					message: banError.message
 				}
 			}
 		}).end());
@@ -216,6 +243,38 @@ router.get('/nex_token/@me', async (request: express.Request, response: express.
 				error: {
 					code: '1021',
 					message: 'The requested game server was not found'
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	const banScopes = [
+		{
+			type: BanScopeType.BAN_SCOPE_TYPE_NEX_SERVICE,
+			target: server.game_server_id
+		}
+	];
+
+	const accountBan = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_NETWORK_ACCOUNT, [
+		pnid.pid.toString()
+	], banScopes);
+
+	const nexAccountBan = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_NEX_ACCOUNT, [
+		nexAccount.pid.toString()
+	], banScopes);
+
+	const ban = accountBan || nexAccountBan;
+
+	if (ban) {
+		const banError = getNNASBanError(ban);
+
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: banError.code,
+					message: banError.message
 				}
 			}
 		}).end());

@@ -1,17 +1,21 @@
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+import { BanScopeType } from '@pretendonetwork/grpc/account/v2/ban_details';
 import { nintendoPasswordHash } from '@/util';
 import { OAuthToken } from '@/models/oauth-token';
 import { PNID } from '@/models/pnid';
 import { Server } from '@/models/server';
+import { Ban } from '@/models/ban';
 import { LOG_ERROR } from '@/logger';
 import { config } from '@/config-manager';
 import { TokenType } from '@/types/common/token-types';
 import { SystemType } from '@/types/common/system-types';
+import type { BanTargetType } from '@pretendonetwork/grpc/account/v2/ban_details';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
+import type { HydratedBanDocument } from '@/types/mongoose/ban';
 import type { PNIDProfile } from '@/types/services/nnas/pnid-profile';
 
 const connection_string = config.mongoose.connection_string;
@@ -293,6 +297,38 @@ export async function getServerByClientID(clientID: string, accessMode: string):
 	}
 
 	return null;
+}
+
+export async function getActiveBan(targetType: BanTargetType, targets: string[], scopes: {
+	type: BanScopeType;
+	target: string;
+}[] = []): Promise<HydratedBanDocument | null> {
+	verifyConnected();
+
+	const now = new Date();
+
+	return await Ban.findOne({
+		target_type: targetType,
+		target: {
+			$in: targets
+		},
+		start_date: {
+			$lte: now
+		},
+		end_date: {
+			$gt: now
+		},
+		pardoned_date: null,
+		$or: [
+			{
+				scope_type: BanScopeType.BAN_SCOPE_TYPE_ALL
+			},
+			...scopes.map(scope => ({
+				scope_type: scope.type,
+				scope_target: scope.target
+			}))
+		]
+	});
 }
 
 export async function checkMarkedDeletions(): Promise<void> {
