@@ -3,7 +3,7 @@ import { Status, ServerError } from 'nice-grpc';
 import { OAuthToken } from '@/models/oauth-token';
 import { Device } from '@/models/device';
 import { NEXAccount } from '@/models/nex-account';
-import { getPNIDByPID } from '@/database';
+import { getLegacyDeviceAccessLevel, getLegacyNEXAccountAccessLevel, getLegacyPNIDAccessLevel, getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 import type { ExchangeOAuthTokenForUserDataRequest, ExchangeOAuthTokenForUserDataResponse } from '@pretendonetwork/grpc/account/v2/exchange_oauth_token_for_user_data_rpc';
@@ -40,25 +40,25 @@ export async function exchangeOAuthTokenForUserData(request: ExchangeOAuthTokenF
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token. No user found');
 	}
 
-	const devices = (await Device.find({
+	const devices = await Promise.all((await Device.find({
 		linked_pids: pnid.pid
-	})).map((device) => {
+	})).map(async (device) => {
 		return {
 			model: device.get('model'), // * ".model" gives the Mongoose model
 			serial: device.serial,
 			linkedPids: device.linked_pids,
-			accessLevel: device.access_level,
+			accessLevel: await getLegacyDeviceAccessLevel(device),
 			serverAccessLevel: device.server_access_level,
 			deviceId: device.device_id
 		};
-	});
+	}));
 
 	return {
 		pnid: {
 			deleted: pnid.deleted,
 			pid: pnid.pid,
 			username: pnid.username,
-			accessLevel: pnid.access_level,
+			accessLevel: await getLegacyPNIDAccessLevel(pnid),
 			serverAccessLevel: pnid.server_access_level,
 			mii: {
 				name: pnid.mii.name,
@@ -101,7 +101,7 @@ export async function exchangeOAuthTokenForUserData(request: ExchangeOAuthTokenF
 		nexAccount: {
 			pid: nexAccount.pid,
 			owningPid: nexAccount.owning_pid,
-			accessLevel: nexAccount.access_level,
+			accessLevel: await getLegacyNEXAccountAccessLevel(nexAccount),
 			serverAccessLevel: nexAccount.server_access_level,
 			friendCode: nexAccount.friend_code,
 			deviceType: nexAccount.device_type
@@ -110,7 +110,7 @@ export async function exchangeOAuthTokenForUserData(request: ExchangeOAuthTokenF
 			systemType: oAuthToken.info.system_type as any, // TODO - Stop the any usage
 			tokenType: oAuthToken.info.token_type as any, // TODO - Stop the any usage
 			pid: BigInt(pnid.pid),
-			accessLevel: pnid.access_level,
+			accessLevel: await getLegacyPNIDAccessLevel(pnid),
 			titleId: oAuthToken.info.title_id,
 			issueTime: oAuthToken.info.issued,
 			expireTime: oAuthToken.info.expires

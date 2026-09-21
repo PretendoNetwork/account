@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import { BanScopeType } from '@pretendonetwork/grpc/account/v2/ban_details';
+import { BanScopeType, BanTargetType } from '@pretendonetwork/grpc/account/v2/ban_details';
 import { nintendoPasswordHash } from '@/util';
 import { OAuthToken } from '@/models/oauth-token';
 import { PNID } from '@/models/pnid';
@@ -11,10 +11,11 @@ import { LOG_ERROR } from '@/logger';
 import { config } from '@/config-manager';
 import { TokenType } from '@/types/common/token-types';
 import { SystemType } from '@/types/common/system-types';
-import type { BanTargetType } from '@pretendonetwork/grpc/account/v2/ban_details';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 import type { IDeviceAttribute } from '@/types/mongoose/device-attribute';
 import type { HydratedServerDocument } from '@/types/mongoose/server';
+import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
+import type { HydratedDeviceDocument } from '@/types/mongoose/device';
 import type { HydratedBanDocument } from '@/types/mongoose/ban';
 import type { PNIDProfile } from '@/types/services/nnas/pnid-profile';
 
@@ -329,6 +330,38 @@ export async function getActiveBan(targetType: BanTargetType, targets: string[],
 			}))
 		]
 	});
+}
+
+// * Older APIs and their clients rely on the older "access level" field on accounts/devices
+// * to determine if they're banned or not. This is being replaced with a newer ban/permissions
+// * API, which has more granular information. In order to help older clients still detect newer
+// * bans while also letting newer tools make use of the new ban/pardon system, these helpers
+// * map any modern ban to the older -1 access level if they exist
+export const LEGACY_BANNED_ACCESS_LEVEL = -1;
+
+export async function getLegacyPNIDAccessLevel(pnid: HydratedPNIDDocument): Promise<number> {
+	const ban = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_NETWORK_ACCOUNT, [
+		pnid.pid.toString()
+	]);
+
+	return ban ? LEGACY_BANNED_ACCESS_LEVEL : pnid.access_level;
+}
+
+export async function getLegacyNEXAccountAccessLevel(nexAccount: HydratedNEXAccountDocument): Promise<number> {
+	const ban = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_NEX_ACCOUNT, [
+		nexAccount.pid.toString()
+	]);
+
+	return ban ? LEGACY_BANNED_ACCESS_LEVEL : nexAccount.access_level;
+}
+
+export async function getLegacyDeviceAccessLevel(device: HydratedDeviceDocument): Promise<number> {
+	const ban = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_DEVICE, [
+		device.certificate_hash,
+		device.fcdcert_hash
+	].filter(hash => !!hash));
+
+	return ban ? LEGACY_BANNED_ACCESS_LEVEL : device.access_level;
 }
 
 export async function checkMarkedDeletions(): Promise<void> {

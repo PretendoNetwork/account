@@ -4,7 +4,7 @@ import { PasswordResetToken } from '@/models/password-reset-token';
 import { Device } from '@/models/device';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
-import { getPNIDByPID } from '@/database';
+import { getLegacyDeviceAccessLevel, getLegacyPNIDAccessLevel, getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 import type { ExchangePasswordResetTokenForUserDataRequest, ExchangePasswordResetTokenForUserDataResponse } from '@pretendonetwork/grpc/account/v2/exchange_password_reset_token_for_user_data_rpc';
@@ -44,25 +44,25 @@ export async function exchangePasswordResetTokenForUserData(request: ExchangePas
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Invalid token. No user found');
 	}
 
-	const devices = (await Device.find({
+	const devices = await Promise.all((await Device.find({
 		linked_pids: pnid.pid
-	})).map((device) => {
+	})).map(async (device) => {
 		return {
 			model: device.get('model'), // * ".model" gives the Mongoose model
 			serial: device.serial,
 			linkedPids: device.linked_pids,
-			accessLevel: device.access_level,
+			accessLevel: await getLegacyDeviceAccessLevel(device),
 			serverAccessLevel: device.server_access_level,
 			deviceId: device.device_id
 		};
-	});
+	}));
 
 	return {
 		pnid: {
 			deleted: pnid.deleted,
 			pid: pnid.pid,
 			username: pnid.username,
-			accessLevel: pnid.access_level,
+			accessLevel: await getLegacyPNIDAccessLevel(pnid),
 			serverAccessLevel: pnid.server_access_level,
 			mii: {
 				name: pnid.mii.name,
@@ -106,7 +106,7 @@ export async function exchangePasswordResetTokenForUserData(request: ExchangePas
 			systemType: passwordResetToken.info.system_type as any, // TODO - Stop the any usage
 			tokenType: passwordResetToken.info.token_type as any, // TODO - Stop the any usage
 			pid: BigInt(pnid.pid),
-			accessLevel: pnid.access_level,
+			accessLevel: await getLegacyPNIDAccessLevel(pnid),
 			titleId: passwordResetToken.info.title_id,
 			issueTime: passwordResetToken.info.issued,
 			expireTime: passwordResetToken.info.expires

@@ -1,5 +1,5 @@
 import { Status, ServerError } from 'nice-grpc';
-import { getPNIDByAPIAccessToken } from '@/database';
+import { getLegacyPNIDAccessLevel, getPNIDByAPIAccessToken } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 import type { GetUserDataResponse } from '@pretendonetwork/grpc/account/get_user_data_rpc';
@@ -20,7 +20,7 @@ export async function exchangeTokenForUserData(request: ExchangeTokenForUserData
 		deleted: pnid.deleted || pnid.marked_for_deletion,
 		pid: pnid.pid,
 		username: pnid.username,
-		accessLevel: pnid.access_level,
+		accessLevel: await getLegacyPNIDAccessLevel(pnid),
 		serverAccessLevel: pnid.server_access_level,
 		mii: {
 			name: pnid.mii.name,

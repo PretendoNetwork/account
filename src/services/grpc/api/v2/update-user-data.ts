@@ -2,6 +2,7 @@ import { ServerError, Status } from 'nice-grpc';
 import Mii from 'mii-js';
 import { isValidBirthday } from '@/util';
 import { config } from '@/config-manager';
+import { getLegacyPNIDAccessLevel } from '@/database';
 import timezones from '@/services/nnas/timezones.json';
 import regions from '@/services/nnas/regions.json';
 import type { CallContext } from 'nice-grpc';
@@ -18,6 +19,7 @@ export async function updateUserData(
 ): Promise<DeepPartial<GetUserDataResponse>> {
 	// * This is asserted in authentication-middleware, we know this is never null
 	const pnid = context.pnid!;
+	const accessLevel = await getLegacyPNIDAccessLevel(pnid);
 
 	const serverAccessLevel = request.serverAccessLevel?.trim();
 	const mii = request?.mii?.trim();
@@ -39,7 +41,7 @@ export async function updateUserData(
 		}
 
 		if (serverAccessLevel === 'prod') {
-			if (pnid.access_level < 0) {
+			if (accessLevel < 0) {
 				throw new ServerError(Status.PERMISSION_DENIED, 'Banned');
 			}
 
@@ -47,7 +49,7 @@ export async function updateUserData(
 		}
 
 		if (serverAccessLevel === 'test') {
-			if (pnid.access_level < 1) {
+			if (accessLevel < 1) {
 				throw new ServerError(
 					Status.INVALID_ARGUMENT,
 					'Do not have permission to enter this environment'
@@ -58,7 +60,7 @@ export async function updateUserData(
 		}
 
 		if (serverAccessLevel === 'dev') {
-			if (pnid.access_level < 3) {
+			if (accessLevel < 3) {
 				throw new ServerError(
 					Status.INVALID_ARGUMENT,
 					'Do not have permission to enter this environment'
@@ -146,7 +148,7 @@ export async function updateUserData(
 		updatedDate: pnid.updated,
 		pid: pnid.pid,
 		username: pnid.username,
-		accessLevel: pnid.access_level,
+		accessLevel: accessLevel,
 		serverAccessLevel: pnid.server_access_level,
 		mii: {
 			name: pnid.mii.name,

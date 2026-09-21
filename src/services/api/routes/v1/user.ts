@@ -3,6 +3,7 @@ import { z } from 'zod';
 import Mii from 'mii-js';
 import { config } from '@/config-manager';
 import { PNID } from '@/models/pnid';
+import { getLegacyPNIDAccessLevel } from '@/database';
 import type { UpdateUserRequest } from '@/types/services/api/update-user-request';
 
 const router = express.Router();
@@ -36,7 +37,7 @@ router.get('/', async (request: express.Request, response: express.Response): Pr
 	}
 
 	response.json({
-		access_level: pnid.access_level,
+		access_level: await getLegacyPNIDAccessLevel(pnid),
 		server_access_level: pnid.server_access_level,
 		pid: pnid.pid,
 		creation_date: pnid.creation_date,
@@ -168,11 +169,12 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	}
 
 	const updateData: Record<string, any> = {};
+	const accessLevel = await getLegacyPNIDAccessLevel(pnid);
 
 	if (result.data.environment) {
 		const environment = result.data.environment;
 
-		if (environment === 'test' && pnid.access_level < 1) {
+		if (environment === 'test' && accessLevel < 1) {
 			response.status(400).json({
 				app: 'api',
 				status: 400,
@@ -182,7 +184,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 			return;
 		}
 
-		if (environment === 'dev' && pnid.access_level < 3) {
+		if (environment === 'dev' && accessLevel < 3) {
 			response.status(400).json({
 				app: 'api',
 				status: 400,
@@ -198,7 +200,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 	await PNID.updateOne({ pid: pnid.pid }, { $set: updateData }).exec();
 
 	response.json({
-		access_level: pnid.access_level,
+		access_level: accessLevel,
 		server_access_level: pnid.server_access_level,
 		pid: pnid.pid,
 		creation_date: pnid.creation_date,
