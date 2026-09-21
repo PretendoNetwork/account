@@ -2,9 +2,11 @@ import crypto from 'node:crypto';
 import express from 'express';
 import xmlbuilder from 'xmlbuilder';
 import bcrypt from 'bcrypt';
+import { BanTargetType, BanScopeType } from '@pretendonetwork/grpc/account/v2/ban_details';
 import deviceCertificateMiddleware from '@/middleware/device-certificate';
 import consoleStatusVerificationMiddleware from '@/middleware/console-status-verification';
-import { getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
+import { getActiveBan, getPNIDByNNASRefreshToken, getPNIDByUsername } from '@/database';
+import { NNAS_BAN_ERRORS, getNNASBanError } from '@/services/nnas/ban-errors';
 import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { Device } from '@/models/device';
@@ -155,12 +157,34 @@ router.post('/access_token/generate', loginRatelimit, deviceCertificateMiddlewar
 		}
 	});
 
+	// * Legacy ban check, kept for accounts banned before the bans collection existed
 	if (pnid.access_level < 0) {
+		const banError = NNAS_BAN_ERRORS.account[BanScopeType.BAN_SCOPE_TYPE_ALL].permanent;
+
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
-					code: '0108',
-					message: 'Account has been banned'
+					code: banError.code,
+					message: banError.message
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	const ban = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_NETWORK_ACCOUNT, [
+		pnid.pid.toString()
+	]);
+
+	if (ban) {
+		const banError = getNNASBanError(ban);
+
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: banError.code,
+					message: banError.message
 				}
 			}
 		}).end());

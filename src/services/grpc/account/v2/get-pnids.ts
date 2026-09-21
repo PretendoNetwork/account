@@ -1,4 +1,4 @@
-import { getPNIDByPID } from '@/database';
+import { getLegacyDeviceAccessLevel, getLegacyPNIDAccessLevel, getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 import { Device } from '@/models/device';
@@ -12,24 +12,24 @@ export async function getPNIDs(request: GetPNIDsRequest): Promise<GetPNIDsRespon
 			continue;
 		}
 
-		const devices = (await Device.find({
+		const devices = await Promise.all((await Device.find({
 			linked_pids: pnid.pid
-		})).map((device) => {
+		})).map(async (device) => {
 			return {
-				model: device.get('model'), // ".model" gives the Mongoose model...
+				model: device.get('model'), // * ".model" gives the Mongoose model...
 				serial: device.serial,
 				linkedPids: device.linked_pids,
-				accessLevel: device.access_level,
+				accessLevel: await getLegacyDeviceAccessLevel(device),
 				serverAccessLevel: device.server_access_level,
 				deviceId: device.device_id
 			};
-		});
+		}));
 
 		response.userData[pid] = {
 			deleted: pnid.deleted || pnid.marked_for_deletion,
 			pid: pnid.pid,
 			username: pnid.username,
-			accessLevel: pnid.access_level,
+			accessLevel: await getLegacyPNIDAccessLevel(pnid),
 			serverAccessLevel: pnid.server_access_level,
 			mii: {
 				name: pnid.mii.name,

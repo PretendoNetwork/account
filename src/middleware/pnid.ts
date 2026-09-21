@@ -1,6 +1,8 @@
 import xmlbuilder from 'xmlbuilder';
+import { BanTargetType, BanScopeType } from '@pretendonetwork/grpc/account/v2/ban_details';
 import { getValueFromHeaders } from '@/util';
-import { getPNIDByBasicAuth, getPNIDByNNASAccessToken } from '@/database';
+import { getActiveBan, getPNIDByBasicAuth, getPNIDByNNASAccessToken } from '@/database';
+import { NNAS_BAN_ERRORS, getNNASBanError } from '@/services/nnas/ban-errors';
 import type express from 'express';
 import type { HydratedPNIDDocument } from '@/types/mongoose/pnid';
 
@@ -66,12 +68,34 @@ async function PNIDMiddleware(request: express.Request, response: express.Respon
 		return;
 	}
 
+	// * Legacy ban check for bans issued before the bans collection existed
 	if (pnid.access_level < 0) {
+		const banError = NNAS_BAN_ERRORS.account[BanScopeType.BAN_SCOPE_TYPE_ALL].permanent;
+
 		response.status(400).send(xmlbuilder.create({
 			errors: {
 				error: {
-					code: '0108',
-					message: 'Account has been banned'
+					code: banError.code,
+					message: banError.message
+				}
+			}
+		}).end());
+
+		return;
+	}
+
+	const ban = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_NETWORK_ACCOUNT, [
+		pnid.pid.toString()
+	]);
+
+	if (ban) {
+		const banError = getNNASBanError(ban);
+
+		response.status(400).send(xmlbuilder.create({
+			errors: {
+				error: {
+					code: banError.code,
+					message: banError.message
 				}
 			}
 		}).end());

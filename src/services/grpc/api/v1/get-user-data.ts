@@ -1,4 +1,5 @@
 import { config } from '@/config-manager';
+import { getLegacyPNIDAccessLevel } from '@/database';
 import type { CallContext } from 'nice-grpc';
 import type { GetUserDataResponse, DeepPartial } from '@pretendonetwork/grpc/api/get_user_data_rpc';
 import type { Empty } from '@pretendonetwork/grpc/google/protobuf/empty';
@@ -14,7 +15,7 @@ export async function getUserData(_request: Empty, context: CallContext & Authen
 		updatedDate: pnid.updated,
 		pid: pnid.pid,
 		username: pnid.username,
-		accessLevel: pnid.access_level,
+		accessLevel: await getLegacyPNIDAccessLevel(pnid),
 		serverAccessLevel: pnid.server_access_level,
 		mii: {
 			name: pnid.mii.name,

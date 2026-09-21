@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { Status, ServerError } from 'nice-grpc';
 import { NEXToken } from '@/models/nex-token';
 import { NEXAccount } from '@/models/nex-account';
-import { getPNIDByPID } from '@/database';
+import { getLegacyNEXAccountAccessLevel, getPNIDByPID } from '@/database';
 import type { ExchangeNEXTokenForUserDataRequest, ExchangeNEXTokenForUserDataResponse } from '@pretendonetwork/grpc/account/v2/exchange_nex_token_for_user_data_rpc';
 import type { HydratedNEXAccountDocument } from '@/types/mongoose/nex-account';
 import type { HydratedNEXTokenDocument } from '@/models/nex-token';
@@ -41,7 +41,7 @@ export async function exchangeNEXTokenForUserData(request: ExchangeNEXTokenForUs
 			nexAccount: {
 				pid: nexAccount.pid,
 				owningPid: nexAccount.owning_pid,
-				accessLevel: nexAccount.access_level,
+				accessLevel: await getLegacyNEXAccountAccessLevel(nexAccount),
 				serverAccessLevel: nexAccount.server_access_level,
 				friendCode: nexAccount.friend_code,
 				deviceType: nexAccount.device_type
@@ -50,7 +50,7 @@ export async function exchangeNEXTokenForUserData(request: ExchangeNEXTokenForUs
 				systemType: nexToken.info.system_type as any, // TODO - Stop the any usage
 				tokenType: nexToken.info.token_type as any, // TODO - Stop the any usage
 				pid: BigInt(nexAccount.pid),
-				accessLevel: nexAccount.access_level,
+				accessLevel: await getLegacyNEXAccountAccessLevel(nexAccount),
 				titleId: nexToken.info.title_id,
 				issueTime: nexToken.info.issued,
 				expireTime: nexToken.info.expires
@@ -66,7 +66,7 @@ export async function exchangeNEXTokenForUserData(request: ExchangeNEXTokenForUs
 			nexAccount: {
 				pid: nexAccount.pid,
 				owningPid: nexAccount.owning_pid,
-				accessLevel: nexAccount.access_level,
+				accessLevel: await getLegacyNEXAccountAccessLevel(nexAccount),
 				serverAccessLevel: nexAccount.server_access_level,
 				friendCode: nexAccount.friend_code,
 				deviceType: nexAccount.device_type
@@ -75,7 +75,7 @@ export async function exchangeNEXTokenForUserData(request: ExchangeNEXTokenForUs
 				systemType: nexToken.info.system_type as any, // TODO - Stop the any usage
 				tokenType: nexToken.info.token_type as any, // TODO - Stop the any usage
 				pid: BigInt(nexAccount.pid),
-				accessLevel: nexAccount.access_level,
+				accessLevel: await getLegacyNEXAccountAccessLevel(nexAccount),
 				titleId: nexToken.info.title_id,
 				issueTime: nexToken.info.issued,
 				expireTime: nexToken.info.expires

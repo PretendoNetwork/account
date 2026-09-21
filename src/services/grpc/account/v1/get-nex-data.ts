@@ -1,4 +1,5 @@
 import { Status, ServerError } from 'nice-grpc';
+import { getLegacyNEXAccountAccessLevel } from '@/database';
 import { NEXAccount } from '@/models/nex-account';
 import type { GetNEXDataRequest, GetNEXDataResponse, DeepPartial } from '@pretendonetwork/grpc/account/get_nex_data_rpc';
 
@@ -16,7 +17,7 @@ export async function getNEXData(request: GetNEXDataRequest): Promise<DeepPartia
 		pid: nexAccount.pid,
 		password: nexAccount.password,
 		owningPid: nexAccount.owning_pid,
-		accessLevel: nexAccount.access_level,
+		accessLevel: await getLegacyNEXAccountAccessLevel(nexAccount),
 		serverAccessLevel: nexAccount.server_access_level,
 		friendCode: nexAccount.friend_code
 	};

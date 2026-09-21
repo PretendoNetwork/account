@@ -3,7 +3,7 @@ import { Status, ServerError } from 'nice-grpc';
 import { IndependentServiceToken } from '@/models/independent-service-token';
 import { Device } from '@/models/device';
 import { NEXAccount } from '@/models/nex-account';
-import { getPNIDByPID } from '@/database';
+import { getLegacyDeviceAccessLevel, getLegacyNEXAccountAccessLevel, getLegacyPNIDAccessLevel, getPNIDByPID } from '@/database';
 import { PNID_PERMISSION_FLAGS } from '@/types/common/permission-flags';
 import { config } from '@/config-manager';
 import type { ExchangeIndependentServiceTokenForUserDataRequest, ExchangeIndependentServiceTokenForUserDataResponse } from '@pretendonetwork/grpc/account/v2/exchange_independent_service_token_for_user_data_rpc';
@@ -42,25 +42,25 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 
 	// TODO - Change this. This duplication sucks, but I wanna push this out the door
 	if (pnid) {
-		const devices = (await Device.find({
+		const devices = await Promise.all((await Device.find({
 			linked_pids: pnid.pid
-		})).map((device) => {
+		})).map(async (device) => {
 			return {
 				model: device.get('model'), // * ".model" gives the Mongoose model
 				serial: device.serial,
 				linkedPids: device.linked_pids,
-				accessLevel: device.access_level,
+				accessLevel: await getLegacyDeviceAccessLevel(device),
 				serverAccessLevel: device.server_access_level,
 				deviceId: device.device_id
 			};
-		});
+		}));
 
 		return {
 			pnid: {
 				deleted: pnid.deleted,
 				pid: pnid.pid,
 				username: pnid.username,
-				accessLevel: pnid.access_level,
+				accessLevel: await getLegacyPNIDAccessLevel(pnid),
 				serverAccessLevel: pnid.server_access_level,
 				mii: {
 					name: pnid.mii.name,
@@ -103,7 +103,7 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 			nexAccount: {
 				pid: nexAccount.pid,
 				owningPid: nexAccount.owning_pid,
-				accessLevel: nexAccount.access_level,
+				accessLevel: await getLegacyNEXAccountAccessLevel(nexAccount),
 				serverAccessLevel: nexAccount.server_access_level,
 				friendCode: nexAccount.friend_code,
 				deviceType: nexAccount.device_type
@@ -112,7 +112,7 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 				systemType: serviceToken.info.system_type as any, // TODO - Stop the any usage
 				tokenType: serviceToken.info.token_type as any, // TODO - Stop the any usage
 				pid: BigInt(pnid.pid),
-				accessLevel: pnid.access_level,
+				accessLevel: await getLegacyPNIDAccessLevel(pnid),
 				titleId: serviceToken.info.title_id,
 				issueTime: serviceToken.info.issued,
 				expireTime: serviceToken.info.expires
@@ -129,7 +129,7 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 			nexAccount: {
 				pid: nexAccount.pid,
 				owningPid: nexAccount.owning_pid,
-				accessLevel: nexAccount.access_level,
+				accessLevel: await getLegacyNEXAccountAccessLevel(nexAccount),
 				serverAccessLevel: nexAccount.server_access_level,
 				friendCode: nexAccount.friend_code,
 				deviceType: nexAccount.device_type
@@ -138,7 +138,7 @@ export async function exchangeIndependentServiceTokenForUserData(request: Exchan
 				systemType: serviceToken.info.system_type as any, // TODO - Stop the any usage
 				tokenType: serviceToken.info.token_type as any, // TODO - Stop the any usage
 				pid: BigInt(nexAccount.pid),
-				accessLevel: nexAccount.access_level,
+				accessLevel: await getLegacyNEXAccountAccessLevel(nexAccount),
 				titleId: serviceToken.info.title_id,
 				issueTime: serviceToken.info.issued,
 				expireTime: serviceToken.info.expires

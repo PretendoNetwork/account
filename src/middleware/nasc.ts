@@ -1,8 +1,9 @@
 import crypto from 'node:crypto';
+import { BanTargetType } from '@pretendonetwork/grpc/account/v2/ban_details';
 import { Device } from '@/models/device';
 import { NEXAccount } from '@/models/nex-account';
 import { nascError, nintendoBase64Decode } from '@/util';
-import { connection as databaseConnection } from '@/database';
+import { connection as databaseConnection, getActiveBan } from '@/database';
 import NintendoCertificate from '@/nintendo-certificate';
 import { LOG_ERROR } from '@/logger';
 import type express from 'express';
@@ -98,7 +99,17 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		nexAccount = await NEXAccount.findOne({ pid });
 
 		// TODO - 102 is a DEVICE ban. Is there an error for ACCOUNT bans?
+		// * Legacy ban check for bans issued before the bans collection existed
 		if (!nexAccount || nexAccount.access_level < 0) {
+			response.status(200).send(nascError('102').toString());
+			return;
+		}
+
+		const nexAccountBan = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_NEX_ACCOUNT, [
+			nexAccount.pid.toString()
+		]);
+
+		if (nexAccountBan) {
 			response.status(200).send(nascError('102').toString());
 			return;
 		}
@@ -108,7 +119,19 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 		fcdcert_hash: fcdcertHash
 	});
 
+	// * The device document may not exist yet, so always check the hash from this request
+	const deviceBan = await getActiveBan(BanTargetType.BAN_TARGET_TYPE_DEVICE, [
+		fcdcertHash,
+		device?.certificate_hash
+	].filter((hash): hash is string => !!hash));
+
+	if (deviceBan) {
+		response.status(200).send(nascError('102').toString());
+		return;
+	}
+
 	if (device) {
+		// * Legacy ban check for bans issued before the bans collection existed
 		if (device.access_level < 0) {
 			response.status(200).send(nascError('102').toString());
 			return;
