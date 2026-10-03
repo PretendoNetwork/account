@@ -50,6 +50,7 @@ router.post('/', async (request: express.Request, response: express.Response): P
 		}
 
 		nexAccount.generateUIDHMAC();
+		nexAccount.save();
 
 		response.json({
 			app: 'api',
