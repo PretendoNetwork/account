@@ -16,7 +16,6 @@ api.options('*', cors());
 
 // * Setup routes
 LOG_INFO('[USER API] Applying imported routes');
-api.use('/v1/connections', V1.CONNECTIONS);
 api.use('/v1/email', V1.EMAIL);
 api.use('/v1/forgot-password', V1.FORGOT_PASSWORD);
 api.use('/v1/login', V1.LOGIN);

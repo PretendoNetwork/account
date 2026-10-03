@@ -1,9 +1,10 @@
+import { format } from 'node:util';
 import express from 'express';
 import morgan from 'morgan';
 import xmlbuilder from 'xmlbuilder';
 import xmlparser from '@/middleware/xml-parser';
 import { connect as connectCache } from '@/cache';
-import { checkMarkedDeletions, connect as connectDatabase } from '@/database';
+import { connect as connectDatabase } from '@/database';
 import { startGRPCServer } from '@/services/grpc/server';
 import { fullUrl, getValueFromHeaders, setupScheduledTasks } from '@/util';
 import { LOG_INFO, LOG_SUCCESS, LOG_WARN } from '@/logger';
@@ -15,8 +16,10 @@ import datastore from '@/services/datastore';
 import api from '@/services/api';
 import localcdn from '@/services/local-cdn';
 import assets from '@/services/assets';
+import healthz from '@/services/healthz';
 import { config, disabledFeatures } from '@/config-manager';
 import { startProvisioner } from '@/provisioning';
+import { listenMetrics, registerMetrics } from '@/metrics';
 
 process.title = 'Pretendo - Account';
 process.on('uncaughtException', (err, origin) => {
@@ -28,6 +31,9 @@ process.on('SIGTERM', () => {
 });
 
 const app = express();
+
+// * Metrics has to happen first so we can measure the other middleware
+const metricsApp = registerMetrics(app);
 
 // * START APPLICATION
 app.set('view engine', 'ejs');
@@ -51,6 +57,7 @@ app.use(nasc);
 app.use(api);
 app.use(localcdn);
 app.use(assets);
+app.use(healthz);
 
 if (!disabledFeatures.datastore) {
 	app.use(datastore);
@@ -94,7 +101,7 @@ app.use((error: any, request: express.Request, response: express.Response, _next
 		deviceID = 'Unknown';
 	}
 
-	LOG_WARN(`HTTP ${status} at ${url} from ${deviceID}: ${error.message}`);
+	LOG_WARN(`HTTP ${status} at ${url} from ${deviceID}: ${format(error)}`);
 
 	response.status(status).json({
 		app: 'api',
@@ -116,13 +123,12 @@ async function main(): Promise<void> {
 
 	startProvisioner();
 
-	await checkMarkedDeletions();
-
 	setupScheduledTasks();
 
 	app.listen(config.http.port, () => {
 		LOG_SUCCESS(`HTTP server started on port ${config.http.port}`);
 	});
+	listenMetrics(metricsApp);
 }
 
 main().catch(console.error);

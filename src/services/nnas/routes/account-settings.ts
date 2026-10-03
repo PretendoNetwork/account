@@ -220,9 +220,13 @@ router.post('/update', async function (request: express.Request, response: expre
 			pnid.server_access_level = environment;
 		}
 
-		if (person.data.email.trim().toLowerCase() !== pnid.email.address) {
+		const newEmail = person.data.email.trim().toLowerCase();
+
+		if (newEmail !== pnid.email.address) {
+			pnid.email.history.unshift({ old: pnid.email.address, new: newEmail, on: new Date() });
+
 			// TODO - Better email check
-			pnid.email.address = person.data.email.trim().toLowerCase();
+			pnid.email.address = newEmail;
 			pnid.email.reachable = false;
 			pnid.email.validated = false;
 			pnid.email.validated_date = '';

@@ -9,7 +9,7 @@ import { SystemType } from '@/types/common/system-types';
 import { TokenType } from '@/types/common/token-types';
 import { config, disabledFeatures } from '@/config-manager';
 import { PasswordResetToken } from '@/models/password-reset-token';
-import { LOG_ERROR } from '@/logger';
+import { LOG_ERROR, LOG_SUCCESS } from '@/logger';
 import type { IncomingHttpHeaders } from 'node:http';
 import type { ParsedQs } from 'qs';
 import type mongoose from 'mongoose';
@@ -33,6 +33,88 @@ if (!disabledFeatures.s3) {
 			secretAccessKey: config.s3.secret
 		}
 	});
+}
+
+const NNID_VALID_CHARACTERS_REGEX = /^[\w\-.]*$/;
+const NNID_PUNCTUATION_START_REGEX = /^[_\-.]/;
+const NNID_PUNCTUATION_END_REGEX = /[_\-.]$/;
+const NNID_PUNCTUATION_DUPLICATE_REGEX = /[_\-.]{2,}/;
+
+// * This sucks
+const PASSWORD_WORD_OR_NUMBER_REGEX = /(?=.*[a-zA-Z])(?=.*\d).*/;
+const PASSWORD_WORD_OR_PUNCTUATION_REGEX = /(?=.*[a-zA-Z])(?=.*[_\-.]).*/;
+const PASSWORD_NUMBER_OR_PUNCTUATION_REGEX = /(?=.*\d)(?=.*[_\-.]).*/;
+const PASSWORD_REPEATED_CHARACTER_REGEX = /(.)\1\1/;
+
+// * Checks if the input NNID username passes all validation rules
+export function checkNNIDUsernameValid(username: string): boolean {
+	return checkNNIDUsernameLength(username) && checkNNIDUsernameValidCharacters(username) && checkNNIDUsernamePunctuationStart(username) && checkNNIDUsernamePunctuationEnd(username) && checkNNIDUsernameDuplicate(username);
+}
+
+// * Ensures the NNID username meets the expected size requirements
+export function checkNNIDUsernameLength(username: string): boolean {
+	return checkNNIDUsernameMinLength(username) && checkNNIDUsernameMaxLength(username);
+}
+
+// * Ensures the NNID username is at least 6 characters long
+export function checkNNIDUsernameMinLength(username: string): boolean {
+	return username.length >= 6;
+}
+
+// * Ensures the NNID username is at most 16 characters long
+export function checkNNIDUsernameMaxLength(username: string): boolean {
+	return username.length <= 16;
+}
+
+// * Ensures the NNID username only contains valid characters
+export function checkNNIDUsernameValidCharacters(username: string): boolean {
+	return NNID_VALID_CHARACTERS_REGEX.test(username);
+}
+
+// * Ensures the NNID username does not start with a punctuation character
+export function checkNNIDUsernamePunctuationStart(username: string): boolean {
+	return !NNID_PUNCTUATION_START_REGEX.test(username);
+}
+
+// * Ensures the NNID username does not end with a punctuation character
+export function checkNNIDUsernamePunctuationEnd(username: string): boolean {
+	return !NNID_PUNCTUATION_END_REGEX.test(username);
+}
+
+// * Ensures the NNID username does not use a punctuation character more than twice in a row
+export function checkNNIDUsernameDuplicate(username: string): boolean {
+	return !NNID_PUNCTUATION_DUPLICATE_REGEX.test(username);
+}
+
+// * Checks if the input NNID password passes all validation rules
+export function checkNNIDPasswordValid(password: string): boolean {
+	return checkNNIDPasswordLength(password) && checkNNIDPasswordAtLeast2CharacterGroups(password) && checkNNIDPasswordRepeatCharacters(password);
+}
+
+// * Ensures the NNID password meets the expected size requirements
+export function checkNNIDPasswordLength(password: string): boolean {
+	return checkNNIDPasswordMinLength(password) && checkNNIDPasswordMaxLength(password);
+}
+
+// * Ensures the NNID password is at least 6 characters long
+export function checkNNIDPasswordMinLength(password: string): boolean {
+	return password.length >= 6;
+}
+
+// * Ensures the NNID password is at most 16 characters long
+export function checkNNIDPasswordMaxLength(password: string): boolean {
+	return password.length <= 16;
+}
+
+// * Ensures the NNID password has a mix of letters, numbers, and/or punctuation characters.
+// * Passwords must contain letters from at least 2 of the 3 groups (letters, numbers, and punctuation)
+export function checkNNIDPasswordAtLeast2CharacterGroups(password: string): boolean {
+	return PASSWORD_WORD_OR_NUMBER_REGEX.test(password) || PASSWORD_WORD_OR_PUNCTUATION_REGEX.test(password) || PASSWORD_NUMBER_OR_PUNCTUATION_REGEX.test(password);
+}
+
+// * Ensures the NNID password does not have 3 or more repeating characters
+export function checkNNIDPasswordRepeatCharacters(password: string): boolean {
+	return PASSWORD_REPEATED_CHARACTER_REGEX.test(password);
 }
 
 export function nintendoPasswordHash(password: string, pid: number): string {
@@ -78,7 +160,7 @@ export function createServiceToken(server: HydratedServerDocument, options: Serv
 
 export function fullUrl(request: express.Request): string {
 	const protocol = request.protocol;
-	const host = request.host;
+	const host = request.hostname;
 	const opath = request.originalUrl;
 
 	return `${protocol}://${host}${opath}`;
@@ -129,8 +211,8 @@ export function nascError(errorCode: string): URLSearchParams {
 export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
 	const email = new CreateEmail()
 		.addHeader('Hello {{pnid}}!', { pnid: pnid.username })
-		.addParagraph('Your <b>Pretendo Network ID</b> activation is almost complete. Please click the link below to confirm your e-mail address and complete the activation process.')
-		.addButton('Confirm email address', `https://api.pretendo.cc/v1/email/verify?token=${pnid.identification.email_token}`)
+		.addParagraph('Please click the link below to confirm your e-mail address.')
+		.addButton('Confirm email address', `${config.website_base}/account/verify-email?token=${pnid.identification.email_token}`)
 		.addParagraph('You may also enter the following 6-digit code on your console:')
 		.addButton(pnid.identification.email_code, '', false)
 		.addParagraph('We hope you have fun using our services!');
@@ -145,18 +227,51 @@ export async function sendConfirmationEmail(pnid: mongoose.HydratedDocument<IPNI
 }
 
 export async function sendEmailConfirmedEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
-	const email = new CreateEmail()
+	const noticeEmail = new CreateEmail()
 		.addHeader('Dear {{pnid}}!', { pnid: pnid.username })
 		.addParagraph('Your email address has been confirmed.')
 		.addParagraph('We hope you have fun on Pretendo Network!');
 
-	const options = {
+	const noticeOptions = {
 		to: pnid.email.address,
 		subject: '[Pretendo Network] Email address confirmed',
-		email
+		email: noticeEmail
 	};
 
-	await sendMail(options);
+	await sendMail(noticeOptions);
+
+	if (pnid.email.history.length > 0) {
+		// we can just grab the latest email update event, since it's guaranteed to be the relevant one (or the tokens wouldn't be valid)
+		const emailUpdateEvent = pnid.email.history[0];
+
+		const warningEmail = new CreateEmail()
+			.addHeader('Dear {{pnid}},', { pnid: pnid.username })
+			.addParagraph('your email address has been changed.')
+			.addParagraph('If this wasn\'t you, contact [support@pretendo.network](mailto:support@pretendo.network).');
+
+		const warningOptions = {
+			to: emailUpdateEvent.old,
+			subject: '[Pretendo Network] Email address changed',
+			email: warningEmail
+		};
+
+		await sendMail(warningOptions);
+	}
+}
+
+export async function sendPasswordResetNoticeEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
+	const noticeEmail = new CreateEmail()
+		.addHeader('Dear {{pnid}},', { pnid: pnid.username })
+		.addParagraph('your password has been changed.')
+		.addParagraph('If this wasn\'t you, contact [support@pretendo.network](mailto:support@pretendo.network).');
+
+	const noticeOptions = {
+		to: pnid.email.address,
+		subject: '[Pretendo Network] Password changed',
+		email: noticeEmail
+	};
+
+	await sendMail(noticeOptions);
 }
 
 export async function sendEmailConfirmedParentalControlsEmail(pnid: mongoose.HydratedDocument<IPNID, IPNIDMethods>): Promise<void> {
@@ -191,7 +306,7 @@ export async function sendForgotPasswordEmail(pnid: mongoose.HydratedDocument<IP
 	const email = new CreateEmail()
 		.addHeader('Dear {{pnid}},', { pnid: pnid.username })
 		.addParagraph('a password reset has been requested from this account.')
-		.addParagraph('If you did not request the password reset, please ignore this email. If you did request this password reset, please click the link below to reset your password.')
+		.addParagraph('If you did not request the password reset, please ignore this email. Otherwise, please click the link below to reset your password.')
 		.addButton('Reset password', `${config.website_base}/account/reset-password?token=${encodeURIComponent(token)}`);
 
 	const mailerOptions = {
@@ -299,6 +414,20 @@ export function isValidBirthday(dateString: string): boolean {
 	const month = parseInt(parts[1], 10);
 	const day = parseInt(parts[2], 10);
 
+	const today = new Date();
+	const currentYear = today.getFullYear();
+	const currentMonth = today.getMonth() + 1;
+	const currentDay = today.getDate();
+
+	// Check that date isn't in the future
+	if (currentYear < year && currentMonth < month && currentDay < day) {
+		return false;
+	}
+
+	if (year < 1900) {
+		return false;
+	}
+
 	const date = new Date(year, month - 1, day);
 
 	return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
@@ -333,6 +462,10 @@ export async function setupScheduledTasks(): Promise<void> {
 	scheduledTask('0 2 * * *', 'check-account-deletions', checkMarkedDeletions);
 }
 
+export function isObject(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function scheduledTask(schedule: string, name: string, fn: () => void | Promise<void>): void {
 	CronJob.from({
 		cronTime: schedule,
@@ -347,5 +480,5 @@ function scheduledTask(schedule: string, name: string, fn: () => void | Promise<
 		start: true
 	});
 
-	LOG_ERROR(`Added schedule ${name} for ${schedule}`);
+	LOG_SUCCESS(`Added schedule ${name} for ${schedule}`);
 }
