@@ -16,11 +16,13 @@ export interface INEXAccount {
 	access_level: ACCESS_LEVEL;
 	server_access_level: string;
 	friend_code: string;
+	uidhmac: string;
 }
 
 export interface INEXAccountMethods {
 	generatePID(): Promise<void>;
 	generatePassword(): void;
+	generateUIDHMAC(): void;
 }
 
 interface INEXAccountQueryHelpers {}
