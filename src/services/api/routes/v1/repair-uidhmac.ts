@@ -1,6 +1,7 @@
 import express from 'express';
 import { LOG_ERROR } from '@/logger';
 import { NEXAccount } from '@/models/nex-account';
+import { repairUIDHMACRatelimit } from '@/middleware/ratelimit';
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ const router = express.Router();
  * Implementation of: https://api.pretendo.cc/v1/repair-uidhmac
  * Description: Creates a new user PNID
  */
-router.post('/', async (request: express.Request, response: express.Response): Promise<void> => {
+router.post('/', repairUIDHMACRatelimit, async (request: express.Request, response: express.Response): Promise<void> => {
 	const pid = request.body.pid?.trim(); // * This has to be forwarded since this request comes from the websites server
 	const nexPassword = request.body.password?.trim();
 

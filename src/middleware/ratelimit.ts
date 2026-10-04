@@ -63,3 +63,13 @@ export const nascRatelimit = ratelimit({
 	},
 	message: nascError('null')
 });
+
+export const repairUIDHMACRatelimit = ratelimit({
+	windowMs: 5 * 60 * 1000, // 5mins
+	max: 30,
+	keyGenerator: (request: express.Request): string => {
+		const pid = request.body.pid?.trim();
+
+		return String(pid);
+	}
+});
