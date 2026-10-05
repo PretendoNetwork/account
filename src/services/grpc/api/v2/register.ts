@@ -123,7 +123,7 @@ export async function register(request: RegisterRequest): Promise<DeepPartial<Lo
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Password must have combination of letters, numbers, and/or punctuation characters');
 	}
 
-	if (!checkNNIDPasswordRepeatCharacters(password)) {
+	if (checkNNIDPasswordRepeatCharacters(password)) {
 		throw new ServerError(Status.INVALID_ARGUMENT, 'Password may not have 3 repeating characters');
 	}
 

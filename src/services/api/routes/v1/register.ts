@@ -302,7 +302,7 @@ router.post('/', webRegisterRatelimit, async (request: express.Request, response
 		return;
 	}
 
-	if (!checkNNIDPasswordRepeatCharacters(password)) {
+	if (checkNNIDPasswordRepeatCharacters(password)) {
 		response.status(400).json({
 			app: 'api',
 			status: 400,
