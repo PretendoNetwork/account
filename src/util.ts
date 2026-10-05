@@ -200,6 +200,21 @@ export function nascDateTime(): string {
 	return `${year}${month}${day}${hours}${minutes}${seconds}`;
 }
 
+// * The original version of AccountManagementProtocol::NintendoCreateAccount on the friends server would use
+// * the strKey value provided by the client to generate the uidhmac. This was thought to be correct, because of
+// * a misunderstanding of how this value was actually used in NASC. In reality, the strKey value is ALWAYS sent
+// * as c3ef03044c6937d30e6b179f610ea190 ("dummy" MD5 hashed 65,000 times). Because of this, ALL previous uidhmac
+// * values generated before commit 4e6021b on the friends server are wrong. This is used to detect these older
+// * values and send a custom error code so users know they need to repair their uidhmac
+export function generateLegacyUIDHMAC(pid: number): string {
+	const pidBuffer = Buffer.alloc(4);
+	pidBuffer.writeUInt32LE(pid);
+
+	const hmac = crypto.createHmac('md5', 'c3ef03044c6937d30e6b179f610ea190').update(pidBuffer);
+
+	return hmac.digest('hex').substring(0, 8);
+}
+
 export function nascError(errorCode: string): URLSearchParams {
 	return new URLSearchParams({
 		retry: nintendoBase64Encode('1'),
