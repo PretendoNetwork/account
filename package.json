@@ -56,7 +56,7 @@
     "morgan": "^1.9.1",
     "nice-grpc": "^2.1.4",
     "node-rsa": "^1.0.7",
-    "nodemailer": "^6.4.2",
+    "nodemailer": "^7.0.11",
     "redis": "^4.3.1",
     "stripe": "^12.3.0",
     "tga": "^1.0.4",
