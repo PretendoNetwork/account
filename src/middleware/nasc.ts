@@ -1,9 +1,10 @@
 import crypto from 'node:crypto';
 import { Device } from '@/models/device';
 import { NEXAccount } from '@/models/nex-account';
-import { nascError, nintendoBase64Decode } from '@/util';
+import { nascError, nintendoBase64Decode, generateLegacyUIDHMAC } from '@/util';
 import { connection as databaseConnection } from '@/database';
 import NintendoCertificate from '@/nintendo-certificate';
+import { isFailedUIDHMACRatelimited, recordFailedUIDHMAC } from '@/middleware/ratelimit';
 import { LOG_ERROR } from '@/logger';
 import type express from 'express';
 import type { NASCACRequestParams } from '@/types/services/nasc/ac-request-params';
@@ -103,7 +104,23 @@ async function NASCMiddleware(request: express.Request, response: express.Respon
 			return;
 		}
 
+		// * Checked before the uidhmac itself, so a console which has hit the limit learns nothing
+		if (await isFailedUIDHMACRatelimited(fcdcertHash)) {
+			response.status(200).send(nascError('122').toString());
+			return;
+		}
+
 		if (!uidhmac || nexAccount.uidhmac !== uidhmac) {
+			// * Consoles still sending a uidhmac from the old, broken implementation get their own error code,
+			// * so they can be told to repair their account rather than being shown a ban error
+			if (uidhmac && uidhmac === generateLegacyUIDHMAC(nexAccount.pid)) {
+				response.status(200).send(nascError('153').toString());
+				return;
+			}
+
+			// * Only record this when it's a failure from a non-legacy uidhmac, to stop blocking legitimate users
+			await recordFailedUIDHMAC(fcdcertHash);
+
 			response.status(200).send(nascError('122').toString());
 			return;
 		}
