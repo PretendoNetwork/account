@@ -81,7 +81,7 @@ export function checkNNIDUsernamePunctuationEnd(username: string): boolean {
 	return !NNID_PUNCTUATION_END_REGEX.test(username);
 }
 
-// * Ensures the NNID username does not use a punctuation character more than twice in a row
+// * Ensures the NNID username does not use two or more punctuation characters in a row
 export function checkNNIDUsernameDuplicate(username: string): boolean {
 	return !NNID_PUNCTUATION_DUPLICATE_REGEX.test(username);
 }
@@ -114,7 +114,7 @@ export function checkNNIDPasswordAtLeast2CharacterGroups(password: string): bool
 
 // * Ensures the NNID password does not have 3 or more repeating characters
 export function checkNNIDPasswordRepeatCharacters(password: string): boolean {
-	return PASSWORD_REPEATED_CHARACTER_REGEX.test(password);
+	return !PASSWORD_REPEATED_CHARACTER_REGEX.test(password);
 }
 
 export function nintendoPasswordHash(password: string, pid: number): string {
