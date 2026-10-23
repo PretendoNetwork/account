@@ -4,7 +4,7 @@ ARG app_dir="/home/node/app"
 
 
 # * Base Node.js image
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 ARG app_dir
 WORKDIR ${app_dir}
 
