@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "description": "",
   "main": "./dist/server.js",
+  "engines": {
+    "node": "^24.22.1"
+  },
   "scripts": {
     "lint": "eslint ./src",
     "lint:fix": "eslint --fix ./src",
